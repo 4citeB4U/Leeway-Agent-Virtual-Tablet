@@ -6,6 +6,8 @@ on:
     paths:
       - 'apps/agent-tablet/**'
       - 'apps/crm/**'
+      - 'docs/**'
+      - 'README.md'
       - 'package.json'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
