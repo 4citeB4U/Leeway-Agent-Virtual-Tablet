@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+/* Lined Notepad Paper Texture and Ruled Lines */
+.notepad-paper-human {
+  background-color: #fffdf5;
+  background-image: linear-gradient(transparent 2.45rem, #eef2ff 2.5rem);
+  background-size: 100% 2.5rem;
+}
+.notepad-paper-agent {
+  background-color: #fafaf9;
+  background-image: linear-gradient(transparent 2.45rem, #f1f5f9 2.5rem);
+  background-size: 100% 2.5rem;
+}

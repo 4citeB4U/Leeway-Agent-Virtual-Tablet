@@ -1,0 +1,16 @@
+{
+  "name": "leeway-agent-virtual-tablet",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Isolated LeeWay Agent Virtual Tablet interface, backend, and read-only Runtime Fabric adapter.",
+  "type": "module",
+  "scripts": {
+    "install:tablet": "npm --prefix apps/agent-tablet ci",
+    "dev": "npm --prefix apps/agent-tablet run dev",
+    "start": "npm --prefix apps/agent-tablet run start",
+    "lint": "npm --prefix apps/agent-tablet run lint",
+    "build": "npm --prefix apps/agent-tablet run build",
+    "test:integration": "node --test integration/runtime-fabric/*.test.mjs",
+    "test": "npm run lint && npm run test:integration && npm run build"
+  }
+}

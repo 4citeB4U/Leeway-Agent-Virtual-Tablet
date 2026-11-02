@@ -1,0 +1,6 @@
+{
+  "name": "LeeWay Agent Workstation & Open Notebook",
+  "description": "An autonomous multi-agent workstation for Agent Lee and assisting LLMs featuring Termux and Linux terminal environments, LeeWay Standards Diagnostics, autonomous multi-engine search federation, and multi-agent blackboard coordination.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
