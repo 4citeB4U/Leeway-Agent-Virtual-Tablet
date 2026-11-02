@@ -2,9 +2,9 @@
 
 ## Result
 
-`STAGED_ISOLATED_SOURCE_PENDING_VERIFICATION`
+`ISOLATED_SOURCE_PUSHED_CI_VERIFIED`
 
-The target GitHub repository was empty and is being populated as a standalone tablet repository. No source outside the isolated staging directory has been reset, merged, deleted, or rebound.
+The target GitHub repository was empty and is now populated as a standalone tablet repository. No source outside the isolated staging directory was reset, merged, deleted, or rebound.
 
 ## Source provenance
 
@@ -23,10 +23,19 @@ The target GitHub repository was empty and is being populated as a standalone ta
 
 ## Verification state
 
-The source records provide prior local evidence of TypeScript lint and production-build passes for the contributing tablet work. This isolated repository still requires its own fresh `npm test` and GitHub Actions run before it can be called verified.
+Fresh isolated verification completed:
+
+- `npm run lint`: PASS.
+- Runtime Fabric and engineering-cycle contract tests: 14/14 PASS.
+- Production build: PASS; CRM runtime sync, Vite bundle, standalone preview, and bundled Express server all completed.
+- Local smoke checks: `/api/health` 200, `/api/auth/status` 200 with `OWNER_SESSION_REQUIRED`, unauthenticated Workforce read 401 with the read-only bearer challenge, Agent Roster 200 observation-only, and `/standalone.html` 302 to the preview route.
+- GitHub commit: `35eb6fe86fcc88ce3b032330bc70b8a2e4e5154f` on `main`.
+- GitHub Actions: run `41519016090`, conclusion `success`.
+
+The local and remote `main` heads matched after push.
 
 The live Runtime Fabric/OIDC gate remains separate: without the approved issuer/client and authenticated provider snapshot, Workforce status must remain blocked or unverified. Device Bridge native execution is not claimed by repository presence.
 
 ## Receipt boundary
 
-This document records the extraction and its evidence boundary. It is not a Veritas acceptance, runtime execution receipt, Formula decision, or Learning Ledger admission.
+This document records the extraction and its evidence boundary. It is not a Veritas acceptance, runtime execution receipt, Formula decision, or Learning Ledger admission. Live Pocket ID/OIDC, authenticated Workforce telemetry, Workboard availability, and Device Bridge native execution remain separate runtime gates.
