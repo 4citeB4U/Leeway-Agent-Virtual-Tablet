@@ -1,5 +1,7 @@
 # LeeWay Agent Virtual Tablet
 
+Live browser UI: https://4citeb4u.github.io/Leeway-Agent-Virtual-Tablet/
+
 This repository isolates the LeeWay Agent Virtual Tablet so its interface and replaceable host adapter can evolve without rewriting the surrounding LeeWay system.
 
 The tablet is an interface and bounded backend. It is not a second Runtime Fabric, Device Bridge, Formula, Veritas, receipt, or learning authority. It reads those systems through explicit adapters and keeps unavailable or unverified state visible.
