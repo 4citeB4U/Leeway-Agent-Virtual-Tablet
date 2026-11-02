@@ -29,8 +29,13 @@ Fresh isolated verification completed:
 - Runtime Fabric and engineering-cycle contract tests: 14/14 PASS.
 - Production build: PASS; CRM runtime sync, Vite bundle, standalone preview, and bundled Express server all completed.
 - Local smoke checks: `/api/health` 200, `/api/auth/status` 200 with `OWNER_SESSION_REQUIRED`, unauthenticated Workforce read 401 with the read-only bearer challenge, Agent Roster 200 observation-only, and `/standalone.html` 302 to the preview route.
-- GitHub commit: `35eb6fe86fcc88ce3b032330bc70b8a2e4e5154f` on `main`.
-- GitHub Actions: run `41519016090`, conclusion `success`.
+- GitHub commit: `acbbae33be864f1628a0f0c201a69b9d3c64251b` on `main`.
+- GitHub Actions CI: run `41527850766`, conclusion `success`.
+- GitHub Pages build/deploy workflow: run `41527850790`, conclusion `success`.
+- GitHub Pages environment deployment: run `41527849646`, conclusion `success`.
+- Published browser UI: `https://4citeb4u.github.io/Leeway-Agent-Virtual-Tablet/`.
+
+The Pages source is now GitHub Actions. The workflow builds `apps/agent-tablet/dist` with the repository base path and publishes that artifact, so the public site renders the tablet application rather than the repository README.
 
 The local and remote `main` heads matched after push.
 
