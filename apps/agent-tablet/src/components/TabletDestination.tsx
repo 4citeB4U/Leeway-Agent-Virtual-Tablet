@@ -4,7 +4,7 @@ type Destination = 'continuum' | 'preview' | 'apps';
 
 interface TabletDestinationProps {
   destination: Destination;
-  onOpen: (surface: 'openNotebook' | 'editor' | 'browser' | 'crm' | 'vscode' | 'terminal') => void;
+  onOpen: (surface: 'openNotebook' | 'editor' | 'browser' | 'crm' | 'modelHub' | 'logistics' | 'vscode' | 'terminal') => void;
 }
 
 const copy: Record<Destination, { title: string; subtitle: string; body: string }> = {
@@ -46,6 +46,8 @@ export function TabletDestination({ destination, onOpen }: TabletDestinationProp
               <button type="button" onClick={() => onOpen('vscode')} className="rounded-lg border border-zinc-700 bg-zinc-900 p-4 text-left hover:bg-zinc-800"><strong>LeeCode</strong><span className="mt-1 block text-xs text-zinc-400">Development workspace</span></button>
               <button type="button" onClick={() => onOpen('terminal')} className="rounded-lg border border-zinc-700 bg-zinc-900 p-4 text-left hover:bg-zinc-800"><strong>Terminal Gateway</strong><span className="mt-1 block text-xs text-zinc-400">Authorized shell surface</span></button>
               <button type="button" onClick={() => onOpen('crm')} className="rounded-lg border border-zinc-700 bg-zinc-900 p-4 text-left hover:bg-zinc-800"><strong>Operations</strong><span className="mt-1 block text-xs text-zinc-400">Existing CRM and workflow tools</span></button>
+              <button type="button" onClick={() => onOpen('modelHub')} className="rounded-lg border border-zinc-700 bg-zinc-900 p-4 text-left hover:bg-zinc-800"><strong>LeeWay Model Hub</strong><span className="mt-1 block text-xs text-zinc-400">Existing registered-model catalog and widget. Live inference requires an authenticated LeeWay host.</span></button>
+              <button type="button" onClick={() => onOpen('logistics')} className="rounded-lg border border-zinc-700 bg-zinc-900 p-4 text-left hover:bg-zinc-800"><strong>LeeWay Logistics</strong><span className="mt-1 block text-xs text-zinc-400">Transit World spatial and business operations. Device location requires explicit permission; training map data is not live GPS.</span></button>
             </>}
           </div>
         </div>
