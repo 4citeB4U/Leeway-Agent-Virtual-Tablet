@@ -106,6 +106,34 @@ test('real MCP initialize, tools/list and fixed runtime_health call remain read-
   assert.equal(result.productionExecutionAuthorized, false);
   assert.equal(JSON.stringify(result).includes(env.LEEWAY_WORKFORCE_MCP_ACCESS_TOKEN), false);
 });
+test('current OIDC-verified Runtime label is accepted without claiming worker activation', async () => {
+  const currentRuntime = {
+    ...report,
+    runtimeFabric: {status:'AVAILABLE', authentication:'OIDC_ACCESS_TOKEN_VERIFIED'}
+  };
+  const {fetchImpl,seen} = fixture({health:currentRuntime});
+  const result = await probeWorkforceRuntimeMcp({env,fetchImpl});
+  assert.deepEqual(seen, ['initialize','notifications/initialized','tools/list','tools/call']);
+  assert.equal(result.state, 'AUTHENTICATED_READ_ONLY_OBSERVED');
+  assert.equal(result.providerComposition.deviceBridge, 'NOT_PROBED');
+  assert.equal(result.productionExecutionAuthorized, false);
+  assert.equal(result.formulaExecuted, false);
+  assert.equal(result.veritasAccepted, false);
+  assert.equal(result.receiptAdmitted, false);
+  assert.equal(result.learningAdmitted, false);
+  assert.equal(Object.hasOwn(result, 'workers'), false);
+});
+
+test('unverified or caller-asserted OIDC strings remain blocked', async () => {
+  for (const authentication of ['OIDC_BEARER_PRESENT','OIDC_ACCESS_TOKEN_UNVERIFIED','OIDC_ACCESS_TOKEN_VERIFIED_BY_CLIENT',null]) {
+    const health={...report,runtimeFabric:{status:'AVAILABLE',authentication}};
+    const result=await probeWorkforceRuntimeMcp({env,fetchImpl:fixture({health}).fetchImpl});
+    assert.equal(result.state, 'BLOCKED');
+    assert.equal(result.reason,'MCP_HEALTH_CONTRACT_MISMATCH');
+    assert.equal(result.productionExecutionAuthorized,false);
+  }
+});
+
 test('SSE Streamable HTTP response also decodes', async () => {
   const r = await probeWorkforceRuntimeMcp({env,fetchImpl:fixture({eventStream:true}).fetchImpl});
   assert.equal(r.state, 'AUTHENTICATED_READ_ONLY_OBSERVED');
