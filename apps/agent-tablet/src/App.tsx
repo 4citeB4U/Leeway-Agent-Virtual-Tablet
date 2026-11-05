@@ -602,6 +602,43 @@ export default function App() {
           </div>
         )}
 
+
+        {/* Canonical LeeWay product surfaces. These hosted pages are not MCP
+            execution grants: Model Hub, Logistics, Runtime Fabric and Device
+            Bridge remain the authorities for live effects and device position. */}
+        {(currentApp === 'modelHub' || currentApp === 'logistics') && (
+          <div className="flex-grow min-w-0 flex flex-col overflow-hidden bg-[#111318] text-zinc-100">
+            <div className="shrink-0 border-b border-zinc-700 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-bold">{currentApp === 'modelHub' ? 'LeeWay Model Hub' : 'LeeWay Logistics — Transit World'}</div>
+                <p className="text-[11px] text-zinc-300">
+                  {currentApp === 'modelHub'
+                    ? 'Existing catalog and widget. GitHub Pages does not host model inference; owner-authorized Runtime/Device Bridge access is separately required.'
+                    : 'Existing spatial application. Training/demo fallback is not live location, and browser geolocation remains user-permission gated.'}
+                </p>
+              </div>
+              <a
+                href={currentApp === 'modelHub'
+                  ? 'https://4citeb4u.github.io/LeeWay-Model-Hub/'
+                  : 'https://4citeb4u.github.io/LEEWAY-LOGISTICS-/'}
+                target="_blank" rel="noopener noreferrer"
+                className="shrink-0 rounded border border-zinc-500 px-3 py-2 text-[11px] font-semibold hover:bg-zinc-800"
+              >Open original LeeWay app</a>
+            </div>
+            <iframe
+              title={currentApp === 'modelHub' ? 'LeeWay Model Hub public catalog' : 'LeeWay Logistics Transit World'}
+              src={currentApp === 'modelHub'
+                ? 'https://4citeb4u.github.io/LeeWay-Model-Hub/'
+                : 'https://4citeb4u.github.io/LEEWAY-LOGISTICS-/'}
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              allow={currentApp === 'logistics' ? 'geolocation' : undefined}
+              referrerPolicy="no-referrer"
+              loading="lazy"
+              className="flex-grow w-full border-0 bg-white"
+            />
+          </div>
+        )}
+
         {/* ================= FULL OPEN NOTEBOOK APPLICATION ================= */}
         {currentApp === 'openNotebook' && (
           <div className="flex-grow flex flex-col overflow-hidden">
