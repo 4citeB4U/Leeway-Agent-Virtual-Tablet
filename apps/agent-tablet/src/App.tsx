@@ -588,15 +588,15 @@ export default function App() {
                 <Database size={14} className="text-[#d99a1e]" />
                 <div>
                   <div className="text-[10px] font-black uppercase tracking-[0.16em]">LeeWay Business Operations</div>
-                  <div className="text-[8px] text-blue-200">Actual Voice · Scheduling · Translator CRM package</div>
+                  <div className="text-[8px] text-blue-200">Canonical LeeWay Agentic CRM/ERP · shared records not yet verified</div>
                 </div>
               </div>
-              <a href="/crm/index.html" target="_blank" rel="noreferrer"
+              <a href="https://4citeb4u.github.io/Leeway-Agentic-CRM-ERP/" target="_blank" rel="noreferrer"
                  className="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded text-[8px] font-bold uppercase tracking-wider">
-                Open Full CRM
+                Open Full CRM/ERP
               </a>
             </div>
-            <iframe title="LeeWay Voice Scheduling Translator CRM" src="/crm/index.html"
+            <iframe title="LeeWay Agentic CRM/ERP" src="https://4citeb4u.github.io/Leeway-Agentic-CRM-ERP/"
               className="flex-grow w-full border-0 bg-white"
               allow="microphone; geolocation; clipboard-read; clipboard-write" />
           </div>
