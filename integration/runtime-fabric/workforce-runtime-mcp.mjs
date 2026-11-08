@@ -90,7 +90,8 @@ async function parseResponse(response) {
 
 function boundedReport(data) {
   if (!data || data.runtimeFabric?.status !== 'AVAILABLE' ||
-      data.runtimeFabric?.authentication !== 'POCKET_ID_ACCESS_TOKEN_VERIFIED' ||
+      !['POCKET_ID_ACCESS_TOKEN_VERIFIED', 'OIDC_ACCESS_TOKEN_VERIFIED']
+        .includes(data.runtimeFabric?.authentication) ||
       typeof data.providerComposition !== 'object' || data.providerComposition === null ||
       data.mutation !== 'NOT_ATTEMPTED' || data.authenticatedDeviceCommand !== 'NOT_PROBED') {
     return blocked('MCP_HEALTH_CONTRACT_MISMATCH');
