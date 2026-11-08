@@ -3,6 +3,8 @@ export type WorkstationAppId =
   | 'editor'
   | 'openNotebook'
   | 'crm'
+  | 'modelHub'
+  | 'logistics'
   | 'vscode'
   | 'browser'
   | 'terminal'
