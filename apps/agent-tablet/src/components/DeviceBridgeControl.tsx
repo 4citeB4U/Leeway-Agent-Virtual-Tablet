@@ -58,7 +58,8 @@ export function DeviceBridgeControl() {
     reset();
     if(!deviceId.trim()||!app.trim()){setStatus('DEVICE_AND_APP_REQUIRED');return;}
     const value=await execute('list',{app:app.trim()});
-    const raw=value?.result?.windows;
+    if(!value)return;
+    const raw=value.result?.windows;
     if(!Array.isArray(raw)){setStatus('WINDOW_LIST_READBACK_MISSING');return;}
     const items=raw.filter(isObj).filter(v=>Number.isSafeInteger(v.pid)&&typeof v.title==='string'&&typeof v.processName==='string')
       .map(v=>({pid:Number(v.pid),title:String(v.title),processName:String(v.processName)})).slice(0,30);
@@ -69,7 +70,8 @@ export function DeviceBridgeControl() {
     setObservation(null);setTargetId('');setActionTargetId('');setTextSha256('');
     const target={app:app.trim(),pid,...(expectedUrl.trim()?{expectedUrl:expectedUrl.trim()}:{})};
     const value=await execute('observe',target);
-    const raw=value?.result;
+    if(!value)return;
+    const raw=value.result;
     if(!raw||typeof raw.observationId!=='string'||!Array.isArray(raw.editableTargets)||!Array.isArray(raw.actionTargets)){
       setStatus('OBSERVATION_NOT_VERIFIED');return;
     }
@@ -80,7 +82,8 @@ export function DeviceBridgeControl() {
     if(!observation||!targetId||!message.trim()){setStatus('EXACT_COMPOSER_AND_TEXT_REQUIRED');return;}
     setTextSha256('');
     const value=await execute('input',{app:app.trim(),pid:observation.pid,observationId:observation.observationId,targetId},message);
-    const hash=value?.result?.textSha256;
+    if(!value)return;
+    const hash=value.result?.textSha256;
     if(typeof hash!=='string'||! /^[a-f0-9]{64}$/.test(hash)){setStatus('INPUT_READBACK_NOT_CONFIRMED');return;}
     setTextSha256(hash);
     setStatus('DRAFT_INPUT_REPORTED_REVIEW_BEFORE_SEND');
@@ -88,7 +91,8 @@ export function DeviceBridgeControl() {
   const submit=async()=>{
     if(!observation||!targetId||!actionTargetId||!textSha256){setStatus('SUBMISSION_REQUIRES_OBSERVED_INPUT_AND_SEND_CONTROL');return;}
     const value=await execute('submit',{app:app.trim(),pid:observation.pid,observationId:observation.observationId,targetId,actionTargetId,expectedTextSha256:textSha256});
-    if(value?.result?.submitted===true){setStatus('SEND_INVOKED_RESPONSE_NOT_YET_VERIFIED');setTextSha256('');}
+    if(!value)return;
+    if(value.result?.submitted===true){setStatus('SEND_INVOKED_RESPONSE_NOT_YET_VERIFIED');setTextSha256('');}
     else {setStatus('SUBMISSION_NOT_CONFIRMED');}
   };
 
