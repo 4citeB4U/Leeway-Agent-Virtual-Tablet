@@ -48,7 +48,7 @@ test('rejects invalid actions and missing observation-bound composer target',()=
   assert.equal(validateTabletExecutionRequest({...body,action:'shell'}),null);
   assert.equal(validateTabletExecutionRequest({...body,deviceId:'../../etc'}),null);
   assert.equal(validateTabletExecutionRequest({...body,action:'input',text:'hello'}),null);
-  assert.equal(validateTabletExecutionRequest({...body,target:{app:'chatgpt',__proto__:null}})?.action,'list');
+  assert.equal(validateTabletExecutionRequest({...body,target:{app:'chatgpt',__proto__:null}}),null);
   assert.equal(validateTabletExecutionRequest({...body,target:{app:'chatgpt',pid:7},action:'observe'})?.action,'observe');
   assert.equal(validateTabletExecutionRequest({...body,target:{app:'chatgpt',pid:7,observationId:'obs',targetId:'t'},action:'input',text:'hello'})?.action,'input');
   assert.equal(validateTabletExecutionRequest({...body,extra:true}),null);
