@@ -52,6 +52,7 @@ import { AgentVTWorkforceCommandCenter } from './components/AgentVTWorkforceComm
 import { TabletDestination } from './components/TabletDestination';
 import { AgentRosterBoard } from './components/AgentRosterBoard';
 import { AgentCommandCenter } from './components/AgentCommandCenter';
+import { CoreServiceDock } from './components/CoreServiceDock';
 import { WorkboardRuntimePanel } from './components/WorkboardRuntimePanel';
 import { AgentNotepadBlackboard } from './components/AgentNotepadBlackboard';
 
@@ -1251,6 +1252,9 @@ export default function App() {
           ))}
         </div>
       )}
+
+      {/* Core services and widget launch live inside the Tablet, not a second executor. */}
+      <CoreServiceDock onOpenSurface={setCurrentApp} />
 
       {/* Global Toast */}
       {toastMsg && (
