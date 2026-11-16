@@ -45,7 +45,7 @@ LICENSE = Existing repository terms; no new rights asserted.
 
 **G1 LIFECYCLE:** Remove legacy Desktop Commander independent startup using the reviewed Boot Fabric PR; run read-only inventory and safe task-retirement script. Leave Docker optional, Seafile retained, and Runtime Supervisor preserved.
 
-**G2 TABLET CONTROL:** Replace the read-only-only core with an authenticated **execution-capable adapter** that forwards the original user token and narrow command to the existing Runtime tool. No new control plane. Add per-service status and only enable command buttons when actual admission is demonstrated.
+**G2 TABLET CONTROL — SOURCE CANDIDATE IMPLEMENTED:** `tablet-device-execution.mjs`, `POST /api/device-bridge/execute`, explicit OIDC execute mode, and `DeviceBridgeControl` now forward only the exact observed window-control actions to the existing Runtime MCP `bridge_device_window_control`. Separate list/observe/input/submit user clicks prevent automatic command execution. Browser Origin, X-LeeWay-User-Intent and caller bearer are required. Live Runtime deployment and physical device execution remain NOT EXECUTED. The independent Runtime source PR #177 already requires `device.bridge.execute` and must be admitted rather than bypassed.
 
 **G3 SENSORY:** Bind approved `voice.status`, `voice.speak`, microphone and camera ingress, interruption and visible session controls using existing Device Bridge and media adapters; test one real audio echo and one fresh camera frame. Claim neither until execution and device readback.
 
