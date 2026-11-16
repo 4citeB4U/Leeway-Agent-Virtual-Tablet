@@ -13,6 +13,7 @@ LICENSE = Existing repository terms (Apache-2.0), no new rights asserted.
 */
 import React, { useState } from 'react';
 import type { WorkstationAppId } from '../types';
+import { DeviceBridgeControl } from './DeviceBridgeControl';
 
 type CoreSurface = {
   id: string;
@@ -61,6 +62,7 @@ export function CoreServiceDock({ onOpenSurface }: { onOpenSurface: (surface: Wo
               <h3 className="text-sm font-bold">{selected.title}</h3>
               <p className="text-xs leading-relaxed text-zinc-300">{selected.description}</p>
               <p role="status" className="rounded border border-amber-700 bg-amber-950/20 p-2 text-xs text-amber-200">LIVE SERVICE: NOT VERIFIED IN THIS TABLET SESSION. This panel does not execute device commands or claim connected cameras, models or voice.</p>
+              {selected.id === 'device-bridge' && <DeviceBridgeControl />}
               {selected.relatedTabletView ? (
                 <button type="button" className="rounded bg-cyan-900 px-3 py-2 text-xs font-bold" onClick={() => { onOpenSurface(selected.relatedTabletView!); setVisible(false); setSelectedId(null); }}>
                   Open related Tablet workspace
