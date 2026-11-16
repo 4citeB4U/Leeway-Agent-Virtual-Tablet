@@ -14,7 +14,7 @@ LICENSE: Repository's existing terms; no new rights declared.
 -->
 # LeeWay Mandatory Worker Admission
 
-**Scope:** read-only and approved interactive management UI; never independent authorization. Source review branch, not independent verified enforcement.
+**Scope:** read, authorized execution requests, and interactive management through the existing Runtime Fabric/Device Bridge; never independent authorization. The source candidate does not grant any host permission or prove a deployed capability.
 
 All workers, outside LLMs, internal agents and automation must first read current approved [Standards Canonical Laws](https://github.com/4citeB4U/LeeWay-Standards/blob/main/Docs/governance/LEEWAY-CANONICAL-ENGINEERING-LAWS.md), [R01–R25](https://github.com/4citeB4U/LeeWay-Standards/blob/main/standards/PERMANENT-ENGINEERING-RULES.md), [Engineering](https://github.com/4citeB4U/LeeWay-Engineering/blob/main/contracts/EDUCATIONAL-ADOPTION-CONTRACT.md), [Agent Skills](https://github.com/4citeB4U/LeeWay-Agent-Skills/blob/main/AGENTS.md), [Receipt Authority](https://github.com/4citeB4U/Receipt-Authority/blob/main/README.md), exact owning mission and source/role/grants. Standards [PR #71](https://github.com/4citeB4U/LeeWay-Standards/pull/71) remains a pending amendment, not an implemented host rule.
 
