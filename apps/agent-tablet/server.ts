@@ -14,6 +14,7 @@ LICENSE: LeeWay-authored source.
 */
 import 'dotenv/config';
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { invokeTabletBridgeExecution, validateTabletExecutionRequest } from '../../integration/runtime-fabric/tablet-device-execution.mjs';
 import {
   probeLocalWorkforceRuntime,
   probeWorkforceRuntimeMcp,
@@ -167,7 +168,12 @@ app.get('/api/auth/start', async (_req, res) => {
     authorization.searchParams.set('response_type', 'code');
     authorization.searchParams.set('client_id', settings.clientId);
     authorization.searchParams.set('redirect_uri', settings.redirectUri);
-    authorization.searchParams.set('scope', settings.scope);
+    // Request native device execution only when the user explicitly enters execute mode.
+    // The existing identity provider must still grant device.bridge.execute; this UI cannot grant it.
+    const executeRequested = _req.query.mode === 'execute';
+    const requestedScope = new Set(settings.scope.split(/\s+/).filter(Boolean));
+    if (executeRequested) requestedScope.add('device.bridge.execute');
+    authorization.searchParams.set('scope', [...requestedScope].join(' '));
     authorization.searchParams.set('state', state);
     authorization.searchParams.set('code_challenge', challenge);
     authorization.searchParams.set('code_challenge_method', 'S256');
@@ -225,6 +231,42 @@ app.get('/api/workforce/runtime-fabric', async (req, res) => {
     'AUTHENTICATED_READ_ONLY_OBSERVED',
     'AUTHENTICATED_LOCAL_RUNTIME_OBSERVED'
   ].includes(result.state) ? 200 : 503).json(result);
+});
+
+// Interactive, owner-initiated Tablet control. Every effect stays with Runtime Fabric / Device Bridge.
+// No token, grant, device identity, permission or Veritas decision originates here.
+function tabletExecutionOriginMatches(req: express.Request): boolean {
+  const expectedText = String(process.env.LEEWAY_AGENT_VT_TRUSTED_ORIGIN || '').trim();
+  let expected: URL;
+  try { expected = new URL(expectedText); } catch { return false; }
+  const permitted = expected.protocol === 'https:' ||
+    (expected.protocol === 'http:' && ['127.0.0.1','localhost','[::1]'].includes(expected.hostname));
+  if (!permitted || expected.username || expected.password ||
+      expected.search || expected.hash || expected.pathname !== '/' ) return false;
+  if (req.headers.origin !== expected.origin) return false;
+  if (req.headers['sec-fetch-site'] && req.headers['sec-fetch-site'] !== 'same-origin') return false;
+  if (req.headers['x-leeway-user-intent'] !== 'execute-click') return false;
+  return /^application\/json(?:\s*;|$)/i.test(String(req.headers['content-type'] || ''));
+}
+
+app.post('/api/device-bridge/execute', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  if (!tabletExecutionOriginMatches(req)) {
+    return res.status(403).json({state:'BLOCKED',reason:'TABLET_EXPLICIT_SAME_ORIGIN_INTENT_REQUIRED'});
+  }
+  const bearer = callerBearer(req);
+  if (!bearer) {
+    res.setHeader('WWW-Authenticate', 'Bearer realm="LeeWay-Device-Bridge", scope="device.bridge.execute"');
+    return res.status(401).json({state:'BLOCKED',reason:'OWNER_EXECUTE_SESSION_REQUIRED'});
+  }
+  if (!validateTabletExecutionRequest(req.body)) {
+    return res.status(400).json({state:'BLOCKED',reason:'EXECUTION_REQUEST_INVALID'});
+  }
+  const result = await invokeTabletBridgeExecution({
+    env:process.env, bearer, body:req.body
+  });
+  // A denied Runtime request cannot be upgraded into an optimistic Tablet success.
+  return res.status(result.state === 'UPSTREAM_OPERATION_REPORTED' ? 200 : 503).json(result);
 });
 
 app.get('/api/health', (_req, res) => {
