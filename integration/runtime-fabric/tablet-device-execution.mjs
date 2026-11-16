@@ -57,7 +57,7 @@ async function readJsonRpc(response,id) {
  throw Error('RUNTIME_RPC_UNMATCHED');
 }
 
-export async function invokeTabletBridgeExecution({env=process.env,bearer,body,fetchImpl=globalThis.fetch,timeoutMs=12000}={}) {
+export async function invokeTabletBridgeExecution({env=process.env,bearer='',body={},fetchImpl=globalThis.fetch,timeoutMs=12000}={}) {
  const request=validateTabletExecutionRequest(body);
  if(!request)return deny('EXECUTION_REQUEST_INVALID');
  if(!scopedBearerFromAuthorization('Bearer '+String(bearer||'')))return deny('OWNER_TOKEN_REQUIRED');
