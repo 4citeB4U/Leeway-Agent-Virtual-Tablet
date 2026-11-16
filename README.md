@@ -42,7 +42,9 @@ Open `http://127.0.0.1:3200`.
 
 The default configuration is intentionally conservative. Read-only observation remains an available permission, but **it is not the Tablet's only mode**. Device controls explicitly request a separate execute scope:
 
-- Workforce telemetry remains blocked until an owner-controlled bearer or OIDC session is present.\n- Native window operations are blocked unless the user explicitly requests execute-mode login, the trusted origin and authenticated Runtime MCP resource are configured, and original Device Bridge/C3 admission succeeds.\n- A control click can type or submit a message only after its observed window/target identity has been provided. Physical verification and canonical receipts remain separate gates.
+- Workforce telemetry remains blocked until an owner-controlled bearer or OIDC session is present.
+- Native window operations are blocked unless the user explicitly requests execute-mode login, the trusted origin and authenticated Runtime MCP resource are configured, and original Device Bridge/C3 admission succeeds.
+- A control click can type or submit a message only after its observed window/target identity has been provided. Physical verification and canonical receipts remain separate gates.
 - The model endpoint is optional and must be loopback-authorized.
 - Search and data-fabric providers remain visibly unbound unless a separate approved adapter is implemented.
 - Workboard content is read through the selected local service only after a health probe; no assignments or messages are seeded by the tablet.
@@ -58,12 +60,14 @@ Agent Tablet UI  <---->  Express tablet backend
       |                         |
       |                         +--> local host observations / diagnostics
       |                         +--> Workboard health-probed iframe
-      |                         +--> authenticated Device Bridge input / submit\n      |                         +--> Continuum notepad adapter
+      |                         +--> authenticated Device Bridge input / submit
+      |                         +--> Continuum notepad adapter
       |                         +--> optional loopback model adapter
       v
 Runtime Fabric read + execute-scoped adapters
       |
-      +--> caller-scoped bearer --> loopback snapshot or HTTPS MCP /mcp\n      +--> execute mode requires device.bridge.execute and user click
+      +--> caller-scoped bearer --> loopback snapshot or HTTPS MCP /mcp
+      +--> execute mode requires device.bridge.execute and user click
       |
       +--> Device Bridge / Runtime Fabric remain external authorities
 ```
