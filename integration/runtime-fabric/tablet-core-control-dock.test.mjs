@@ -50,6 +50,8 @@ test('taskbar owns core control, removes federation from the user surface, and s
   assert.match(app, /AGENT TABLET APPLICATIONS/);
   assert.match(app, /text\/leeway-source/);
   assert.match(app, /leeway:move-to-taskbar/);
+  assert.match(app, /id: 'modelHub'/);
+  assert.match(app, /label: 'Model Hub'/);
   assert.doesNotMatch(app, /label: 'Federated'/);
   assert.doesNotMatch(app, /title: 'LeeWay Federated'/);
   assert.match(home, /Move to Taskbar/);

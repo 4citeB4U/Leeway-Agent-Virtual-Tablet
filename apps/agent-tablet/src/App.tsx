@@ -143,8 +143,12 @@ const TABLET_WIDGETS = [
   { id: 'leewayIde' as const, label: 'IDE', image: '/app-icons/ide.svg', color: 'from-cyan-300 to-blue-800' },
   { id: 'erpCrm' as const, label: 'CRM / ERP', image: '/app-icons/crm-erp.svg', color: 'from-violet-300 to-indigo-900' },
   { id: 'logistics' as const, label: 'Logistics', image: '/app-icons/logistics.png', color: 'from-sky-300 to-blue-900' },
-  { id: 'agentVision' as const, label: 'Vision', image: '/app-icons/agent-vision.png', color: 'from-emerald-300 to-teal-900' }
+  { id: 'agentVision' as const, label: 'Vision', image: '/app-icons/agent-vision.png', color: 'from-emerald-300 to-teal-900' },
+  { id: 'modelHub' as const, label: 'Model Hub', icon: Layers, color: 'from-cyan-300 via-blue-700 to-indigo-950' }
 ] as const;
+
+const TASKBAR_STORAGE_KEY = 'leeway_tablet_taskbar_pinned_v2';
+const LEGACY_TASKBAR_STORAGE_KEY = 'leeway_tablet_taskbar_pinned_v1';
 
 type TabletCatalogItem = {
   id: WorkstationAppId;
@@ -210,13 +214,20 @@ export default function App() {
   });
   const [pinnedAppIds, setPinnedAppIds] = useState<WorkstationAppId[]>(() => {
     try {
-      const saved = localStorage.getItem('leeway_tablet_taskbar_pinned_v1');
+      const saved = localStorage.getItem(TASKBAR_STORAGE_KEY) ?? localStorage.getItem(LEGACY_TASKBAR_STORAGE_KEY);
       if (saved) {
         // Federation remains an internal/background capability, not a user-facing Tablet shortcut.
-        return (JSON.parse(saved) as WorkstationAppId[]).filter(appId => appId !== 'federated');
+        const normalized = (JSON.parse(saved) as WorkstationAppId[]).filter(appId => appId !== 'federated');
+        // One-time migration: make the canonical Model Hub available without
+        // re-adding it after the Creator later chooses to unpin it.
+        if (!localStorage.getItem(TASKBAR_STORAGE_KEY)) {
+          if (!normalized.includes('modelHub')) normalized.push('modelHub');
+          localStorage.setItem(TASKBAR_STORAGE_KEY, JSON.stringify(normalized));
+        }
+        return normalized;
       }
     } catch {}
-    return ['desktop', 'contentVault', 'employmentCenter', 'notepad', 'officeSuite', 'leewayIde', 'erpCrm', 'logistics', 'agentVision'];
+    return ['desktop', 'contentVault', 'employmentCenter', 'notepad', 'officeSuite', 'leewayIde', 'erpCrm', 'logistics', 'agentVision', 'modelHub'];
   });
   const [taskbarMenu, setTaskbarMenu] = useState<{ x: number; y: number; appId: WorkstationAppId } | null>(null);
 
@@ -224,7 +235,7 @@ export default function App() {
     if (!pinnedAppIds.includes(appId)) {
       const next = [...pinnedAppIds, appId];
       setPinnedAppIds(next);
-      try { localStorage.setItem('leeway_tablet_taskbar_pinned_v1', JSON.stringify(next)); } catch {}
+      try { localStorage.setItem(TASKBAR_STORAGE_KEY, JSON.stringify(next)); } catch {}
       showToast(`Pinned ${appId} to Taskbar`);
     }
   };
@@ -232,7 +243,7 @@ export default function App() {
   const unpinAppFromTaskbar = (appId: WorkstationAppId) => {
     const next = pinnedAppIds.filter(id => id !== appId);
     setPinnedAppIds(next);
-    try { localStorage.setItem('leeway_tablet_taskbar_pinned_v1', JSON.stringify(next)); } catch {}
+    try { localStorage.setItem(TASKBAR_STORAGE_KEY, JSON.stringify(next)); } catch {}
     showToast(`Unpinned ${appId} from Taskbar`);
   };
 
