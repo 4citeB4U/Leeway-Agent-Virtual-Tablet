@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="LeeWay Office">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dbeafe"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
+  <rect width="128" height="128" rx="30" fill="#071a45"/><path d="M30 17h45l23 23v71H30z" fill="url(#g)" stroke="#eff6ff" stroke-width="4"/><path d="M75 17v24h23" fill="none" stroke="#eff6ff" stroke-width="4"/><path d="M45 58h38M45 73h38M45 88h25" stroke="#0f3b97" stroke-width="5" stroke-linecap="round"/>
+</svg>

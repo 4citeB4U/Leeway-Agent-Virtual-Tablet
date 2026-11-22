@@ -25,8 +25,9 @@ import path from 'path';
 import fs from 'node:fs';
 import os from 'os';
 import { createServer as createViteServer } from 'vite';
-import { exec as execCb, spawn } from 'child_process';
+import { exec as execCb, execFile as execFileCb, spawn } from 'child_process';
 import { promisify } from 'util';
+import { CANONICAL_LIFECYCLE_PLAYBOOK } from './src/data/canonicalLifecyclePlaybook';
 
 const app = express();
 const PORT = Number(process.env.PORT || 3200);
@@ -34,6 +35,8 @@ const VT_ACCESS_COOKIE = 'leeway_vt_access';
 const VT_OIDC_STATE_COOKIE = 'leeway_vt_oidc_state';
 const VT_OIDC_VERIFIER_COOKIE = 'leeway_vt_oidc_verifier';
 const execAsync = promisify(execCb);
+const execFileAsync = promisify(execFileCb);
+const digitalBrainRoot = process.env.LEEWAY_DIGITAL_BRAIN_ROOT;
 const allowedOrigins = new Set(
   (process.env.LEEWAY_EMPLOYMENT_CENTER_ORIGINS || 'http://127.0.0.1:3100,http://localhost:3100')
     .split(',')
@@ -345,6 +348,19 @@ app.get('/api/agent-roster', async (_req, res) => {
   });
 });
 
+// The tablet exposes the approved lifecycle as a retrievable policy for Agent
+// Lee surfaces. It does not claim that an external model has been trained or
+// that a runtime has accepted the policy without an authorized acknowledgement.
+app.get('/api/agent-lee/operating-playbook', (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  return res.json({
+    ...CANONICAL_LIFECYCLE_PLAYBOOK,
+    servedAt: new Date().toISOString(),
+    runtimeAcknowledgement: 'NOT_OBSERVED',
+    executionAuthority: 'NOT_GRANTED_BY_PLAYBOOK'
+  });
+});
+
 app.get('/api/search', (req, res) => {
   const query = String(req.query.q || '').trim();
   const agentId = String(req.query.agent_id || 'agent-lee');
@@ -596,24 +612,49 @@ app.post('/api/data/query', (req, res) => {
   });
 });
 
-app.get('/api/diagnostics/snapshot', (_req, res) => {
+async function readHostDeviceTelemetry() {
+  if (process.platform === 'win32') {
+    // This process runs on the enrolled Windows device. Query Windows itself;
+    // do not turn an unavailable metric into a made-up zero.
+    const script = "$cpu=(Get-CimInstance Win32_PerfFormattedData_PerfOS_Processor -Filter \"Name='_Total'\").PercentProcessorTime;$os=Get-CimInstance Win32_OperatingSystem;$disks=Get-CimInstance Win32_LogicalDisk -Filter \"DriveType=3\";$total=($disks|Measure-Object -Property Size -Sum).Sum;$free=($disks|Measure-Object -Property FreeSpace -Sum).Sum;[pscustomobject]@{cpu=$cpu;ram=[math]::Round((($os.TotalVisibleMemorySize-$os.FreePhysicalMemory)/$os.TotalVisibleMemorySize)*100,2);disk=if($total){[math]::Round((($total-$free)/$total)*100,2)}else{$null}}|ConvertTo-Json -Compress";
+    try {
+      const { stdout } = await execFileAsync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], { timeout: 1800, windowsHide: true });
+      const raw = JSON.parse(String(stdout).trim());
+      return { cpu: Number.isFinite(raw.cpu) ? raw.cpu : null, ram: Number.isFinite(raw.ram) ? raw.ram : null, disk: Number.isFinite(raw.disk) ? raw.disk : null, temperature: null, source: 'WINDOWS_DEVICE_CIM' };
+    } catch {
+      return { cpu: null, ram: null, disk: null, temperature: null, source: 'WINDOWS_DEVICE_CIM_UNAVAILABLE' };
+    }
+  }
   const mem = process.memoryUsage();
   const totalMem = os.totalmem();
   const freeMem = os.freemem();
   const load = os.loadavg();
   const cpuCount = Math.max(os.cpus().length, 1);
+  return {
+    cpu: Number(((load[0] / cpuCount) * 100).toFixed(2)),
+    ram: Number((((totalMem - freeMem) / totalMem) * 100).toFixed(2)),
+    disk: null,
+    temperature: null,
+    source: 'NODE_HOST_OS'
+  };
+}
+
+app.get('/api/diagnostics/snapshot', async (_req, res) => {
+  const device = await readHostDeviceTelemetry();
+  const mem = process.memoryUsage();
   res.json({
     state: 'OBSERVED_HOST_TELEMETRY',
     telemetry: {
-      cpu: Number(((load[0] / cpuCount) * 100).toFixed(2)),
-      ram: Number((((totalMem - freeMem) / totalMem) * 100).toFixed(2)),
-      disk: null,
-      temp: null,
+      cpu: device.cpu,
+      ram: device.ram,
+      disk: device.disk,
+      temp: device.temperature,
       processRssBytes: mem.rss,
       processHeapUsedBytes: mem.heapUsed,
-      uptimeSeconds: Math.floor(process.uptime())
+      uptimeSeconds: Math.floor(process.uptime()),
+      source: device.source
     },
-    unsupported: { diskUtilization: 'UNBOUND', deviceTemperature: 'UNBOUND', gpuUtilization: 'UNBOUND' },
+    unsupported: { deviceTemperature: 'UNBOUND', gpuUtilization: 'UNBOUND' },
     flowNodes: [],
     flowEdges: [],
     charge: [],
@@ -625,6 +666,211 @@ app.get('/api/diagnostics/snapshot', (_req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+/*
+ * Digital Brain is an owner-local catalogue, not a second filesystem or a
+ * browser data service.  The index intentionally keeps only metadata in
+ * memory and only observes user-approved library folders.  In particular it
+ * never indexes browser profiles, AppData, Codex state, or this workspace.
+ */
+type BrainNode = {
+  id: string;
+  parentId: string | null;
+  path: string | null;
+  label: string;
+  type: 'directory' | 'file';
+  size: number | null;
+  modifiedAt: string | null;
+};
+
+const brainOwnerKey = createHash('sha256')
+  .update(`${os.userInfo().username}\u0000${os.homedir()}`)
+  .digest('hex')
+  .slice(0, 24);
+const brainBodyId = `owner-${brainOwnerKey}`;
+const brainRootId = `brain:${brainBodyId}`;
+const brainWorkspaceRoot = path.resolve(process.env.LEEWAY_WORKSPACE_ROOT || path.resolve(process.cwd(), '../../..')).toLowerCase();
+const brainExcludedNames = new Set(['.codex', 'appdata', 'node_modules', '.git', '$recycle.bin', 'system volume information']);
+const brainMaxNodes = Math.max(1000, Math.min(Number(process.env.LEEWAY_DIGITAL_BRAIN_MAX_NODES || 20000), 50000));
+const brainRoots = (() => {
+  const requested = String(process.env.LEEWAY_DIGITAL_BRAIN_ROOTS || '').split(';').map((value) => value.trim()).filter(Boolean);
+  const defaults = ['Desktop', 'Documents', 'Downloads', 'Pictures', 'Videos', 'Music', 'OneDrive'].map((name) => path.join(os.homedir(), name));
+  return [...new Set((requested.length ? requested : defaults).map((value) => path.resolve(value)))].filter((value) => {
+    const normalized = value.toLowerCase();
+    return fs.existsSync(value) && normalized !== brainWorkspaceRoot && !normalized.startsWith(`${brainWorkspaceRoot}${path.sep}`);
+  });
+})();
+let brainNodes = new Map<string, BrainNode>();
+let brainChildren = new Map<string, string[]>();
+let brainIndexBuiltAt: string | null = null;
+let brainIndexBusy: Promise<void> | null = null;
+
+function brainNodeId(filePath: string): string {
+  return `${brainRootId}:node:${createHash('sha256').update(path.resolve(filePath).toLowerCase()).digest('base64url').slice(0, 22)}`;
+}
+
+function isAllowedBrainPath(filePath: string): boolean {
+  const normalized = path.resolve(filePath).toLowerCase();
+  return brainRoots.some((root) => normalized === root.toLowerCase() || normalized.startsWith(`${root.toLowerCase()}${path.sep}`));
+}
+
+function addBrainNode(node: BrainNode): void {
+  brainNodes.set(node.id, node);
+  if (node.parentId) {
+    const children = brainChildren.get(node.parentId) || [];
+    children.push(node.id);
+    brainChildren.set(node.parentId, children);
+  }
+}
+
+async function rebuildOwnerLocalBrainIndex(): Promise<void> {
+  if (brainIndexBusy) return brainIndexBusy;
+  brainIndexBusy = (async () => {
+    const nodes = new Map<string, BrainNode>();
+    const children = new Map<string, string[]>();
+    const add = (node: BrainNode) => {
+      nodes.set(node.id, node);
+      if (node.parentId) {
+        const list = children.get(node.parentId) || [];
+        list.push(node.id);
+        children.set(node.parentId, list);
+      }
+    };
+    const root: BrainNode = { id: brainRootId, parentId: null, path: null, label: 'Your device files', type: 'directory', size: null, modifiedAt: null };
+    add(root);
+    const visit = async (directory: string, parentId: string): Promise<void> => {
+      if (nodes.size >= brainMaxNodes) return;
+      let entries: fs.Dirent[];
+      try { entries = await fs.promises.readdir(directory, { withFileTypes: true }); } catch { return; }
+      entries.sort((left, right) => left.name.localeCompare(right.name, undefined, { numeric: true, sensitivity: 'base' }));
+      for (const entry of entries) {
+        if (nodes.size >= brainMaxNodes || brainExcludedNames.has(entry.name.toLowerCase()) || entry.isSymbolicLink()) continue;
+        const entryPath = path.join(directory, entry.name);
+        if (!isAllowedBrainPath(entryPath)) continue;
+        let stat: fs.Stats;
+        try { stat = await fs.promises.stat(entryPath); } catch { continue; }
+        const isDirectory = stat.isDirectory();
+        if (!isDirectory && !stat.isFile()) continue;
+        const id = brainNodeId(entryPath);
+        add({ id, parentId, path: entryPath, label: entry.name, type: isDirectory ? 'directory' : 'file', size: isDirectory ? null : stat.size, modifiedAt: stat.mtime.toISOString() });
+        if (isDirectory) await visit(entryPath, id);
+      }
+    };
+    for (const rootPath of brainRoots) {
+      if (nodes.size >= brainMaxNodes) break;
+      let stat: fs.Stats;
+      try { stat = await fs.promises.stat(rootPath); } catch { continue; }
+      const id = brainNodeId(rootPath);
+      add({ id, parentId: brainRootId, path: rootPath, label: path.basename(rootPath), type: 'directory', size: null, modifiedAt: stat.mtime.toISOString() });
+      await visit(rootPath, id);
+    }
+    for (const list of children.values()) list.sort((left, right) => (nodes.get(left)?.label || '').localeCompare(nodes.get(right)?.label || '', undefined, { numeric: true, sensitivity: 'base' }));
+    brainNodes = nodes;
+    brainChildren = children;
+    brainIndexBuiltAt = new Date().toISOString();
+  })().finally(() => { brainIndexBusy = null; });
+  return brainIndexBusy;
+}
+
+async function ensureOwnerLocalBrainIndex(): Promise<void> {
+  if (!brainIndexBuiltAt) await rebuildOwnerLocalBrainIndex();
+}
+
+function serializeBrainNode(node: BrainNode) {
+  const childCount = brainChildren.get(node.id)?.length || 0;
+  return {
+    id: node.id,
+    parent_id: node.parentId,
+    label: node.label,
+    type: node.type,
+    status: 'OBSERVED_LOCAL_METADATA',
+    child_count: childCount,
+    expandable: node.type === 'directory',
+    content_url: node.type === 'file' ? `/api/digital-brain/file/${encodeURIComponent(node.id)}` : null,
+    metadata: {
+      owner_scope: 'CURRENT_WINDOWS_USER_ONLY',
+      content_access: node.type === 'file' ? 'EXPLICIT_LOCAL_OPEN_ONLY' : 'NOT_APPLICABLE',
+      size_bytes: node.size,
+      modified_at: node.modifiedAt
+    }
+  };
+}
+
+function brainEnvelope(result: unknown) {
+  return { ok: true, bodyId: brainBodyId, source: 'OWNER_LOCAL_BRAIN_INDEX', result };
+}
+
+app.post('/api/digital-brain/query', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const operation = String(req.body?.operation || '').trim();
+  const args = req.body?.args && typeof req.body.args === 'object' ? req.body.args as Record<string, unknown> : {};
+  try {
+    await ensureOwnerLocalBrainIndex();
+    if (operation === 'root') return res.json(brainEnvelope({ node: serializeBrainNode(brainNodes.get(brainRootId)!) }));
+    if (operation === 'children') {
+      const id = String(args.id || '');
+      const parent = brainNodes.get(id);
+      const offset = Number(args.offset || 0);
+      const limit = Math.min(128, Math.max(1, Number(args.limit || 128)));
+      if (!parent || parent.type !== 'directory' || !Number.isSafeInteger(offset) || offset < 0) return res.status(404).json({ ok: false, error: 'BRAIN_NODE_NOT_FOUND' });
+      const children = brainChildren.get(id) || [];
+      const page = children.slice(offset, offset + limit).map((childId) => serializeBrainNode(brainNodes.get(childId)!));
+      return res.json(brainEnvelope({ node: serializeBrainNode(parent), nodes: page, offset, total: children.length, hasMore: offset + page.length < children.length }));
+    }
+    if (operation === 'node') {
+      const node = brainNodes.get(String(args.id || ''));
+      if (!node) return res.status(404).json({ ok: false, error: 'BRAIN_NODE_NOT_FOUND' });
+      const ancestors: ReturnType<typeof serializeBrainNode>[] = [];
+      let current = node.parentId ? brainNodes.get(node.parentId) : undefined;
+      while (current && ancestors.length < 128) { ancestors.unshift(serializeBrainNode(current)); current = current.parentId ? brainNodes.get(current.parentId) : undefined; }
+      const siblings = node.parentId ? brainChildren.get(node.parentId) || [] : [];
+      const pageOffset = Math.max(0, Math.floor(Math.max(0, siblings.indexOf(node.id)) / 128) * 128);
+      return res.json(brainEnvelope({ node: serializeBrainNode(node), ancestors, pageOffset, links: [], provenance: [{ kind: 'OWNER_LOCAL_METADATA', description: 'Current Windows user, approved library scope, no cloud transfer.' }] }));
+    }
+    if (operation === 'search') {
+      const query = String(args.query || '').trim().toLocaleLowerCase();
+      const nodes = query.length < 2 ? [] : [...brainNodes.values()].filter((node) => node.id !== brainRootId && node.label.toLocaleLowerCase().includes(query)).slice(0, 32).map(serializeBrainNode);
+      return res.json(brainEnvelope({ nodes }));
+    }
+    return res.status(400).json({ ok: false, error: 'BRAIN_OPERATION_NOT_SUPPORTED' });
+  } catch (error) {
+    return res.status(503).json({ ok: false, error: error instanceof Error ? error.message : 'BRAIN_INDEX_UNAVAILABLE' });
+  }
+});
+
+app.post('/api/digital-brain/refresh', async (_req, res) => {
+  try { await rebuildOwnerLocalBrainIndex(); return res.json({ state: 'OWNER_LOCAL_INDEX_REFRESHED', indexedAt: brainIndexBuiltAt, roots: brainRoots.map((root) => path.basename(root)), count: brainNodes.size }); }
+  catch (error) { return res.status(503).json({ state: 'BLOCKED', reason: error instanceof Error ? error.message : 'BRAIN_INDEX_UNAVAILABLE' }); }
+});
+
+app.get('/api/digital-brain/file/:nodeId', async (req, res) => {
+  await ensureOwnerLocalBrainIndex();
+  const node = brainNodes.get(String(req.params.nodeId || ''));
+  if (!node?.path || node.type !== 'file' || !isAllowedBrainPath(node.path)) return res.sendStatus(404);
+  let stat: fs.Stats;
+  try { stat = await fs.promises.stat(node.path); } catch { return res.sendStatus(404); }
+  if (!stat.isFile() || stat.size > 50 * 1024 * 1024) return res.status(413).json({ state: 'BLOCKED', reason: 'LOCAL_FILE_PREVIEW_SIZE_LIMIT' });
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  const extension = path.extname(node.label).toLowerCase();
+  if (['.txt', '.md', '.json', '.csv', '.log', '.js', '.ts', '.tsx', '.css', '.html', '.ps1', '.py', '.yml', '.yaml', '.xml'].includes(extension)) res.type('text/plain; charset=utf-8');
+  return res.sendFile(node.path, { headers: { 'Content-Disposition': 'inline' } });
+});
+
+app.get('/brain/organization', async (_req, res) => {
+  await ensureOwnerLocalBrainIndex();
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ state: 'OWNER_LOCAL_APPROVED_LIBRARY_SCOPE', owner: 'CURRENT_WINDOWS_USER_ONLY', roots: brainRoots.map((root) => ({ label: path.basename(root), index: 'METADATA_ONLY' })), excluded: ['AppData', '.codex', 'browser profiles', 'LeeWay workspace'] });
+});
+app.get('/brain/inventory', async (_req, res) => { await ensureOwnerLocalBrainIndex(); res.setHeader('Cache-Control', 'no-store'); res.json({ state: 'OBSERVED_OWNER_LOCAL_INDEX', indexedAt: brainIndexBuiltAt, nodeCount: brainNodes.size, maximumNodes: brainMaxNodes }); });
+app.get('/brain/files', async (_req, res) => { await ensureOwnerLocalBrainIndex(); res.setHeader('Cache-Control', 'no-store'); res.json({ files: [...brainNodes.values()].filter((node) => node.type === 'file').length, directories: [...brainNodes.values()].filter((node) => node.type === 'directory').length, source: 'OWNER_LOCAL_BRAIN_INDEX' }); });
+// Raw filesystem paths are never accepted from a web view.  File delivery is
+// only by an opaque node ID issued from the owner-local approved-library index.
+app.all('/brain/files/content', (_req, res) => res.status(410).json({ state: 'BLOCKED', reason: 'OPAQUE_LOCAL_FILE_NODE_REQUIRED' }));
+
+if (digitalBrainRoot && fs.existsSync(path.join(digitalBrainRoot, 'brain.html'))) {
+  app.use('/brain-ui', express.static(digitalBrainRoot));
+}
 
 app.get('/standalone.html', (_req, res) => {
   res.sendFile(path.join(process.cwd(), 'public', 'standalone.html'));
@@ -709,7 +955,10 @@ app.post('/api/github/push', async (req, res) => {
   }
 });
 
-const CONTINUUM_RUNTIME_API = String(process.env.LEEWAY_CONTINUUM_API || 'http://127.0.0.1:4001').replace(/\/$/, '');
+// Continuum is owned by the Agent Lee carrier, not the Formula-only service.
+// Keep the environment override portable, but bind the local default to the
+// canonical carrier that exposes owner-admitted shared-memory operations.
+const CONTINUUM_RUNTIME_API = String(process.env.LEEWAY_CONTINUUM_API || 'http://127.0.0.1:8890').replace(/\/$/, '');
 const CONTINUUM_CONTROL_TOKEN = String(process.env.LEEWAY_WORKPLANE_CONTROL_TOKEN || '');
 
 const NOTEPAD_CHILDREN = {
@@ -729,19 +978,37 @@ function continuumNotepadKey(body: any) {
   const agent = String(body?.agentId || 'agent-lee').replace(/[^a-zA-Z0-9._-]/g, '_');
   return employer + '/' + workspace + '/' + agent;
 }
-function continuumHeaders() {
+function continuumHeaders(contentType = 'application/json', requestKind?: string) {
   if (!CONTINUUM_CONTROL_TOKEN) throw new Error('LEEWAY_WORKPLANE_CONTROL_TOKEN_NOT_CONFIGURED');
-  return {'content-type':'application/json','x-leeway-control-token':CONTINUUM_CONTROL_TOKEN,'x-leeway-doorway':'DIGITAL_WORKFORCE_AGENT_VT'};
+  return {
+    'content-type': contentType,
+    origin: CONTINUUM_RUNTIME_API,
+    'x-leeway-control-token': CONTINUUM_CONTROL_TOKEN,
+    'x-leeway-doorway': 'DIGITAL_WORKFORCE_AGENT_VT',
+    ...(requestKind ? { 'x-continuum-request': requestKind } : {})
+  };
 }
-function continuumKeyPath(key: string) { return encodeURIComponent('agent-notepad/' + key); }
+function continuumNotepadTitle(key: string) { return 'agent-notepad/' + key; }
+function continuumSearchUrl(key: string) {
+  const query = new URLSearchParams({ query: continuumNotepadTitle(key), limit: '10' });
+  return CONTINUUM_RUNTIME_API + '/api/continuum/search?' + query.toString();
+}
 
 app.get('/api/continuum/notepad', async (req, res) => {
   const key=continuumNotepadKey(req.query);
   try{
-    const upstream=await fetch(CONTINUUM_RUNTIME_API + '/continuum/shared-memory/' + continuumKeyPath(key),{headers:continuumHeaders()});
-    const body=await upstream.json();
-    if(!upstream.ok) return res.status(upstream.status).json({state:'CONTINUUM_RUNTIME_READ_FAILED',key,upstream:body});
-    return res.json({state:'CONTINUUM_NOTEPAD_RUNTIME_FEDERATED',key,parentCellRef:'leeway://continuum/agent-workspace/notepad/'+key,upstream:body});
+    const search=await fetch(continuumSearchUrl(key),{headers:continuumHeaders()});
+    const searchBody=await search.json();
+    if(!search.ok) return res.status(search.status).json({state:'CONTINUUM_RUNTIME_READ_FAILED',key,upstream:searchBody});
+    const hits=Array.isArray(searchBody?.result?.hits)?searchBody.result.hits:[];
+    const hit=hits.find((candidate:any)=>candidate?.title===continuumNotepadTitle(key)||candidate?.label===continuumNotepadTitle(key))||hits[0];
+    const recordId=hit?.recordId||hit?.id;
+    if(typeof recordId!=='string'||!recordId) return res.status(404).json({state:'CONTINUUM_NOTEPAD_NOT_FOUND',key,parentCellRef:'leeway://continuum/agent-workspace/notepad/'+key});
+    const content=await fetch(CONTINUUM_RUNTIME_API + '/api/continuum/content?recordId='+encodeURIComponent(recordId),{headers:continuumHeaders()});
+    if(!content.ok) return res.status(content.status).json({state:'CONTINUUM_RUNTIME_READ_FAILED',key,recordId});
+    const raw=Buffer.from(await content.arrayBuffer()).toString('utf8');
+    const parsed=JSON.parse(raw);
+    return res.json({state:'CONTINUUM_NOTEPAD_RUNTIME_FEDERATED',key,parentCellRef:'leeway://continuum/agent-workspace/notepad/'+key,recordId,payload:parsed?.payload??parsed});
   }catch(error){
     return res.status(503).json({state:'CONTINUUM_RUNTIME_UNAVAILABLE',key,error:error instanceof Error?error.message:String(error)});
   }
@@ -758,12 +1025,15 @@ app.post('/api/continuum/notepad', async (req, res) => {
     persistenceProvider:'RUNTIME_FABRIC_CONTINUUM',updatedAt:new Date().toISOString(),value:payload[spec.payloadKey]??null
   }));
   try{
-    const upstream=await fetch(CONTINUUM_RUNTIME_API + '/continuum/shared-memory/' + continuumKeyPath(key),{
-      method:'POST',headers:continuumHeaders(),body:JSON.stringify({value:{schema:'leeway-continuum-agent-notepad-universe-v0.1',key,parentCellRef,records}})
+    const requestId='agent-notepad-'+randomBytes(10).toString('hex');
+    const document=JSON.stringify({schema:'leeway-continuum-agent-notepad-universe-v0.1',key,parentCellRef,records,payload});
+    const query=new URLSearchParams({requestId,title:continuumNotepadTitle(key),mimeType:'application/json',viewId:'knowledge'});
+    const upstream=await fetch(CONTINUUM_RUNTIME_API + '/api/continuum/import?'+query.toString(),{
+      method:'POST',headers:continuumHeaders('application/octet-stream','owner-import'),body:Buffer.from(document,'utf8')
     });
     const body=await upstream.json();
     if(!upstream.ok) return res.status(upstream.status).json({state:'CONTINUUM_RUNTIME_WRITE_FAILED',key,upstream:body});
-    return res.json({state:'CONTINUUM_NOTEPAD_RUNTIME_FEDERATED_DURABLE',key,parentCellRef,records,upstream:body});
+    return res.json({state:'CONTINUUM_NOTEPAD_RUNTIME_FEDERATED_DURABLE',key,parentCellRef,records,requestId,recordId:body?.result?.recordId||body?.result?.id||null,upstream:body});
   }catch(error){
     return res.status(503).json({state:'CONTINUUM_RUNTIME_UNAVAILABLE',key,error:error instanceof Error?error.message:String(error)});
   }

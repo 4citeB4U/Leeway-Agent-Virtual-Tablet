@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="LeeWay CRM and ERP">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c4b5fd"/><stop offset=".55" stop-color="#6366f1"/><stop offset="1" stop-color="#312e81"/></linearGradient></defs>
+  <rect width="128" height="128" rx="30" fill="#151034"/><rect x="15" y="19" width="98" height="90" rx="17" fill="url(#g)" stroke="#ddd6fe" stroke-width="4"/>
+  <rect x="28" y="36" width="72" height="55" rx="8" fill="#160f36"/><path d="M39 48h50M39 60h25M39 72h50" stroke="#ddd6fe" stroke-width="4" stroke-linecap="round"/><circle cx="78" cy="60" r="10" fill="#34d399"/><path d="M78 55v10M73 60h10" stroke="#052e2b" stroke-width="3" stroke-linecap="round"/>
+  <path d="M37 101h54" stroke="#fbbf24" stroke-width="4" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="LeeWay Workforce Center">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fde68a"/><stop offset=".5" stop-color="#f97316"/><stop offset="1" stop-color="#7c2d12"/></linearGradient></defs>
+  <rect width="128" height="128" rx="30" fill="#271004"/><circle cx="64" cy="64" r="50" fill="url(#g)" stroke="#fed7aa" stroke-width="4"/>
+  <circle cx="64" cy="47" r="12" fill="#fff7ed"/><circle cx="37" cy="56" r="9" fill="#fff7ed"/><circle cx="91" cy="56" r="9" fill="#fff7ed"/>
+  <path d="M43 91c2-18 10-27 21-27s19 9 21 27M22 92c1-14 7-21 15-21 7 0 12 7 14 16m40 0c2-9 7-16 14-16 8 0 14 7 15 21" fill="#431407" stroke="#fff7ed" stroke-width="4" stroke-linecap="round"/>
+</svg>

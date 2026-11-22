@@ -76,7 +76,7 @@ export interface DiagnosticsSnapshot {
 }
 
 interface DiagnosticsBoardProps {
-  telemetry: { cpu: number; ram: number; disk: number; temp: number };
+  telemetry: { cpu: number | null; ram: number | null; disk: number | null; temp: number | null };
   openNotebookStatus: string;
   workboardStatus: string;
   terminalStatus: string;
@@ -402,10 +402,10 @@ export const DiagnosticsBoard: React.FC<DiagnosticsBoardProps> = ({
             {/* Telemetry Numbers Grid */}
             <div className="grid grid-cols-4 gap-px bg-zinc-800 shrink-0">
               {[
-                { label: 'CPU', val: `${telemetry.cpu}%`, color: '#22c55e' },
-                { label: 'RAM', val: `${telemetry.ram}%`, color: '#22d3ee' },
-                { label: 'DISK I/O', val: `${telemetry.disk}%`, color: '#f59e0b' },
-                { label: 'TEMP', val: `${telemetry.temp}°C`, color: '#fb7185' }
+                { label: 'CPU', val: telemetry.cpu == null ? '—' : `${telemetry.cpu}%`, color: '#22c55e' },
+                { label: 'RAM', val: telemetry.ram == null ? '—' : `${telemetry.ram}%`, color: '#22d3ee' },
+                { label: 'DISK USED', val: telemetry.disk == null ? '—' : `${telemetry.disk}%`, color: '#f59e0b' },
+                { label: 'TEMP', val: telemetry.temp == null ? 'UNBOUND' : `${telemetry.temp}°C`, color: '#fb7185' }
               ].map(item => (
                 <div key={item.label} className="bg-[#09111b] p-2">
                   <div className="text-[6.5px] text-zinc-500 uppercase">{item.label}</div>

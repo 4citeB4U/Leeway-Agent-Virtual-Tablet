@@ -1,3 +1,4 @@
+const isWidgetSurface = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('leewaySurface') === 'widget';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -38,8 +39,10 @@ import {
   PanelRightClose,
   RefreshCw,
   Share2,
+  Pin,
   Bot,
-  Github
+  Github,
+  Building2
 } from 'lucide-react';
 import { WorkstationAppId } from './types';
 import { LeeWayEditor } from './components/editor/LeeWayEditor';
@@ -54,6 +57,10 @@ import { AgentRosterBoard } from './components/AgentRosterBoard';
 import { AgentCommandCenter } from './components/AgentCommandCenter';
 import { WorkboardRuntimePanel } from './components/WorkboardRuntimePanel';
 import { AgentNotepadBlackboard } from './components/AgentNotepadBlackboard';
+import { PublishedLeeWayApp } from './components/PublishedLeeWayApp';
+import { ContentVault } from './components/ContentVault';
+import { LeeWayFederated } from './components/LeeWayFederated';
+import { isPublishedLeeWayAppId, PUBLISHED_LEEWAY_APP_BY_ID } from './publishedApps';
 
 // Base initial files for LeeCode
 const initialFiles: Record<string, string> = {
@@ -124,14 +131,81 @@ const DATA_SOURCES = [
   { id: 'seafile', label: 'Seafile', role: 'File/object collaboration projection' }
 ];
 
+// Universal widget identity stays separate from the current 2D host presentation.
+// These entries are launchers for the canonical Agent Virtual Tablet surfaces;
+// they do not create a second backend or capability authority.
+const TABLET_WIDGETS = [
+  { id: 'desktop' as const, label: 'Home', icon: TerminalIcon, color: 'from-cyan-300 to-teal-700' },
+  { id: 'contentVault' as const, label: 'Vault', image: '/app-icons/content-vault.svg', color: 'from-amber-300 via-fuchsia-600 to-indigo-900' },
+  { id: 'employmentCenter' as const, label: 'Employment', image: '/app-icons/employment-center.svg', color: 'from-amber-200 to-orange-800' },
+  { id: 'notepad' as const, label: 'Blackboard', image: '/app-icons/blackboard.svg', color: 'from-fuchsia-300 to-violet-800' },
+  { id: 'officeSuite' as const, label: 'Office', image: '/app-icons/office.svg', color: 'from-blue-300 to-indigo-800' },
+  { id: 'leewayIde' as const, label: 'IDE', image: '/app-icons/ide.svg', color: 'from-cyan-300 to-blue-800' },
+  { id: 'erpCrm' as const, label: 'CRM / ERP', image: '/app-icons/crm-erp.svg', color: 'from-violet-300 to-indigo-900' },
+  { id: 'logistics' as const, label: 'Logistics', image: '/app-icons/logistics.png', color: 'from-sky-300 to-blue-900' },
+  { id: 'agentVision' as const, label: 'Vision', image: '/app-icons/agent-vision.png', color: 'from-emerald-300 to-teal-900' },
+  { id: 'federated' as const, label: 'Federated', icon: Building2, color: 'from-violet-300 via-fuchsia-600 to-slate-950' }
+] as const;
+
+// These applications have a real local tablet implementation.  They may be
+// listed in the directory for icon/metadata purposes, but must never also be
+// mounted through PublishedLeeWayApp: doing so embeds the tablet route inside
+// itself and produces the repeated narrow window stack seen in widgets.
+const LOCAL_SURFACE_APP_IDS = new Set<WorkstationAppId>([
+  'contentVault', 'workforce', 'notepad', 'diagnostics', 'agentRoster', 'federated'
+]);
+
 export default function App() {
   // Main Navigation App
-  const [currentApp, setCurrentApp] = useState<WorkstationAppId>(() => (
-    new URLSearchParams(window.location.search).get('view') === 'preview' ? 'editor' : 'desktop'
-  ));
-  const [isChassisMode, setIsChassisMode] = useState(true);
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [currentApp, setCurrentApp] = useState<WorkstationAppId>(() => {
+    const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const requestedView = params?.get('view');
+    if (requestedView) {
+      return requestedView as WorkstationAppId;
+    }
+    return 'desktop';
+  });
+  const [pinnedAppIds, setPinnedAppIds] = useState<WorkstationAppId[]>(() => {
+    try {
+      const saved = localStorage.getItem('leeway_tablet_taskbar_pinned_v1');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return ['desktop', 'contentVault', 'employmentCenter', 'notepad', 'officeSuite', 'leewayIde', 'erpCrm', 'logistics', 'agentVision', 'federated'];
+  });
+  const [taskbarMenu, setTaskbarMenu] = useState<{ x: number; y: number; appId: WorkstationAppId } | null>(null);
+
+  const pinAppToTaskbar = (appId: WorkstationAppId) => {
+    if (!pinnedAppIds.includes(appId)) {
+      const next = [...pinnedAppIds, appId];
+      setPinnedAppIds(next);
+      try { localStorage.setItem('leeway_tablet_taskbar_pinned_v1', JSON.stringify(next)); } catch {}
+      showToast(`Pinned ${appId} to Taskbar`);
+    }
+  };
+
+  const unpinAppFromTaskbar = (appId: WorkstationAppId) => {
+    const next = pinnedAppIds.filter(id => id !== appId);
+    setPinnedAppIds(next);
+    try { localStorage.setItem('leeway_tablet_taskbar_pinned_v1', JSON.stringify(next)); } catch {}
+    showToast(`Unpinned ${appId} from Taskbar`);
+  };
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      const appId = e.detail?.appId;
+      if (appId) pinAppToTaskbar(appId);
+    };
+    window.addEventListener('leeway:pin-to-taskbar', handler);
+    const closeMenu = () => setTaskbarMenu(null);
+    window.addEventListener('click', closeMenu);
+    return () => {
+      window.removeEventListener('leeway:pin-to-taskbar', handler);
+      window.removeEventListener('click', closeMenu);
+    };
+  }, [pinnedAppIds]);
+  const tabletRef = useRef<HTMLElement | null>(null);
   const [showKeyboard, setShowKeyboard] = useState(false);
+  const [isContentVaultOpen, setIsContentVaultOpen] = useState(false);
   const [isRuntimeCardDismissed, setIsRuntimeCardDismissed] = useState(() => {
     try {
       return localStorage.getItem('leeway_agent_vt_runtime_card_dismissed_v1') === 'true';
@@ -220,7 +294,7 @@ export default function App() {
   }, [workboardUrl]);
 
   // Diagnostics state
-  const [telemetry, setTelemetry] = useState({ cpu: 0, ram: 0, disk: 0, temp: 0 });
+  const [telemetry, setTelemetry] = useState<{ cpu: number | null; ram: number | null; disk: number | null; temp: number | null }>({ cpu: null, ram: null, disk: null, temp: null });
 
   // Memory Pallium
   const [syncedNodes, setSyncedNodes] = useState(5);
@@ -265,13 +339,13 @@ export default function App() {
         const data = await response.json();
         if (stopped) return;
         setTelemetry({
-          cpu: Number(data.telemetry?.cpu || 0),
-          ram: Number(data.telemetry?.ram || 0),
-          disk: Number(data.telemetry?.disk || 0),
-          temp: Number(data.telemetry?.temp || 0)
+          cpu: Number.isFinite(data.telemetry?.cpu) ? data.telemetry.cpu : null,
+          ram: Number.isFinite(data.telemetry?.ram) ? data.telemetry.ram : null,
+          disk: Number.isFinite(data.telemetry?.disk) ? data.telemetry.disk : null,
+          temp: Number.isFinite(data.telemetry?.temp) ? data.telemetry.temp : null
         });
       } catch {
-        if (!stopped) setTelemetry({ cpu: 0, ram: 0, disk: 0, temp: 0 });
+        if (!stopped) setTelemetry({ cpu: null, ram: null, disk: null, temp: null });
       }
     };
     pollTelemetry();
@@ -397,59 +471,139 @@ export default function App() {
     setChatInput('');
   };
 
-  if (isMinimized) {
-    return (
-      <div className="h-screen w-screen flex items-center justify-center bg-[#0d0e12]">
-        <div
-          onClick={() => setIsMinimized(false)}
-          className="p-4 bg-[#c0b9a3] border-4 border-white rounded shadow-2xl flex items-center gap-3 cursor-pointer hover:scale-105 transition-all text-black select-none"
-        >
-          <div className="w-4 h-4 rounded-full bg-orange-500 animate-ping"></div>
-          <div>
-            <div className="text-xs font-bold">LEEWAY WORKSTATION & OPEN NOTEBOOK (MINIMIZED)</div>
-            <div className="text-[10px] text-zinc-700">Click anywhere to restore workstation window</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // The tablet is the launcher, not a second set of application pages.  In
+  // the native host every destination except Home opens in the one canonical
+  // LeeWay floating-widget host.  Browser preview retains its in-tablet
+  // fallback because it has no native window authority.
+  useEffect(() => {
+    if (isWidgetSurface || currentApp === 'desktop') return;
+    const launchWidget = window.leewayNative?.openAppWidget;
+    if (!launchWidget) return;
+    let cancelled = false;
+    void launchWidget(currentApp as Exclude<WorkstationAppId, 'desktop'>)
+      .then(result => {
+        if (cancelled) return;
+        if (result.state !== 'WIDGET_OPENED' && result.state !== 'WIDGET_RESTORED') {
+          showToast(`Could not open ${currentApp} as a floating widget: ${result.state}`);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) showToast(`Could not open ${currentApp} as a floating widget.`);
+      });
+    return () => { cancelled = true; };
+  }, [currentApp]);
 
   const appContent = (
     <div className="flex flex-col h-full w-full overflow-hidden bg-[#18191f]">
-      {/* OS Taskbar */}
-      <div className="order-2 h-8 bg-[#c0c0c0] border-t border-black flex items-center px-1 shrink-0 z-30 text-[9px] font-bold gap-1 select-none overflow-x-auto">
-        {/* Eight user-facing tablet destinations. Implementation tools live inside their owning workspace. */}
-        {[
-          { id: 'desktop' as const, label: 'Home', icon: TerminalIcon },
-          { id: 'workforce' as const, label: 'Workforce', icon: Bot },
-          { id: 'notepad' as const, label: 'Blackboard', icon: FileText },
-          { id: 'editor' as const, label: 'LeeWay Office', icon: Layers },
-          { id: 'continuum' as const, label: 'Continuum', icon: BookOpen },
-          { id: 'diagnostics' as const, label: 'Diagnostics', icon: Activity },
-          { id: 'preview' as const, label: 'Preview', icon: GlobeIcon },
-          { id: 'apps' as const, label: 'Apps / Developments', icon: CodeIcon }
-        ].map(app => {
-          const IconComp = app.icon;
-          const isActive = currentApp === app.id;
-          return (
-            <button
-              key={app.id}
-              onClick={() => setCurrentApp(app.id)}
-              className={`px-2.5 py-0.5 border text-[8.5px] uppercase active:bg-zinc-400 border-t-white border-l-white border-r-gray-600 border-b-gray-600 flex items-center gap-1 whitespace-nowrap transition-colors ${
-                isActive
-                  ? 'bg-zinc-400 text-blue-950 font-black border-inner'
-                  : 'bg-gray-300 hover:bg-zinc-100 text-black'
-              }`}
+      {/* Windows 11 Fluent Taskbar (Pinned Apps, Drag-to-Pin, Context Menu / Jump List) */}
+      {!isWidgetSurface && (
+        <nav
+          aria-label="Tablet Taskbar"
+          onDragOver={e => e.preventDefault()}
+          onDrop={e => {
+            e.preventDefault();
+            const appId = e.dataTransfer.getData('text/leeway-app-id') as WorkstationAppId;
+            if (appId) pinAppToTaskbar(appId);
+          }}
+          className="order-2 z-30 flex h-[70px] shrink-0 items-center justify-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border-t border-white/10 bg-[#07111b]/95 px-3 py-2 select-none backdrop-blur-2xl"
+        >
+          <div className="flex items-center gap-2 rounded-[26px] border border-white/15 bg-white/[.08] px-3 py-1.5 shadow-[0_10px_34px_rgba(0,0,0,.5),inset_0_1px_1px_rgba(255,255,255,.15)]">
+            {pinnedAppIds.map(appId => {
+              const appMeta = TABLET_WIDGETS.find(w => w.id === appId) ||
+                (PUBLISHED_LEEWAY_APP_BY_ID[appId as any] ? {
+                  id: appId,
+                  label: PUBLISHED_LEEWAY_APP_BY_ID[appId as any].shortTitle,
+                  image: PUBLISHED_LEEWAY_APP_BY_ID[appId as any].iconImage,
+                  color: 'from-cyan-300 via-sky-600 to-indigo-950'
+                } : { id: appId, label: appId, color: 'from-zinc-500 to-zinc-800' });
+              const IconComp = 'icon' in appMeta ? (appMeta as any).icon : undefined;
+              const isActive = currentApp === appId;
+              return (
+                <button
+                  key={appId}
+                  draggable
+                  onDragStart={e => {
+                    e.dataTransfer.setData('text/leeway-app-id', appId);
+                    e.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onClick={() => setCurrentApp(appId)}
+                  onContextMenu={e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setTaskbarMenu({ x: e.clientX, y: e.clientY - 140, appId });
+                  }}
+                  title={`${appMeta.label} (Right click for Taskbar Jump List)`}
+                  className={`group relative flex w-12 shrink-0 flex-col items-center gap-0.5 rounded-2xl p-1 text-[7px] font-bold text-zinc-200 transition hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${isActive ? 'bg-white/15' : 'hover:bg-white/10'}`}
+                >
+                  <span className={`flex h-9 w-9 items-center justify-center overflow-hidden rounded-[13px] border border-white/25 bg-gradient-to-br ${appMeta.color} shadow-lg`}>
+                    {'image' in appMeta && appMeta.image ? (
+                      <img src={appMeta.image} alt="" className="h-full w-full object-cover" draggable={false} />
+                    ) : IconComp ? (
+                      <IconComp size={18} />
+                    ) : (
+                      <Layers size={18} />
+                    )}
+                  </span>
+                  <span className="max-w-full truncate">{appMeta.label}</span>
+                  <span className={`h-0.5 w-3 rounded-full ${isActive ? 'bg-cyan-300 shadow-[0_0_8px_#22d3ee]' : 'bg-transparent'}`} />
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Taskbar Right-Click Jump List */}
+          {taskbarMenu && (
+            <div
+              style={{ left: Math.max(10, taskbarMenu.x - 90), top: Math.max(10, taskbarMenu.y) }}
+              onClick={e => e.stopPropagation()}
+              className="fixed z-50 min-w-[190px] rounded-xl border border-cyan-400/40 bg-slate-950/95 p-1.5 text-xs text-white shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95"
             >
-              <IconComp size={11} />
-              <span>{app.label}</span>
-            </button>
-          );
-        })}
-
-        <div className="ml-auto" />
-
-      </div>
+              <div className="border-b border-white/10 px-2 py-1 font-black text-cyan-200">
+                {taskbarMenu.appId.toUpperCase()}
+              </div>
+              <div className="py-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCurrentApp(taskbarMenu.appId);
+                    setTaskbarMenu(null);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-[11px] font-bold text-white hover:bg-cyan-500/20 hover:text-cyan-200"
+                >
+                  <Sparkles size={12} className="text-cyan-400" />
+                  <span>Open</span>
+                </button>
+                {taskbarMenu.appId !== 'desktop' && <button
+                  type="button"
+                  onClick={() => {
+                    if (window.leewayNative?.openAppWidget) {
+                      void window.leewayNative.openAppWidget(taskbarMenu.appId);
+                    }
+                    setTaskbarMenu(null);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-[11px] font-bold text-white hover:bg-cyan-500/20 hover:text-cyan-200"
+                >
+                  <ExternalLink size={12} className="text-amber-400" />
+                  <span>Launch as Floating Widget</span>
+                </button>}
+                {taskbarMenu.appId !== 'desktop' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      unpinAppFromTaskbar(taskbarMenu.appId);
+                      setTaskbarMenu(null);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-[11px] font-bold text-rose-300 hover:bg-rose-500/20 hover:text-rose-200"
+                  >
+                    <Pin size={12} className="rotate-45" />
+                    <span>Unpin from Taskbar</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </nav>
+      )}
 
       {/* Main Canvas Area */}
       <div className="order-1 flex-grow flex overflow-hidden relative">
@@ -580,25 +734,15 @@ export default function App() {
           </div>
         )}
 
-        {/* ================= CRM BUSINESS OPERATIONS ================= */}
+        {/* ================= PRESERVED LOCAL CRM FALLBACK ================= */}
         {currentApp === 'crm' && (
-          <div className="flex-grow flex flex-col overflow-hidden bg-white">
-            <div className="h-10 shrink-0 bg-[#071f49] text-white flex items-center justify-between px-4 border-b border-[#d99a1e]">
-              <div className="flex items-center gap-3">
-                <Database size={14} className="text-[#d99a1e]" />
-                <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.16em]">LeeWay Business Operations</div>
-                  <div className="text-[8px] text-blue-200">Actual Voice · Scheduling · Translator CRM package</div>
-                </div>
-              </div>
-              <a href="/crm/index.html" target="_blank" rel="noreferrer"
-                 className="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded text-[8px] font-bold uppercase tracking-wider">
-                Open Full CRM
-              </a>
-            </div>
-            <iframe title="LeeWay Voice Scheduling Translator CRM" src="/crm/index.html"
-              className="flex-grow w-full border-0 bg-white"
-              allow="microphone; geolocation; clipboard-read; clipboard-write" />
+          <div className="flex min-h-0 flex-grow flex-col overflow-hidden bg-slate-950">
+            <iframe
+              title="Leeway Agentic CRM ERP"
+              src="/erp-crm/index.html"
+              className="min-h-0 flex-grow w-full border-0 bg-slate-950"
+              allow="microphone; geolocation; clipboard-read; clipboard-write"
+            />
           </div>
         )}
 
@@ -1130,9 +1274,15 @@ export default function App() {
           <AgentVTWorkforceCommandCenter onShowToast={showToast} />
         )}
 
-        {currentApp === 'continuum' && (
-          <TabletDestination destination="continuum" onOpen={setCurrentApp} />
+        {currentApp === 'contentVault' && (
+          <ContentVault
+            mode="page"
+            onOpenApp={(app) => setCurrentApp(app)}
+            onNotice={showToast}
+          />
         )}
+
+        {currentApp === 'federated' && <LeeWayFederated />}
 
         {currentApp === 'preview' && (
           <TabletDestination destination="preview" onOpen={setCurrentApp} />
@@ -1142,7 +1292,31 @@ export default function App() {
           <TabletDestination destination="apps" onOpen={setCurrentApp} />
         )}
 
+        {!LOCAL_SURFACE_APP_IDS.has(currentApp) && isPublishedLeeWayAppId(currentApp) && (
+          <PublishedLeeWayApp appId={currentApp} onBack={() => setCurrentApp('desktop')} />
+        )}
+
         {currentApp === 'agentRoster' && <AgentRosterBoard />}
+
+        {!isWidgetSurface && currentApp !== 'contentVault' && (
+          <button
+            type="button"
+            onClick={() => setIsContentVaultOpen(true)}
+            className="absolute bottom-3 right-3 z-40 flex items-center gap-2 rounded-2xl border border-cyan-200/30 bg-gradient-to-r from-amber-500 via-fuchsia-700 to-indigo-950 px-3 py-2 text-[9px] font-black tracking-[.1em] text-white shadow-[0_12px_30px_rgba(0,0,0,.6),0_0_18px_rgba(217,70,239,.25)] hover:-translate-y-0.5"
+            aria-label="Open shared Content Vault"
+          >
+            <Folder size={15} /> VAULT
+          </button>
+        )}
+
+        {isContentVaultOpen && (
+          <ContentVault
+            mode="drawer"
+            onClose={() => setIsContentVaultOpen(false)}
+            onOpenApp={(app) => { setIsContentVaultOpen(false); setCurrentApp(app); }}
+            onNotice={showToast}
+          />
+        )}
 
         {/* ================= 9. PALLIUM ================= */}
         {currentApp === 'pallium' && (
@@ -1255,52 +1429,63 @@ export default function App() {
     </div>
   );
 
-  // If in retro CRT chassis mode:
-  if (isChassisMode) {
-    return (
-      <div className="relative h-screen w-screen bg-[#111215] flex flex-col p-2 md:p-3 overflow-hidden select-none">
-        {/* Retro CRT Chassis Bezel Frame */}
-        <div className="relative flex-grow bg-[#dcd7c0] rounded-[18px] shadow-2xl border-[6px] border-[#c0b9a3] overflow-hidden flex flex-col p-1.5 md:p-2.5">
-          {/* Inner Screen Bezel */}
-          <div className="flex-grow bg-[#1a1b1e] rounded-[8px] border-[4px] border-[#ada68f] overflow-hidden flex flex-col relative">
-            {appContent}
-          </div>
-
-          {/* Chassis Bottom Control Bar */}
-          <div className="h-8 flex items-center justify-between px-2 mt-1 select-none">
-            <div className="flex items-center gap-2">
-              <span className="text-[8.5px] text-[#847e67] font-extrabold tracking-tight italic">
-                LEEWAY_AGENT_WORKSTATION // OPEN_NOTEBOOK_INTEGRATED
-              </span>
-              <span className="text-[7.5px] bg-[#ada68f]/50 px-1.5 py-0.5 rounded text-zinc-900 font-extrabold">
-                MODULAR RESEARCH EXTENSION ACTIVE
-              </span>
-            </div>
-            <div className="flex gap-2 items-center">
-              <button
-                onClick={() => setShowKeyboard(!showKeyboard)}
-                className={`px-2.5 py-0.5 rounded text-[8px] font-bold border transition-colors ${
-                  showKeyboard ? 'bg-green-700 text-white border-green-900' : 'bg-gray-300 shadow-sm border-zinc-400 hover:bg-gray-200 text-black'
-                }`}
-              >
-                KEYBOARD
-              </button>
-              <button
-                onClick={() => setIsMinimized(true)}
-                className="w-3.5 h-3.5 rounded-full border border-red-900 bg-red-500 shadow hover:bg-red-400 active:scale-90"
-                title="Minimize VM Window"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  // A launched application is its own native widget. Do not nest it inside
+  // the tablet frame, header, taskbar, or footer-like workstation shell.
+  if (isWidgetSurface) {
+    return <div className="h-screen w-screen overflow-hidden bg-transparent">{appContent}</div>;
   }
 
-  // Full screen mode
+  // Canonical LeeWay Agent VT floating-widget frame. This is the same visual
+  // language as the current Agent Workstation / Open Notebook widget: a thin
+  // dark-and-cyan rounded perimeter, a compact top rail, and a teal inner
+  // canvas. Native hosts bind MOVE/CLOSE to their window adapter in preload;
+  // the buttons remain usable in a normal browser preview as well.
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#111215]">
-      {appContent}
+    <div className="relative h-screen w-screen overflow-hidden bg-transparent select-none">
+      <section
+        ref={tabletRef}
+        aria-label="LeeWay Agent VT floating widget"
+        className="absolute inset-[8px_10px_14px] flex min-h-0 flex-col overflow-hidden rounded-[25px] border-[6px] border-[#1a3035] bg-[#078184] shadow-[0_18px_40px_rgba(0,0,0,0.68),0_4px_12px_rgba(0,0,0,0.45),inset_0_2px_3px_rgba(255,255,255,0.35),inset_0_-4px_8px_rgba(0,0,0,0.36)] outline outline-2 outline-[#5ec9d0]"
+      >
+        <div
+          id="leeway-vt-widget-header"
+          className="flex h-8 shrink-0 items-center gap-2 bg-[#172627] px-2.5 text-[11px] font-bold tracking-[0.08em] text-[#b7fff5]"
+          title="Drag the Agent Virtual Tablet from the native MOVE control"
+        >
+          <span className="flex min-w-0 flex-1 items-center gap-2 truncate">
+            <img src="/leeway-approved-coin.png" alt="LeeWay" className="h-5 w-5 shrink-0 rounded-full" />
+            <span>LEEWAY - AGENT VT</span>
+          </span>
+          <span className="text-[8px] font-normal tracking-normal text-[#78b9b9]">AGENT VIRTUAL TABLET</span>
+          <span
+            aria-label="Current tablet device"
+            className="shrink-0 rounded border border-cyan-200/35 bg-[#0a1a22]/95 px-1.5 py-0.5 text-[8px] font-black tracking-[0.08em] text-cyan-100"
+          >
+            WINDOWS 11 · HARMONY
+          </span>
+          <button
+            id="leeway-vt-widget-move"
+            type="button"
+            aria-label="Move Agent VT widget"
+            title="Move Agent VT widget"
+            className="rounded border border-[#4b8e97] bg-[#0a3e46] px-1.5 py-0.5 text-[8px] font-black tracking-[0.08em] text-[#d8ffff] hover:bg-[#12616b]"
+          >
+            MOVE
+          </button>
+          <button
+            id="leeway-vt-widget-close"
+            type="button"
+            aria-label="Close Agent VT widget"
+            title="Close Agent VT widget"
+            className="flex h-5 w-5 items-center justify-center rounded border border-[#a9d6d4] bg-transparent text-[15px] leading-none text-[#d8ffff] hover:bg-[#5e2830] hover:text-white"
+          >
+            ×
+          </button>
+        </div>
+        <div className="relative min-h-0 flex-1 overflow-hidden rounded-b-[15px] border-t-[3px] border-[#615f51] bg-[#078184]">
+          {appContent}
+        </div>
+      </section>
     </div>
   );
 }

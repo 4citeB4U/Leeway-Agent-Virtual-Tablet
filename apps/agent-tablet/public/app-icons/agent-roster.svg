@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Agent Lee Roster">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c4b5fd"/><stop offset=".5" stop-color="#7c3aed"/><stop offset="1" stop-color="#172554"/></linearGradient></defs>
+  <rect width="128" height="128" rx="30" fill="#110b29"/><circle cx="64" cy="64" r="50" fill="url(#g)" stroke="#ddd6fe" stroke-width="4"/>
+  <circle cx="64" cy="45" r="14" fill="#111827" stroke="#fff" stroke-width="4"/><path d="M37 91c2-18 13-28 27-28s25 10 27 28" fill="#111827" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="33" cy="42" r="8" fill="#67e8f9" stroke="#fff" stroke-width="3"/><circle cx="95" cy="42" r="8" fill="#f0abfc" stroke="#fff" stroke-width="3"/><path d="M40 47 51 52m37 0 11-5M38 83l13-7m39 0 13 7" stroke="#fef08a" stroke-width="3" stroke-linecap="round"/>
+</svg>

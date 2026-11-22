@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="LeeWay Content Foundry">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f0abfc"/><stop offset=".48" stop-color="#a855f7"/><stop offset="1" stop-color="#312e81"/></linearGradient></defs>
+  <rect width="128" height="128" rx="30" fill="#1b0827"/><circle cx="64" cy="64" r="48" fill="url(#g)" stroke="#f5d0fe" stroke-width="4"/>
+  <path d="M37 86V56l27-16 27 16v30L64 102z" fill="#2e1065" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+  <path d="m64 40 27 16-27 16-27-16z" fill="#f0abfc" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M53 79h22M57 88h14" stroke="#fbbf24" stroke-width="4" stroke-linecap="round"/>
+</svg>

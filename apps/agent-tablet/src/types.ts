@@ -12,10 +12,22 @@ export type WorkstationAppId =
   | 'diagnostics'
   | 'workforce'
   | 'agentRoster'
+  | 'digitalBrain'
   | 'pallium'
   | 'continuum'
   | 'preview'
   | 'apps'
+  | 'agentSkills'
+  | 'leewayIde'
+  | 'officeSuite'
+  | 'logistics'
+  | 'contentFoundry'
+  | 'erpCrm'
+  | 'agentVision'
+  | 'voiceFabric'
+  | 'contentVault'
+  | 'employmentCenter'
+  | 'federated'
   | 'standalone';
 
 export type TerminalShellType = 'ubuntu' | 'powershell' | 'termux';
