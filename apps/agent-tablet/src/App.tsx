@@ -60,7 +60,7 @@ import { AgentNotepadBlackboard } from './components/AgentNotepadBlackboard';
 import { PublishedLeeWayApp } from './components/PublishedLeeWayApp';
 import { ContentVault } from './components/ContentVault';
 import { LeeWayFederated } from './components/LeeWayFederated';
-import { isPublishedLeeWayAppId, PUBLISHED_LEEWAY_APP_BY_ID } from './publishedApps';
+import { isPublishedLeeWayAppId, PUBLISHED_LEEWAY_APP_BY_ID, PUBLISHED_LEEWAY_APPS } from './publishedApps';
 
 // Base initial files for LeeCode
 const initialFiles: Record<string, string> = {
@@ -145,6 +145,50 @@ const TABLET_WIDGETS = [
   { id: 'logistics' as const, label: 'Logistics', image: '/app-icons/logistics.png', color: 'from-sky-300 to-blue-900' },
   { id: 'agentVision' as const, label: 'Vision', image: '/app-icons/agent-vision.png', color: 'from-emerald-300 to-teal-900' }
 ] as const;
+
+type TabletCatalogItem = {
+  id: WorkstationAppId;
+  label: string;
+  description: string;
+  image?: string;
+  icon?: React.ComponentType<{ size?: number; className?: string }>;
+  color: string;
+};
+
+// Home's jump list is the complete Tablet catalog, not just the apps currently
+// pinned or visible on the desktop. Federation is intentionally absent: it is
+// a background capability, not a user-facing application shortcut.
+const TABLET_APP_CATALOG: readonly TabletCatalogItem[] = Array.from(
+  new Map<WorkstationAppId, TabletCatalogItem>([
+    ...TABLET_WIDGETS.filter(widget => widget.id !== 'desktop').map(widget => [widget.id, {
+      id: widget.id,
+      label: widget.label,
+      description: `${widget.label} Tablet surface`,
+      image: 'image' in widget ? widget.image : undefined,
+      icon: 'icon' in widget ? widget.icon : undefined,
+      color: widget.color
+    }] as [WorkstationAppId, TabletCatalogItem]),
+    ...PUBLISHED_LEEWAY_APPS.map(app => [app.id, {
+      id: app.id,
+      label: app.shortTitle,
+      description: app.title,
+      image: app.iconImage,
+      color: 'from-cyan-300 via-sky-600 to-indigo-950'
+    }] as [WorkstationAppId, TabletCatalogItem]),
+    ['openNotebook', { id: 'openNotebook', label: 'Open Notebook', description: 'Grounded research notebook', icon: BookOpen, color: 'from-amber-300 to-orange-900' }],
+    ['editor', { id: 'editor', label: 'Editor', description: 'Local composition preview', icon: Layers, color: 'from-emerald-300 to-green-900' }],
+    ['browser', { id: 'browser', label: 'Research Fabric', description: 'Provider-bound research browser', icon: GlobeIcon, color: 'from-cyan-300 to-blue-900' }],
+    ['vscode', { id: 'vscode', label: 'LeeCode IDE', description: 'Agent development workspace', icon: CodeIcon, color: 'from-blue-300 to-indigo-900' }],
+    ['terminal', { id: 'terminal', label: 'Terminal Gateway', description: 'Termux, Ubuntu and PowerShell gateway', icon: TerminalIcon, color: 'from-green-300 to-emerald-900' }],
+    ['database', { id: 'database', label: 'Data Fabric', description: 'Unified vector and SQL access', icon: Database, color: 'from-purple-300 to-violet-900' }],
+    ['pallium', { id: 'pallium', label: 'Memory Pallium', description: 'Distributed cognitive cache surface', icon: Layers, color: 'from-teal-300 to-cyan-900' }],
+    ['workboard', { id: 'workboard', label: 'Workboard Runtime', description: 'Agent Blackboard and coordination', icon: FileText, color: 'from-amber-300 to-yellow-900' }],
+    ['preview', { id: 'preview', label: 'Preview', description: 'Creator review workspace', icon: Maximize2, color: 'from-rose-300 to-red-900' }],
+    ['apps', { id: 'apps', label: 'Apps Directory', description: 'LeeWay applications and developments', icon: Layers, color: 'from-sky-300 to-blue-900' }],
+    ['crm', { id: 'crm', label: 'CRM', description: 'Business operations surface', icon: Database, color: 'from-blue-300 to-indigo-900' }]
+  ])
+    .values()
+);
 
 // These applications have a real local tablet implementation.  They may be
 // listed in the directory for icon/metadata purposes, but must never also be
@@ -505,11 +549,17 @@ export default function App() {
           onDrop={e => {
             e.preventDefault();
             const appId = e.dataTransfer.getData('text/leeway-app-id') as WorkstationAppId;
-            if (appId) pinAppToTaskbar(appId);
+            const source = e.dataTransfer.getData('text/leeway-source');
+            if (appId) {
+              pinAppToTaskbar(appId);
+              if (source === 'desktop') {
+                window.dispatchEvent(new CustomEvent('leeway:move-to-taskbar', { detail: { appId } }));
+              }
+            }
           }}
-          className="order-2 z-30 flex h-[70px] shrink-0 items-center justify-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border-t border-white/10 bg-[#07111b]/95 px-3 py-2 select-none backdrop-blur-2xl"
+          className="order-2 z-30 flex h-[70px] shrink-0 items-center justify-start overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border-t border-white/10 bg-[#07111b]/95 px-3 py-2 select-none backdrop-blur-2xl"
         >
-          <div className="flex items-center gap-2 rounded-[26px] border border-white/15 bg-white/[.08] px-3 py-1.5 shadow-[0_10px_34px_rgba(0,0,0,.5),inset_0_1px_1px_rgba(255,255,255,.15)]">
+          <div className="mx-auto flex min-w-max shrink-0 items-center gap-2 rounded-[26px] border border-white/15 bg-white/[.08] px-3 py-1.5 shadow-[0_10px_34px_rgba(0,0,0,.5),inset_0_1px_1px_rgba(255,255,255,.15)]">
             {pinnedAppIds.map(appId => {
               const appMeta = TABLET_WIDGETS.find(w => w.id === appId) ||
                 (PUBLISHED_LEEWAY_APP_BY_ID[appId as any] ? {
@@ -526,6 +576,7 @@ export default function App() {
                   draggable
                   onDragStart={e => {
                     e.dataTransfer.setData('text/leeway-app-id', appId);
+                    e.dataTransfer.setData('text/leeway-source', 'taskbar');
                     e.dataTransfer.effectAllowed = 'move';
                   }}
                   onClick={() => setCurrentApp(appId)}
@@ -561,48 +612,74 @@ export default function App() {
               onClick={e => e.stopPropagation()}
               className="fixed z-50 min-w-[190px] rounded-xl border border-cyan-400/40 bg-slate-950/95 p-1.5 text-xs text-white shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95"
             >
-              <div className="border-b border-white/10 px-2 py-1 font-black text-cyan-200">
-                {taskbarMenu.appId.toUpperCase()}
-              </div>
-              <div className="py-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCurrentApp(taskbarMenu.appId);
-                    setTaskbarMenu(null);
-                  }}
-                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-[11px] font-bold text-white hover:bg-cyan-500/20 hover:text-cyan-200"
-                >
-                  <Sparkles size={12} className="text-cyan-400" />
-                  <span>Open</span>
-                </button>
-                {taskbarMenu.appId !== 'desktop' && <button
-                  type="button"
-                  onClick={() => {
-                    if (window.leewayNative?.openAppWidget) {
-                      void window.leewayNative.openAppWidget(taskbarMenu.appId);
-                    }
-                    setTaskbarMenu(null);
-                  }}
-                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-[11px] font-bold text-white hover:bg-cyan-500/20 hover:text-cyan-200"
-                >
-                  <ExternalLink size={12} className="text-amber-400" />
-                  <span>Launch as Floating Widget</span>
-                </button>}
-                {taskbarMenu.appId !== 'desktop' && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      unpinAppFromTaskbar(taskbarMenu.appId);
-                      setTaskbarMenu(null);
-                    }}
-                    className="flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-[11px] font-bold text-rose-300 hover:bg-rose-500/20 hover:text-rose-200"
-                  >
-                    <Pin size={12} className="rotate-45" />
-                    <span>Unpin from Taskbar</span>
-                  </button>
-                )}
-              </div>
+              {taskbarMenu.appId === 'desktop' ? (
+                <div className="w-[min(92vw,430px)]">
+                  <div className="border-b border-white/10 px-2 py-1 font-black text-cyan-200">AGENT TABLET APPLICATIONS</div>
+                  <div className="grid max-h-[min(70vh,520px)] grid-cols-2 gap-1 overflow-y-auto p-1">
+                    {TABLET_APP_CATALOG.map(app => {
+                      const IconComp = app.icon;
+                      return (
+                        <button
+                          key={app.id}
+                          type="button"
+                          onClick={() => {
+                            setCurrentApp(app.id);
+                            setTaskbarMenu(null);
+                          }}
+                          className="flex min-w-0 items-center gap-2 rounded-lg border border-white/10 bg-white/[.04] px-2 py-1.5 text-left hover:border-cyan-400/60 hover:bg-cyan-500/15"
+                          title={app.description}
+                        >
+                          <span className={`flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/20 bg-gradient-to-br ${app.color}`}>
+                            {app.image ? <img src={app.image} alt="" className="h-full w-full object-cover" /> : IconComp ? <IconComp size={14} /> : <Layers size={14} />}
+                          </span>
+                          <span className="min-w-0 truncate text-[10px] font-bold">{app.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="border-b border-white/10 px-2 py-1 font-black text-cyan-200">{taskbarMenu.appId.toUpperCase()}</div>
+                  <div className="py-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCurrentApp(taskbarMenu.appId);
+                        setTaskbarMenu(null);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-[11px] font-bold text-white hover:bg-cyan-500/20 hover:text-cyan-200"
+                    >
+                      <Sparkles size={12} className="text-cyan-400" />
+                      <span>Open</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.leewayNative?.openAppWidget) {
+                          void window.leewayNative.openAppWidget(taskbarMenu.appId);
+                        }
+                        setTaskbarMenu(null);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-[11px] font-bold text-white hover:bg-cyan-500/20 hover:text-cyan-200"
+                    >
+                      <ExternalLink size={12} className="text-amber-400" />
+                      <span>Launch as Floating Widget</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        unpinAppFromTaskbar(taskbarMenu.appId);
+                        setTaskbarMenu(null);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-[11px] font-bold text-rose-300 hover:bg-rose-500/20 hover:text-rose-200"
+                    >
+                      <Pin size={12} className="rotate-45" />
+                      <span>Unpin from Taskbar</span>
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </nav>

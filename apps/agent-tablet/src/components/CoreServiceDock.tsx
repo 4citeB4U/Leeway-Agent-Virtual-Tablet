@@ -38,7 +38,6 @@ const coreSurfaces: readonly CoreSurface[] = [
   { id: 'voice', title: 'Voice Fabric / Listening', group: 'Sensory', description: 'Approved speech, microphone consent, streaming, interruptibility and speaker readback.' },
   { id: 'vision', title: 'Vision Fabric / Cameras', group: 'Sensory', description: 'Per-device camera consent, authenticated streams and actual frame-readback evidence.' },
   { id: 'edge-rtc', title: 'Edge RTC', group: 'Network', description: 'Real-time voice/video transport; sessions and client authority are separate from this UI.' },
-  { id: 'federate', title: 'Federate Web / Edge', group: 'Network', description: 'Standards-backed discovery and qualified peer federation; public pages are not native execution.' },
 ];
 
 export function CoreServiceDock({ onOpenSurface, embedded = false }: { onOpenSurface: (surface: WorkstationAppId) => void; embedded?: boolean }) {

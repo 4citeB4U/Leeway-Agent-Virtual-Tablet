@@ -116,6 +116,7 @@ export function AgentCommandCenter({ workboardStatus, onOpenSurface, onPinToTask
   const handleDragStart = (e: React.DragEvent, app: DesktopItem) => {
     setDraggedAppId(app.id);
     e.dataTransfer.setData('text/leeway-app-id', app.id);
+    e.dataTransfer.setData('text/leeway-source', 'desktop');
     e.dataTransfer.effectAllowed = 'move';
   };
 
@@ -182,6 +183,22 @@ export function AgentCommandCenter({ workboardStatus, onOpenSurface, onPinToTask
     const next = desktopApps.filter(a => a.id !== appId);
     persistApps(next);
   };
+
+  const handleMoveToTaskbar = (appId: WorkstationAppId) => {
+    handlePin(appId);
+    handleRemoveFromDesktop(appId);
+  };
+
+  useEffect(() => {
+    const handleTaskbarMove = (event: Event) => {
+      const appId = (event as CustomEvent<{ appId?: WorkstationAppId }>).detail?.appId;
+      if (appId && desktopApps.some(app => app.id === appId)) {
+        persistApps(desktopApps.filter(app => app.id !== appId));
+      }
+    };
+    window.addEventListener('leeway:move-to-taskbar', handleTaskbarMove);
+    return () => window.removeEventListener('leeway:move-to-taskbar', handleTaskbarMove);
+  }, [desktopApps]);
 
   const handleAutoArrange = () => {
     persistApps(INITIAL_DESKTOP_APPS);
@@ -290,13 +307,25 @@ export function AgentCommandCenter({ workboardStatus, onOpenSurface, onPinToTask
                 <button
                   type="button"
                   onClick={() => {
-                    handlePin(contextMenu.app!.id);
+                    handleMoveToTaskbar(contextMenu.app!.id);
                     setContextMenu(null);
                   }}
                   className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[11px] font-bold text-white hover:bg-cyan-500/20 hover:text-cyan-200"
                 >
                   <Pin size={13} className="text-emerald-400" />
-                  <span>Pin to Taskbar</span>
+                  <span>Move to Taskbar</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    handlePin(contextMenu.app!.id);
+                    setContextMenu(null);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[11px] font-bold text-white hover:bg-cyan-500/20 hover:text-cyan-200"
+                >
+                  <Pin size={13} className="text-cyan-400" />
+                  <span>Pin, Keep on Desktop</span>
                 </button>
 
                 <button

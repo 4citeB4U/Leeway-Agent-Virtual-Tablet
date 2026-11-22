@@ -30,9 +30,10 @@ test('Tablet owns the visible core-service launcher and persistent popout', () =
 });
 
 test('source projection includes core authorities, sensory and compute surfaces', () => {
-  for (const id of ['agent-lee','device-bridge','agent-skills','runtime','gpu','model-hub','continuum','brain','voice','vision','edge-rtc','federate','seafile']) {
+  for (const id of ['agent-lee','device-bridge','agent-skills','runtime','gpu','model-hub','continuum','brain','voice','vision','edge-rtc','seafile']) {
     assert.ok(dock.includes("id: '" + id + "'"), id);
   }
+  assert.doesNotMatch(dock, /id: 'federate'/, 'federation is background-only and has no Tablet inspection tile');
   assert.match(dock, /LIVE SERVICE: NOT VERIFIED IN THIS TABLET SESSION/);
   assert.match(dock, /Studios and additional products enter only after core execution is qualified/);
 });
@@ -41,4 +42,16 @@ test('no fabricated authority, automatic mic or device-command execution in dock
   assert.doesNotMatch(dock, /bridge\.call\(|getUserMedia\(|getDisplayMedia\(|navigator\.mediaDevices|fetch\(|eval\(|new Function/);
   assert.doesNotMatch(dock, /PRODUCTION_VERIFIED|VERITAS_ACCEPTED|execution: 'PASS'/);
   assert.doesNotMatch(home, /Runtime identity separately verified|System: Runtime observation active/);
+});
+
+test('taskbar owns core control, removes federation from the user surface, and supports overflow moves', () => {
+  assert.match(app, /<CoreServiceDock onOpenSurface=\{setCurrentApp\} embedded \/>/);
+  assert.match(app, /TABLET_APP_CATALOG/);
+  assert.match(app, /AGENT TABLET APPLICATIONS/);
+  assert.match(app, /text\/leeway-source/);
+  assert.match(app, /leeway:move-to-taskbar/);
+  assert.doesNotMatch(app, /label: 'Federated'/);
+  assert.doesNotMatch(app, /title: 'LeeWay Federated'/);
+  assert.match(home, /Move to Taskbar/);
+  assert.match(home, /Pin, Keep on Desktop/);
 });
