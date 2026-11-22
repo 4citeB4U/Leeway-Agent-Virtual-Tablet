@@ -55,6 +55,7 @@ import { AgentVTWorkforceCommandCenter } from './components/AgentVTWorkforceComm
 import { TabletDestination } from './components/TabletDestination';
 import { AgentRosterBoard } from './components/AgentRosterBoard';
 import { AgentCommandCenter } from './components/AgentCommandCenter';
+import { CoreServiceDock } from './components/CoreServiceDock';
 import { WorkboardRuntimePanel } from './components/WorkboardRuntimePanel';
 import { AgentNotepadBlackboard } from './components/AgentNotepadBlackboard';
 import { PublishedLeeWayApp } from './components/PublishedLeeWayApp';
@@ -734,14 +735,58 @@ export default function App() {
           </div>
         )}
 
-        {/* ================= PRESERVED LOCAL CRM FALLBACK ================= */}
+        {/* ================= CANONICAL CRM / ERP SURFACE ================= */}
         {currentApp === 'crm' && (
-          <div className="flex min-h-0 flex-grow flex-col overflow-hidden bg-slate-950">
+          <div className="flex-grow flex flex-col overflow-hidden bg-white">
+            <div className="h-10 shrink-0 bg-[#071f49] text-white flex items-center justify-between px-4 border-b border-[#d99a1e]">
+              <div className="flex items-center gap-3">
+                <Database size={14} className="text-[#d99a1e]" />
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.16em]">LeeWay Business Operations</div>
+                  <div className="text-[8px] text-blue-200">Canonical LeeWay Agentic CRM/ERP · shared records not yet verified</div>
+                </div>
+              </div>
+              <a href="https://4citeb4u.github.io/Leeway-Agentic-CRM-ERP/" target="_blank" rel="noreferrer"
+                 className="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded text-[8px] font-bold uppercase tracking-wider">
+                Open Full CRM/ERP
+              </a>
+            </div>
+            <iframe title="LeeWay Agentic CRM/ERP" src="https://4citeb4u.github.io/Leeway-Agentic-CRM-ERP/"
+              className="flex-grow w-full border-0 bg-white"
+              allow="microphone; geolocation; clipboard-read; clipboard-write" />
+          </div>
+        )}
+
+        {/* Canonical published product surfaces. Pages host the UI; Runtime and
+            Device Bridge remain the authorities for inference, location, and effects. */}
+        {(currentApp === 'modelHub' || currentApp === 'logistics') && (
+          <div className="flex-grow min-w-0 flex flex-col overflow-hidden bg-[#111318] text-zinc-100">
+            <div className="shrink-0 border-b border-zinc-700 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-bold">{currentApp === 'modelHub' ? 'LeeWay Model Hub' : 'LeeWay Logistics — Transit World'}</div>
+                <p className="text-[11px] text-zinc-300">
+                  {currentApp === 'modelHub'
+                    ? 'Existing catalog and widget. GitHub Pages does not host model inference; owner-authorized Runtime/Device Bridge access is separately required.'
+                    : 'Existing spatial application. Training/demo fallback is not live location, and browser geolocation remains user-permission gated.'}
+                </p>
+              </div>
+              <a
+                href={currentApp === 'modelHub'
+                  ? 'https://4citeb4u.github.io/LeeWay-Model-Hub/'
+                  : 'https://4citeb4u.github.io/LEEWAY-LOGISTICS-/'}
+                target="_blank" rel="noopener noreferrer"
+                className="shrink-0 rounded border border-zinc-500 px-3 py-2 text-[11px] font-semibold hover:bg-zinc-800"
+              >Open original LeeWay app</a>
+            </div>
             <iframe
-              title="Leeway Agentic CRM ERP"
-              src="/erp-crm/index.html"
-              className="min-h-0 flex-grow w-full border-0 bg-slate-950"
-              allow="microphone; geolocation; clipboard-read; clipboard-write"
+              title={currentApp === 'modelHub' ? 'LeeWay Model Hub public catalog' : 'LeeWay Logistics Transit World'}
+              src={currentApp === 'modelHub'
+                ? 'https://4citeb4u.github.io/LeeWay-Model-Hub/'
+                : 'https://4citeb4u.github.io/LEEWAY-LOGISTICS-/'}
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              allow={currentApp === 'logistics' ? 'geolocation' : undefined}
+              referrerPolicy="no-referrer"
+              className="min-h-0 flex-grow w-full border-0 bg-black"
             />
           </div>
         )}
@@ -1388,6 +1433,9 @@ export default function App() {
           ))}
         </div>
       )}
+
+      {/* Existing core authorities remain the execution boundary; this dock is only the Tablet entrypoint. */}
+      <CoreServiceDock onOpenSurface={setCurrentApp} />
 
       {/* Global Toast */}
       {toastMsg && (

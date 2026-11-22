@@ -8,10 +8,11 @@ The tablet is the replaceable interface boundary. It presents one command surfac
 
 1. The browser loads the React tablet from `apps/agent-tablet`.
 2. The Express backend serves the built UI and owns bounded local routes.
-3. Workforce reads require either an existing caller-scoped `Authorization: Bearer …` header or the owner-controlled Pocket ID/OIDC browser session. Tokens are never returned to the browser UI or written to logs by the adapter.
-4. `integration/runtime-fabric/workforce-runtime-mcp.mjs` accepts only the exact contracts for the loopback workforce snapshot or HTTPS Streamable HTTP MCP resource. It returns provider evidence only and hard-fails authority claims.
-5. Continuum notepad writes, when enabled, go to the existing Runtime Fabric Continuum API. The tablet does not create a private notepad authority.
-6. Workboard is embedded only after a loopback health probe. A reachable endpoint is not treated as verified Workboard content.
+3. Workforce observation requires either an existing caller-scoped `Authorization: Bearer …` header or the owner-controlled ZITADEL/OIDC browser session. Tokens are never returned to the browser UI or written to logs by the adapter.
+4. The Tablet also accepts explicit user-initiated window-control requests via `POST /api/device-bridge/execute`, using a separate caller-scoped `device.bridge.execute` grant. The request is forwarded to the **existing** Runtime MCP `bridge_device_window_control` tool, which remains the authority for native execution and its device admission. The Tablet cannot invent a scope, register a native driver, bypass C3 or certify Veritas. The new source is a candidate, not production-connected.
+5. `integration/runtime-fabric/workforce-runtime-mcp.mjs` accepts only the exact contracts for the loopback workforce snapshot or HTTPS Streamable HTTP MCP resource. It returns provider evidence only and hard-fails authority claims.
+6. Continuum notepad writes, when enabled, go to the existing Runtime Fabric Continuum API. The tablet does not create a private notepad authority.
+7. Workboard is embedded only after a loopback health probe. A reachable endpoint is not treated as verified Workboard content.
 
 ## Authority boundaries
 
@@ -22,14 +23,14 @@ The tablet is the replaceable interface boundary. It presents one command surfac
 | Agent Pad / Blackboard | Existing notepad and event presentation | No second storage or communication authority |
 | LeeWay Office / Preview | Existing editor and preview surfaces | Preview is not deployment or a receipt |
 | CRM | Bundled entitled application surface | Presence is not employee execution |
-| Runtime Fabric adapter | Authenticated read-only transport | Does not issue tokens, dispatch work, sign Veritas, or write ledgers |
-| Device Bridge | External canonical authority | This repository does not duplicate or impersonate the Device Bridge |
+| Runtime Fabric adapters | Authenticated read plus execute-scoped capability forwarding | The Tablet does not issue tokens, grant execute scope, or perform native device commands |
+| Device Bridge | External canonical native executor | This repository does not duplicate or impersonate Device Bridge; real commands require the separate execute grant |
 
 ## Interchange rule
 
 The tablet can be replaced when the replacement preserves the following contracts:
 
-- same read-only Workforce projection shape;
+- same bounded Workforce observation shape and explicit execute-scoped Tablet interaction;
 - same explicit blocked/unverified states;
 - same caller-scoped authentication boundary;
 - same Continuum and Workboard adapter boundaries;
