@@ -1192,8 +1192,10 @@ function renderGalacticMesh(
   vh: number,
   elapsedSeconds: number,
   settings: BackgroundSettings,
-  colors: ResolvedColors
+  colors: [RGB, RGB, RGB, RGB]
 ) {
+  const [primary, , , bg] = colors;
+
   if (!cachedGalacticShapes) {
     cachedGalacticShapes = Array.from({ length: 700 }, () => ({
       x: Math.random() * 2400,
@@ -1207,12 +1209,12 @@ function renderGalacticMesh(
     }));
   }
 
-  ctx.fillStyle = colors.bgBase;
+  ctx.fillStyle = rgbStr(bg);
   ctx.fillRect(0, 0, vw, vh);
 
   const speed = (settings.speed || 0.8) * 0.35;
   const offsetX = elapsedSeconds * 60 * speed;
-  const p = colors.primaryRgb;
+  const p = primary;
   const rgb = `${p.r},${p.g},${p.b}`;
 
   ctx.save();
