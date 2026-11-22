@@ -200,7 +200,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'http://127.0.0.1:3217/?view=agentRoster&leewaySurface=widget',
     capabilityRef: 'leeway.agent-roster',
     accent: 'border-cyan-700 bg-cyan-950/20',
-    iconImage: '/app-icons/agent-roster.svg',
+    iconImage: '/app-icons/agent-roster-badge.png',
     gradient: 'from-cyan-300 via-teal-500 to-blue-950'
   },
   {
