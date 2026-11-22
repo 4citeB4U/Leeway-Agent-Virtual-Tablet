@@ -61,6 +61,7 @@ import { PublishedLeeWayApp } from './components/PublishedLeeWayApp';
 import { ContentVault } from './components/ContentVault';
 import { LeeWayFederated } from './components/LeeWayFederated';
 import { isPublishedLeeWayAppId, PUBLISHED_LEEWAY_APP_BY_ID, PUBLISHED_LEEWAY_APPS } from './publishedApps';
+import { tabletAssetUrl } from './assetUrl';
 
 // Base initial files for LeeCode
 const initialFiles: Record<string, string> = {
@@ -601,7 +602,7 @@ export default function App() {
                 >
                   <span className={`flex h-9 w-9 items-center justify-center overflow-hidden rounded-[13px] border border-white/25 bg-gradient-to-br ${appMeta.color} shadow-lg`}>
                     {'image' in appMeta && appMeta.image ? (
-                      <img src={appMeta.image} alt="" className="h-full w-full object-cover" draggable={false} />
+                      <img src={tabletAssetUrl(appMeta.image)} alt="" className="h-full w-full object-cover" draggable={false} />
                     ) : IconComp ? (
                       <IconComp size={18} />
                     ) : (
@@ -641,7 +642,7 @@ export default function App() {
                           title={app.description}
                         >
                           <span className={`flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/20 bg-gradient-to-br ${app.color}`}>
-                            {app.image ? <img src={app.image} alt="" className="h-full w-full object-cover" /> : IconComp ? <IconComp size={14} /> : <Layers size={14} />}
+                            {app.image ? <img src={tabletAssetUrl(app.image)} alt="" className="h-full w-full object-cover" /> : IconComp ? <IconComp size={14} /> : <Layers size={14} />}
                           </span>
                           <span className="min-w-0 truncate text-[10px] font-bold">{app.label}</span>
                         </button>

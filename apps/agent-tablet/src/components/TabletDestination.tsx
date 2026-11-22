@@ -1,6 +1,7 @@
 import React from 'react';
 import type { WorkstationAppId } from '../types';
 import { PUBLISHED_LEEWAY_APPS } from '../publishedApps';
+import { tabletAssetUrl } from '../assetUrl';
 
 type Destination = 'continuum' | 'preview' | 'apps';
 
@@ -78,7 +79,7 @@ export function TabletDestination({ destination, onOpen }: TabletDestinationProp
             <p className="max-w-xl text-[10px] leading-4 text-zinc-500">Selecting an application loads its published UI inside the tablet. In the native host it also raises the application window; pop-out restore and close remain controlled from the tablet rail.</p>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {PUBLISHED_LEEWAY_APPS.map(app => <button key={app.id} type="button" onClick={() => onOpen(app.id)} className={`group overflow-hidden rounded-3xl border text-left shadow-xl transition hover:-translate-y-1 hover:border-cyan-300 ${app.accent}`}><span className="relative block aspect-[16/8] overflow-hidden"><img src={app.iconImage} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" /><span className={`absolute inset-0 bg-gradient-to-t ${app.gradient} opacity-20`} /></span><span className="block p-4"><strong className="block text-sm text-white">{app.title}</strong><span className="mt-1 block text-[10px] leading-4 text-zinc-400">{app.description}</span><span className="mt-3 block text-[8px] font-black uppercase tracking-[0.12em] text-cyan-300">OPEN TRUE UI + WIDGET</span></span></button>)}
+            {PUBLISHED_LEEWAY_APPS.map(app => <button key={app.id} type="button" onClick={() => onOpen(app.id)} className={`group overflow-hidden rounded-3xl border text-left shadow-xl transition hover:-translate-y-1 hover:border-cyan-300 ${app.accent}`}><span className="relative block aspect-[16/8] overflow-hidden"><img src={tabletAssetUrl(app.iconImage)} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" /><span className={`absolute inset-0 bg-gradient-to-t ${app.gradient} opacity-20`} /></span><span className="block p-4"><strong className="block text-sm text-white">{app.title}</strong><span className="mt-1 block text-[10px] leading-4 text-zinc-400">{app.description}</span><span className="mt-3 block text-[8px] font-black uppercase tracking-[0.12em] text-cyan-300">OPEN TRUE UI + WIDGET</span></span></button>)}
           </div>
         </div>}
         {destination === 'apps' && <div className="mt-5 rounded-xl border border-zinc-800 bg-zinc-950/70 p-5">

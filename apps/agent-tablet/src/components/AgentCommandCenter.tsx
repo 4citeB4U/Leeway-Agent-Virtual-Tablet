@@ -16,6 +16,7 @@ import {
 import type { WorkstationAppId } from '../types';
 import { PUBLISHED_LEEWAY_APPS } from '../publishedApps';
 import { GalacticMeshBackground } from './GalacticMeshBackground';
+import { tabletAssetUrl } from '../assetUrl';
 
 type Props = {
   workboardStatus: string;
@@ -238,7 +239,7 @@ export function AgentCommandCenter({ workboardStatus, onOpenSurface, onPinToTask
                 className={`relative flex h-[58px] w-[58px] shrink-0 items-center justify-center overflow-hidden rounded-[18px] border border-white/30 bg-gradient-to-br ${app.gradient} shadow-[0_10px_24px_rgba(0,0,0,.55),inset_0_1px_1px_rgba(255,255,255,.4)] transition group-hover:-translate-y-1 group-hover:scale-105`}
               >
                 {app.image ? (
-                  <img src={app.image} alt="" className="h-full w-full object-cover" draggable={false} />
+                  <img src={tabletAssetUrl(app.image)} alt="" className="h-full w-full object-cover" draggable={false} />
                 ) : Icon ? (
                   <Icon size={29} />
                 ) : null}
@@ -265,7 +266,7 @@ export function AgentCommandCenter({ workboardStatus, onOpenSurface, onPinToTask
               <div className="flex items-center gap-2 border-b border-white/10 px-2 py-1.5">
                 <span className="flex h-5 w-5 items-center justify-center rounded-md bg-white/10">
                   {contextMenu.app.image ? (
-                    <img src={contextMenu.app.image} alt="" className="h-4 w-4 object-cover" />
+                    <img src={tabletAssetUrl(contextMenu.app.image)} alt="" className="h-4 w-4 object-cover" />
                   ) : contextMenu.app.icon ? (
                     React.createElement(contextMenu.app.icon, { size: 14 })
                   ) : (
@@ -391,7 +392,7 @@ export function AgentCommandCenter({ workboardStatus, onOpenSurface, onPinToTask
           <div className="w-[320px] rounded-2xl border border-cyan-400/40 bg-slate-950 p-4 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center gap-3 border-b border-white/10 pb-3">
               <span className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${propModalApp.gradient}`}>
-                {propModalApp.image ? <img src={propModalApp.image} alt="" className="h-8 w-8 object-cover" /> : propModalApp.icon ? React.createElement(propModalApp.icon, { size: 24 }) : null}
+                {propModalApp.image ? <img src={tabletAssetUrl(propModalApp.image)} alt="" className="h-8 w-8 object-cover" /> : propModalApp.icon ? React.createElement(propModalApp.icon, { size: 24 }) : null}
               </span>
               <div>
                 <div className="font-black text-cyan-200">{propModalApp.label}</div>
