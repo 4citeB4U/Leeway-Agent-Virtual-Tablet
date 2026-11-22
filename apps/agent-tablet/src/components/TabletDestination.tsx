@@ -39,7 +39,6 @@ export function TabletDestination({ destination, onOpen }: TabletDestinationProp
     { title: 'CRM & ERP', detail: 'The published sovereign Agentic CRM/ERP package inside the tablet shell.', target: 'erpCrm', state: 'CANONICAL UI' },
     { title: 'IDE / Development', detail: 'LeeWay orchestration workspace, development canvas, and terminal planning.', target: 'leewayIde', state: 'CANONICAL UI' },
     { title: 'Device Bridge', detail: 'Registered devices, declared capabilities, and authorized device operations. Enrollment status is not exposed by this tablet server yet.', state: 'STATUS UNAVAILABLE' },
-    { title: 'LeeWay Federated', detail: 'Owner-scoped federation for the existing Device Bridge, browser extension, encrypted continuity, and recovery boundaries.', target: 'federated', state: 'INTEGRATION SURFACE' },
     { title: 'LeeWay Applications', detail: 'Model Hub, Formula, GPU/VRAM, Agent Skills, Voice Fabric, Vision Fabric, Edge RTC, and ecosystem services. No duplicate authority is created here.', target: 'agentRoster', state: 'SERVICE DIRECTORY' }
   ];
   const platforms = [

@@ -12,6 +12,7 @@ HOW = User-initiated popout, truth-preserving unverified states and existing Tab
 LICENSE = Existing repository terms (Apache-2.0), no new rights asserted.
 */
 import React, { useState } from 'react';
+import { Settings2 } from 'lucide-react';
 import type { WorkstationAppId } from '../types';
 import { DeviceBridgeControl } from './DeviceBridgeControl';
 
@@ -40,15 +41,15 @@ const coreSurfaces: readonly CoreSurface[] = [
   { id: 'federate', title: 'Federate Web / Edge', group: 'Network', description: 'Standards-backed discovery and qualified peer federation; public pages are not native execution.' },
 ];
 
-export function CoreServiceDock({ onOpenSurface }: { onOpenSurface: (surface: WorkstationAppId) => void }) {
+export function CoreServiceDock({ onOpenSurface, embedded = false }: { onOpenSurface: (surface: WorkstationAppId) => void; embedded?: boolean }) {
   const [visible, setVisible] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = coreSurfaces.find(surface => surface.id === selectedId);
 
   return (
-    <div className="fixed bottom-10 right-3 z-[90] max-w-[calc(100vw-1.5rem)] text-zinc-100">
+    <div className={embedded ? 'relative z-[90] text-zinc-100' : 'fixed bottom-10 right-3 z-[90] max-w-[calc(100vw-1.5rem)] text-zinc-100'}>
       {visible && (
-        <section aria-label="LeeWay core service controls" className="mb-2 max-h-[min(70vh,620px)] w-[min(90vw,440px)] overflow-y-auto rounded-xl border border-cyan-700 bg-[#0b1422] p-4 shadow-2xl">
+        <section aria-label="LeeWay core service controls" className={`${embedded ? 'fixed bottom-[4.5rem] right-3' : 'mb-2'} max-h-[min(70vh,620px)] w-[min(90vw,440px)] overflow-y-auto rounded-xl border border-cyan-700 bg-[#0b1422] p-4 shadow-2xl`}>
           <header className="mb-3 flex items-center justify-between gap-2">
             <div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-cyan-300">LeeWay Agent Virtual Tablet</div>
@@ -87,8 +88,12 @@ export function CoreServiceDock({ onOpenSurface }: { onOpenSurface: (surface: Wo
         </section>
       )}
       <button type="button" aria-expanded={visible} aria-label="Toggle LeeWay core service widget" onClick={() => { setVisible(v => !v); setSelectedId(null); }}
-        className="ml-auto block rounded-full border border-cyan-500 bg-[#10243a] px-4 py-2 text-xs font-black shadow-lg hover:bg-[#174263]">
-        LeeWay Core
+        className={embedded
+          ? 'group relative flex w-16 shrink-0 flex-col items-center gap-0.5 rounded-2xl p-1 text-[7px] font-bold text-zinc-200 transition hover:-translate-y-1 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300'
+          : 'ml-auto block rounded-full border border-cyan-500 bg-[#10243a] px-4 py-2 text-xs font-black shadow-lg hover:bg-[#174263]'}>
+        {embedded && <span className="flex h-9 w-9 items-center justify-center rounded-[13px] border border-cyan-300/70 bg-gradient-to-br from-cyan-300 via-sky-700 to-indigo-950 shadow-lg"><Settings2 size={18} /></span>}
+        <span>LeeWay Core</span>
+        {embedded && <span className={`h-0.5 w-3 rounded-full ${visible ? 'bg-cyan-300 shadow-[0_0_8px_#22d3ee]' : 'bg-transparent'}`} />}
       </button>
     </div>
   );

@@ -41,8 +41,7 @@ import {
   Share2,
   Pin,
   Bot,
-  Github,
-  Building2
+  Github
 } from 'lucide-react';
 import { WorkstationAppId } from './types';
 import { LeeWayEditor } from './components/editor/LeeWayEditor';
@@ -144,8 +143,7 @@ const TABLET_WIDGETS = [
   { id: 'leewayIde' as const, label: 'IDE', image: '/app-icons/ide.svg', color: 'from-cyan-300 to-blue-800' },
   { id: 'erpCrm' as const, label: 'CRM / ERP', image: '/app-icons/crm-erp.svg', color: 'from-violet-300 to-indigo-900' },
   { id: 'logistics' as const, label: 'Logistics', image: '/app-icons/logistics.png', color: 'from-sky-300 to-blue-900' },
-  { id: 'agentVision' as const, label: 'Vision', image: '/app-icons/agent-vision.png', color: 'from-emerald-300 to-teal-900' },
-  { id: 'federated' as const, label: 'Federated', icon: Building2, color: 'from-violet-300 via-fuchsia-600 to-slate-950' }
+  { id: 'agentVision' as const, label: 'Vision', image: '/app-icons/agent-vision.png', color: 'from-emerald-300 to-teal-900' }
 ] as const;
 
 // These applications have a real local tablet implementation.  They may be
@@ -169,9 +167,12 @@ export default function App() {
   const [pinnedAppIds, setPinnedAppIds] = useState<WorkstationAppId[]>(() => {
     try {
       const saved = localStorage.getItem('leeway_tablet_taskbar_pinned_v1');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        // Federation remains an internal/background capability, not a user-facing Tablet shortcut.
+        return (JSON.parse(saved) as WorkstationAppId[]).filter(appId => appId !== 'federated');
+      }
     } catch {}
-    return ['desktop', 'contentVault', 'employmentCenter', 'notepad', 'officeSuite', 'leewayIde', 'erpCrm', 'logistics', 'agentVision', 'federated'];
+    return ['desktop', 'contentVault', 'employmentCenter', 'notepad', 'officeSuite', 'leewayIde', 'erpCrm', 'logistics', 'agentVision'];
   });
   const [taskbarMenu, setTaskbarMenu] = useState<{ x: number; y: number; appId: WorkstationAppId } | null>(null);
 
@@ -550,6 +551,7 @@ export default function App() {
                 </button>
               );
             })}
+            <CoreServiceDock onOpenSurface={setCurrentApp} embedded />
           </div>
 
           {/* Taskbar Right-Click Jump List */}
@@ -1433,9 +1435,6 @@ export default function App() {
           ))}
         </div>
       )}
-
-      {/* Existing core authorities remain the execution boundary; this dock is only the Tablet entrypoint. */}
-      <CoreServiceDock onOpenSurface={setCurrentApp} />
 
       {/* Global Toast */}
       {toastMsg && (
