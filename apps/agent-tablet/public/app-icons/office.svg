@@ -1,4 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="LeeWay Office">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dbeafe"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
-  <rect width="128" height="128" rx="30" fill="#071a45"/><path d="M30 17h45l23 23v71H30z" fill="url(#g)" stroke="#eff6ff" stroke-width="4"/><path d="M75 17v24h23" fill="none" stroke="#eff6ff" stroke-width="4"/><path d="M45 58h38M45 73h38M45 88h25" stroke="#0f3b97" stroke-width="5" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0d1b4b"/>
+      <stop offset="100%" stop-color="#06091a"/>
+    </radialGradient>
+    <linearGradient id="blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4fc3f7"/>
+      <stop offset="100%" stop-color="#0288d1"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffd600"/>
+      <stop offset="100%" stop-color="#ff8f00"/>
+    </linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="6"/></filter>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <!-- Document stack -->
+  <rect x="145" y="175" width="230" height="195" rx="10" fill="#0a1929" stroke="url(#blue)" stroke-width="2" opacity="0.6" transform="rotate(-5,256,272)"/>
+  <rect x="140" y="165" width="230" height="195" rx="10" fill="#0d2137" stroke="url(#blue)" stroke-width="2" opacity="0.8" transform="rotate(-2,256,262)"/>
+  <!-- Main doc -->
+  <rect x="136" y="155" width="230" height="195" rx="10" fill="#0a1929" stroke="url(#blue)" stroke-width="2.5"/>
+  <!-- Doc lines -->
+  <rect x="160" y="185" width="180" height="10" rx="5" fill="url(#blue)" opacity="0.7"/>
+  <rect x="160" y="210" width="150" height="8" rx="4" fill="url(#blue)" opacity="0.5"/>
+  <rect x="160" y="232" width="170" height="8" rx="4" fill="url(#blue)" opacity="0.4"/>
+  <rect x="160" y="254" width="120" height="8" rx="4" fill="url(#blue)" opacity="0.5"/>
+  <!-- Spreadsheet icon -->
+  <rect x="285" y="270" width="80" height="65" rx="8" fill="#0d2137" stroke="url(#gold)" stroke-width="2"/>
+  <line x1="285" y1="289" x2="365" y2="289" stroke="url(#gold)" stroke-width="1.5" opacity="0.6"/>
+  <line x1="285" y1="308" x2="365" y2="308" stroke="url(#gold)" stroke-width="1.5" opacity="0.6"/>
+  <line x1="316" y1="270" x2="316" y2="335" stroke="url(#gold)" stroke-width="1.5" opacity="0.6"/>
+  <!-- Gold accent bar -->
+  <rect x="80" y="390" width="352" height="5" rx="3" fill="url(#gold)" opacity="0.8"/>
+  <!-- Glow -->
+  <ellipse cx="256" cy="260" rx="130" ry="110" fill="#003380" opacity="0.15" filter="url(#blur)"/>
 </svg>

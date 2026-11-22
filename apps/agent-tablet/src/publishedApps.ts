@@ -57,7 +57,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'https://4citeb4u.github.io/LeeWay-Continuum/',
     capabilityRef: 'leeway.continuum',
     accent: 'border-amber-700 bg-amber-950/20',
-    iconImage: '/app-icons/continuum.png',
+    iconImage: '/app-icons/continuum-badge.png',
     gradient: 'from-amber-300 via-orange-700 to-black'
   },
   {
@@ -68,7 +68,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'https://4citeb4u.github.io/LeeWay-Agent-Skills/',
     capabilityRef: 'leeway.agent-skills',
     accent: 'border-lime-700 bg-lime-950/20',
-    iconImage: '/app-icons/agent-skills.png',
+    iconImage: '/app-icons/agent-skills-badge.png',
     gradient: 'from-lime-300 via-emerald-500 to-slate-950'
   },
   {
@@ -134,7 +134,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'https://4citeb4u.github.io/Leeway-Agent-Lee-Vision/',
     capabilityRef: 'leeway.vision-fabric',
     accent: 'border-emerald-700 bg-emerald-950/20',
-    iconImage: '/app-icons/agent-vision.png',
+    iconImage: '/app-icons/agent-vision-badge.png',
     gradient: 'from-emerald-300 via-teal-700 to-slate-950'
   },
   {
@@ -145,7 +145,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'https://4citeb4u.github.io/LeeWay-Voice-Fabric/',
     capabilityRef: 'leeway.voice-fabric',
     accent: 'border-violet-700 bg-violet-950/20',
-    iconImage: '/app-icons/voice-fabric.png',
+    iconImage: '/app-icons/voice-fabric-badge.png',
     gradient: 'from-violet-300 via-purple-700 to-slate-950'
   },
   {
@@ -156,7 +156,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'http://127.0.0.1:3217/?view=contentVault&leewaySurface=widget',
     capabilityRef: 'leeway.content-vault',
     accent: 'border-amber-700 bg-amber-950/20',
-    iconImage: '/app-icons/content-vault.svg',
+    iconImage: '/app-icons/content-vault-badge.png',
     gradient: 'from-amber-200 via-fuchsia-600 to-indigo-950'
   },
   {
@@ -189,7 +189,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'http://127.0.0.1:3217/?view=diagnostics&leewaySurface=widget',
     capabilityRef: 'leeway.diagnostics',
     accent: 'border-rose-700 bg-rose-950/20',
-    iconImage: '/app-icons/diagnostics.svg',
+    iconImage: '/app-icons/diagnostics-badge.png',
     gradient: 'from-rose-300 via-red-600 to-zinc-950'
   },
   {
@@ -211,7 +211,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'http://127.0.0.1:3217/brain-ui/brain.html',
     capabilityRef: 'leeway.digital-brain',
     accent: 'border-blue-700 bg-blue-950/20',
-    iconImage: '/app-icons/digital-brain.svg',
+    iconImage: '/app-icons/digital-brain-badge.png',
     gradient: 'from-blue-200 via-cyan-600 to-indigo-950'
   }
 ] as const;

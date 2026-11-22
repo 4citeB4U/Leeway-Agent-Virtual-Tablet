@@ -1,0 +1,75 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, MonitorUp } from 'lucide-react';
+import { PUBLISHED_LEEWAY_APP_BY_ID, type PublishedLeeWayAppId } from '../publishedApps';
+
+type MirrorFrame = { appId: PublishedLeeWayAppId; frame: string; width: number; height: number; at: number };
+
+declare global {
+  interface Window {
+    leewayNative?: {
+      openAppWidget: (appId: PublishedLeeWayAppId) => Promise<{ state: string; appId: string }>;
+      closeAppWidget: (appId: PublishedLeeWayAppId) => Promise<{ state: string; appId: string }>;
+      controlAppWidget: (appId: PublishedLeeWayAppId, action: 'center' | 'larger' | 'smaller' | 'reload') => Promise<{ state: string; appId: string }>;
+      sendAppMirrorInput: (appId: PublishedLeeWayAppId, input: Record<string, unknown>) => void;
+      onAppMirrorFrame: (listener: (frame: MirrorFrame) => void) => () => void;
+    };
+  }
+}
+
+type Props = { appId: PublishedLeeWayAppId; onBack: () => void };
+
+// One published application has one native WebContents, owned by its floating
+// widget. The tablet deliberately renders that same instance as a live frame
+// instead of mounting a second iframe/session. Every tablet gesture below is
+// translated into the source WebContents, so the two surfaces cannot drift.
+export function PublishedLeeWayApp({ appId, onBack }: Props) {
+  const app = PUBLISHED_LEEWAY_APP_BY_ID[appId];
+  const mirrorRef = useRef<HTMLDivElement>(null);
+  const [frame, setFrame] = useState<MirrorFrame | null>(null);
+  const [nativeState, setNativeState] = useState('OPENING_SHARED_INSTANCE');
+  const native = window.leewayNative;
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!native) { setNativeState('NATIVE_MIRROR_UNAVAILABLE'); return; }
+    const unsubscribe = native.onAppMirrorFrame(payload => {
+      if (!cancelled && payload.appId === appId) setFrame(payload);
+    });
+    void native.openAppWidget(appId).then(result => {
+      if (!cancelled) setNativeState(result.state === 'WIDGET_OPENED' || result.state === 'WIDGET_RESTORED' ? 'LIVE_SHARED_INSTANCE' : result.state);
+    }).catch(() => { if (!cancelled) setNativeState('NATIVE_MIRROR_UNAVAILABLE'); });
+    return () => { cancelled = true; unsubscribe(); };
+  }, [appId, native]);
+
+  const point = (event: React.PointerEvent | React.WheelEvent) => {
+    const bounds = mirrorRef.current?.getBoundingClientRect();
+    if (!bounds || !frame) return null;
+    return { x: Math.round((event.clientX - bounds.left) * frame.width / bounds.width), y: Math.round((event.clientY - bounds.top) * frame.height / bounds.height) };
+  };
+  const forwardPointer = (event: React.PointerEvent, type: 'mouseDown' | 'mouseUp' | 'mouseMove') => {
+    const target = point(event); if (!target) return;
+    native?.sendAppMirrorInput(appId, { type, ...target, button: event.button === 2 ? 'right' : event.button === 1 ? 'middle' : 'left', clickCount: event.detail || 1 });
+  };
+
+  return (
+    <section className="relative flex min-h-0 flex-grow overflow-hidden bg-black" aria-label={`${app.title} live shared application`}>
+      <div className="pointer-events-none absolute left-2 top-2 z-20 flex items-center gap-2 rounded-full border border-cyan-300/30 bg-slate-950/80 px-2 py-1 text-[8px] font-black tracking-[.1em] text-cyan-100 shadow-lg backdrop-blur"><MonitorUp size={11} /><span>{app.title}</span><span className="text-emerald-300">{nativeState}</span></div>
+      <button type="button" onClick={onBack} className="absolute right-2 top-2 z-20 flex items-center gap-1 rounded-full border border-white/20 bg-slate-950/80 px-2 py-1 text-[8px] font-black text-white shadow-lg backdrop-blur hover:bg-slate-800"><ArrowLeft size={11} />HOME</button>
+      <div
+        ref={mirrorRef}
+        tabIndex={0}
+        aria-label={`${app.title} shared live view`}
+        className="relative h-full w-full cursor-default overflow-hidden outline-none focus:ring-2 focus:ring-cyan-300"
+        onPointerDown={event => { event.currentTarget.focus(); forwardPointer(event, 'mouseDown'); }}
+        onPointerUp={event => forwardPointer(event, 'mouseUp')}
+        onPointerMove={event => forwardPointer(event, 'mouseMove')}
+        onContextMenu={event => { event.preventDefault(); }}
+        onWheel={event => { const target = point(event); if (!target) return; event.preventDefault(); native?.sendAppMirrorInput(appId, { type: 'wheel', ...target, deltaX: event.deltaX, deltaY: event.deltaY }); }}
+        onKeyDown={event => native?.sendAppMirrorInput(appId, { type: 'key', phase: 'down', key: event.key, keyCode: event.code })}
+        onKeyUp={event => native?.sendAppMirrorInput(appId, { type: 'key', phase: 'up', key: event.key, keyCode: event.code })}
+      >
+        {frame ? <img src={frame.frame} alt={`${app.title} live shared frame`} draggable={false} className="h-full w-full select-none object-fill" /> : <div className="grid h-full w-full place-items-center bg-[#050b12] text-xs font-bold tracking-[.18em] text-cyan-200">CONNECTING SHARED APPLICATION…</div>}
+      </div>
+    </section>
+  );
+}
