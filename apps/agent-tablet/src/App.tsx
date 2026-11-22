@@ -145,7 +145,7 @@ const TABLET_WIDGETS = [
   { id: 'erpCrm' as const, label: 'CRM / ERP', image: '/app-icons/crm-erp.png', color: 'from-violet-300 to-indigo-900' },
   { id: 'logistics' as const, label: 'Logistics', image: '/app-icons/logistics.png', color: 'from-sky-300 to-blue-900' },
   { id: 'agentVision' as const, label: 'Vision', image: '/app-icons/agent-vision.png', color: 'from-emerald-300 to-teal-900' },
-  { id: 'modelHub' as const, label: 'Model Hub', icon: Layers, color: 'from-cyan-300 via-blue-700 to-indigo-950' }
+  { id: 'modelHub' as const, label: 'Model Hub', image: '/app-icons/model-hub-button.png', icon: Layers, color: 'from-cyan-300 via-blue-700 to-indigo-950' }
 ] as const;
 
 const TASKBAR_STORAGE_KEY = 'leeway_tablet_taskbar_pinned_v2';
