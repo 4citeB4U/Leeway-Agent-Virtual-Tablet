@@ -137,14 +137,14 @@ const DATA_SOURCES = [
 // they do not create a second backend or capability authority.
 const TABLET_WIDGETS = [
   { id: 'desktop' as const, label: 'Home', icon: TerminalIcon, color: 'from-cyan-300 to-teal-700' },
-  { id: 'contentVault' as const, label: 'Vault', image: '/app-icons/content-vault-badge.png', color: 'from-amber-300 via-fuchsia-600 to-indigo-900' },
-  { id: 'employmentCenter' as const, label: 'Employment', image: '/app-icons/employment-center.svg', color: 'from-amber-200 to-orange-800' },
-  { id: 'notepad' as const, label: 'Blackboard', image: '/app-icons/blackboard.svg', color: 'from-fuchsia-300 to-violet-800' },
-  { id: 'officeSuite' as const, label: 'Office', image: '/app-icons/office.svg', color: 'from-blue-300 to-indigo-800' },
-  { id: 'leewayIde' as const, label: 'IDE', image: '/app-icons/ide.svg', color: 'from-cyan-300 to-blue-800' },
-  { id: 'erpCrm' as const, label: 'CRM / ERP', image: '/app-icons/crm-erp.svg', color: 'from-violet-300 to-indigo-900' },
-  { id: 'logistics' as const, label: 'Logistics', image: '/app-icons/logistics.svg', color: 'from-sky-300 to-blue-900' },
-  { id: 'agentVision' as const, label: 'Vision', image: '/app-icons/agent-vision-badge.png', color: 'from-emerald-300 to-teal-900' },
+  { id: 'contentVault' as const, label: 'Vault', image: '/app-icons/content-vault.jpg', color: 'from-amber-300 via-fuchsia-600 to-indigo-900' },
+  { id: 'employmentCenter' as const, label: 'Employment', image: '/app-icons/employment-center.png', color: 'from-amber-200 to-orange-800' },
+  { id: 'notepad' as const, label: 'Blackboard', image: '/app-icons/blackboard.jpg', color: 'from-fuchsia-300 to-violet-800' },
+  { id: 'officeSuite' as const, label: 'Office', image: '/app-icons/office-suite.png', color: 'from-blue-300 to-indigo-800' },
+  { id: 'leewayIde' as const, label: 'IDE', image: '/app-icons/ide.jpg', color: 'from-cyan-300 to-blue-800' },
+  { id: 'erpCrm' as const, label: 'CRM / ERP', image: '/app-icons/crm-erp.png', color: 'from-violet-300 to-indigo-900' },
+  { id: 'logistics' as const, label: 'Logistics', image: '/app-icons/logistics.png', color: 'from-sky-300 to-blue-900' },
+  { id: 'agentVision' as const, label: 'Vision', image: '/app-icons/agent-vision.png', color: 'from-emerald-300 to-teal-900' },
   { id: 'modelHub' as const, label: 'Model Hub', icon: Layers, color: 'from-cyan-300 via-blue-700 to-indigo-950' }
 ] as const;
 

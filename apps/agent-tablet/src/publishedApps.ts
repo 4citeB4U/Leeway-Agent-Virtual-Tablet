@@ -41,12 +41,12 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
   {
     id: 'employmentCenter',
     title: 'LeeWay Digital Employment Center',
-    shortTitle: 'Employment Center',
+    shortTitle: 'Employment',
     description: 'Canonical employee, agent onboarding, identity, assignment, and governed workforce UI.',
     url: 'https://4citeb4u.github.io/LeeWay-Digital-Workforce/',
     capabilityRef: 'leeway.digital-employment-center',
     accent: 'border-orange-700 bg-orange-950/20',
-    iconImage: '/app-icons/employment-center.svg',
+    iconImage: '/app-icons/employment-center.png',
     gradient: 'from-amber-200 via-orange-500 to-rose-950'
   },
   {
@@ -57,7 +57,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'https://4citeb4u.github.io/LeeWay-Continuum/',
     capabilityRef: 'leeway.continuum',
     accent: 'border-amber-700 bg-amber-950/20',
-    iconImage: '/app-icons/continuum-badge.png',
+    iconImage: '/app-icons/continuum.png',
     gradient: 'from-amber-300 via-orange-700 to-black'
   },
   {
@@ -68,7 +68,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'https://4citeb4u.github.io/LeeWay-Agent-Skills/',
     capabilityRef: 'leeway.agent-skills',
     accent: 'border-lime-700 bg-lime-950/20',
-    iconImage: '/app-icons/agent-skills-badge.png',
+    iconImage: '/app-icons/agent-skills.png',
     gradient: 'from-lime-300 via-emerald-500 to-slate-950'
   },
   {
@@ -79,7 +79,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'https://4citeb4u.github.io/leeway-ide/',
     capabilityRef: 'leeway.ide',
     accent: 'border-cyan-700 bg-cyan-950/20',
-    iconImage: '/app-icons/ide.svg',
+    iconImage: '/app-icons/ide.jpg',
     gradient: 'from-cyan-300 via-sky-600 to-indigo-950'
   },
   {
@@ -90,7 +90,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: OWNER_LOCAL_OFFICE_URL,
     capabilityRef: 'leeway.office',
     accent: 'border-blue-700 bg-blue-950/20',
-    iconImage: '/app-icons/office.svg',
+    iconImage: '/app-icons/office-suite.png',
     gradient: 'from-blue-300 via-indigo-600 to-slate-950'
   },
   {
@@ -107,12 +107,12 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
   {
     id: 'contentFoundry',
     title: 'LeeWay Agentic Content Foundry',
-    shortTitle: 'Content Foundry',
+    shortTitle: 'Content',
     description: 'Canonical Beast AI creation canvas, transformation clusters, and publishing workflow UI.',
     url: 'https://4citeb4u.github.io/Leeway-agentic-content-foundry/',
     capabilityRef: 'leeway.content-foundry',
     accent: 'border-fuchsia-700 bg-fuchsia-950/20',
-    iconImage: '/app-icons/content-foundry.svg',
+    iconImage: '/app-icons/content-foundry.jpg',
     gradient: 'from-fuchsia-300 via-violet-700 to-slate-950'
   },
   {
@@ -123,7 +123,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'https://4citeb4u.github.io/Leeway-Agentic-CRM-ERP/',
     capabilityRef: 'leeway.erp-crm',
     accent: 'border-indigo-700 bg-indigo-950/20',
-    iconImage: '/app-icons/crm-erp.svg',
+    iconImage: '/app-icons/crm-erp.png',
     gradient: 'from-violet-300 via-indigo-700 to-slate-950'
   },
   {
@@ -134,7 +134,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'https://4citeb4u.github.io/Leeway-Agent-Lee-Vision/',
     capabilityRef: 'leeway.vision-fabric',
     accent: 'border-emerald-700 bg-emerald-950/20',
-    iconImage: '/app-icons/agent-vision-badge.png',
+    iconImage: '/app-icons/agent-vision.png',
     gradient: 'from-emerald-300 via-teal-700 to-slate-950'
   },
   {
@@ -145,7 +145,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'https://4citeb4u.github.io/LeeWay-Voice-Fabric/',
     capabilityRef: 'leeway.voice-fabric',
     accent: 'border-violet-700 bg-violet-950/20',
-    iconImage: '/app-icons/voice-fabric-badge.png',
+    iconImage: '/app-icons/voice-fabric.png',
     gradient: 'from-violet-300 via-purple-700 to-slate-950'
   },
   {
@@ -156,7 +156,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'http://127.0.0.1:3217/?view=contentVault&leewaySurface=widget',
     capabilityRef: 'leeway.content-vault',
     accent: 'border-amber-700 bg-amber-950/20',
-    iconImage: '/app-icons/content-vault-badge.png',
+    iconImage: '/app-icons/content-vault.jpg',
     gradient: 'from-amber-200 via-fuchsia-600 to-indigo-950'
   },
   {
@@ -178,7 +178,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'http://127.0.0.1:3217/?view=notepad&leewaySurface=widget',
     capabilityRef: 'leeway.blackboard',
     accent: 'border-fuchsia-700 bg-fuchsia-950/20',
-    iconImage: '/app-icons/blackboard.svg',
+    iconImage: '/app-icons/blackboard.jpg',
     gradient: 'from-fuchsia-300 via-violet-600 to-indigo-950'
   },
   {
@@ -200,7 +200,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'http://127.0.0.1:3217/?view=agentRoster&leewaySurface=widget',
     capabilityRef: 'leeway.agent-roster',
     accent: 'border-cyan-700 bg-cyan-950/20',
-    iconImage: '/app-icons/agent-roster-badge.png',
+    iconImage: '/app-icons/agent-roster.png',
     gradient: 'from-cyan-300 via-teal-500 to-blue-950'
   },
   {
@@ -211,7 +211,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'http://127.0.0.1:3217/brain-ui/brain.html',
     capabilityRef: 'leeway.digital-brain',
     accent: 'border-blue-700 bg-blue-950/20',
-    iconImage: '/app-icons/digital-brain-badge.png',
+    iconImage: '/app-icons/digital-brain.png',
     gradient: 'from-blue-200 via-cyan-600 to-indigo-950'
   }
 ] as const;

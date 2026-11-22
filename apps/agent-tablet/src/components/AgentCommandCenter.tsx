@@ -14,8 +14,8 @@ import {
   Sparkles
 } from 'lucide-react';
 import type { WorkstationAppId } from '../types';
-import { PUBLISHED_LEEWAY_APPS } from '../publishedApps';
-import { GalacticMeshBackground } from './GalacticMeshBackground';
+import { PUBLISHED_LEEWAY_APPS, PUBLISHED_LEEWAY_APP_BY_ID, type PublishedLeeWayAppId } from '../publishedApps';
+import { LeewayAgentVTBackground } from '../LeewayAgentVTBackground';
 import { tabletAssetUrl } from '../assetUrl';
 
 type Props = {
@@ -35,18 +35,36 @@ type DesktopItem = {
   gradient: string;
 };
 
-const INITIAL_DESKTOP_APPS: DesktopItem[] = [
-  ...PUBLISHED_LEEWAY_APPS.filter(app => app.id !== 'workforce').map(app => ({
+const DESKTOP_APP_ORDER: PublishedLeeWayAppId[] = [
+  'employmentCenter',
+  'continuum',
+  'agentSkills',
+  'leewayIde',
+  'officeSuite',
+  'logistics',
+  'contentFoundry',
+  'erpCrm',
+  'agentVision',
+  'voiceFabric',
+  'contentVault',
+  'notepad',
+  'agentRoster',
+  'digitalBrain'
+];
+
+const INITIAL_DESKTOP_APPS: DesktopItem[] = DESKTOP_APP_ORDER.map(id => {
+  const app = PUBLISHED_LEEWAY_APP_BY_ID[id];
+  return {
     id: app.id as WorkstationAppId,
     label: app.shortTitle,
     detail: app.title,
     image: app.iconImage,
     gradient: app.gradient,
     icon: undefined
-  }))
-];
+  };
+});
 
-const STORAGE_KEY = 'leeway_tablet_desktop_apps_v1';
+const STORAGE_KEY = 'leeway_tablet_desktop_apps_v2';
 
 export function AgentCommandCenter({ workboardStatus, onOpenSurface, onPinToTaskbar }: Props) {
   const [runtimeState, setRuntimeState] = useState('CHECKING');
@@ -211,7 +229,7 @@ export function AgentCommandCenter({ workboardStatus, onOpenSurface, onPinToTask
       onContextMenu={handleBackgroundContextMenu}
       className="relative flex-grow overflow-hidden bg-black text-white select-none"
     >
-      <GalacticMeshBackground tint="#3b82f6" density={700} style="all" speed={0.3} />
+      <LeewayAgentVTBackground />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_45%,rgba(37,99,235,.14),transparent_34%),linear-gradient(90deg,rgba(0,0,0,.18),transparent_52%,rgba(0,0,0,.12))]" />
 
       {/* Desktop Icons Grid */}
