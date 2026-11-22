@@ -1438,7 +1438,7 @@ export default function App() {
           <button
             type="button"
             onClick={() => setIsContentVaultOpen(true)}
-            className="absolute bottom-3 right-3 z-40 flex items-center gap-2 rounded-2xl border border-cyan-200/30 bg-gradient-to-r from-amber-500 via-fuchsia-700 to-indigo-950 px-3 py-2 text-[9px] font-black tracking-[.1em] text-white shadow-[0_12px_30px_rgba(0,0,0,.6),0_0_18px_rgba(217,70,239,.25)] hover:-translate-y-0.5"
+            className="absolute top-3 right-3 z-40 flex items-center gap-2 rounded-2xl border border-cyan-200/30 bg-gradient-to-r from-amber-500 via-fuchsia-700 to-indigo-950 px-3 py-2 text-[9px] font-black tracking-[.1em] text-white shadow-[0_12px_30px_rgba(0,0,0,.6),0_0_18px_rgba(217,70,239,.25)] hover:-translate-y-0.5"
             aria-label="Open shared Content Vault"
           >
             <Folder size={15} /> VAULT

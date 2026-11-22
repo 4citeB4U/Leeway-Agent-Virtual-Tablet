@@ -21,6 +21,7 @@ const dock = read('apps/agent-tablet/src/components/CoreServiceDock.tsx');
 const app = read('apps/agent-tablet/src/App.tsx');
 const home = read('apps/agent-tablet/src/components/AgentCommandCenter.tsx');
 const assetUrl = read('apps/agent-tablet/src/assetUrl.ts');
+const background = read('apps/agent-tablet/src/LeewayAgentVTBackground.tsx');
 
 test('Tablet owns the visible core-service launcher and persistent popout', () => {
   assert.match(app, /import \{ CoreServiceDock \}/);
@@ -63,4 +64,9 @@ test('public Tablet assets resolve beneath the active deployment base path', () 
   assert.match(assetUrl, /new URL\(relativeAsset, document\.baseURI\)/);
   assert.match(app, /tabletAssetUrl\(appMeta\.image\)/);
   assert.match(home, /tabletAssetUrl\(app\.image\)/);
+});
+
+test('Vault and Background controls occupy separate desktop corners', () => {
+  assert.match(app, /className="absolute top-3 right-3[^"]*"[\s\S]{0,220}aria-label="Open shared Content Vault"/);
+  assert.match(background, /aria-label="Change Background"[\s\S]{0,180}className="absolute bottom-4 right-4[^"]*"/);
 });
