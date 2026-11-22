@@ -68,5 +68,8 @@ test('public Tablet assets resolve beneath the active deployment base path', () 
 
 test('Vault and Background controls occupy separate desktop corners', () => {
   assert.match(app, /className="absolute top-3 right-3[^"]*"[\s\S]{0,220}aria-label="Open shared Content Vault"/);
-  assert.match(background, /aria-label="Change Background"[\s\S]{0,180}className="absolute bottom-4 right-4[^"]*"/);
+  assert.match(app, /id: 'desktop' as const, label: 'Home', image: '\/app-icons\/home-button\.png'/);
+  assert.match(background, /aria-label="Change Background"[\s\S]{0,180}className="absolute bottom-3 right-3[^"]*"/);
+  assert.match(background, /tabletAssetUrl\('\/app-icons\/background-button\.png'\)/);
+  assert.match(background, /max-h-\[calc\(100%_-_6rem\)\]/);
 });

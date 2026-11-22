@@ -1,6 +1,5 @@
 import { tabletAssetUrl } from './assetUrl';
 import {
-  Palette,
   Check,
   Copy,
   Download,
@@ -2103,7 +2102,7 @@ export function LeewayAgentVTBackground({
           {open && (
             <aside
               aria-label="Background rotary console"
-              className="absolute bottom-20 right-4 z-40 w-88 sm:w-[404px] max-w-[calc(100vw-2.5rem)] max-h-[calc(100vh-9rem)] overflow-y-auto rounded-xl border border-cyan-700/60 bg-[#06090f]/95 backdrop-blur-2xl p-4 shadow-2xl text-slate-200 pointer-events-auto"
+              className="absolute bottom-20 right-3 z-40 w-[86%] max-w-[340px] max-h-[calc(100%_-_6rem)] overflow-y-auto overscroll-contain rounded-xl border border-cyan-700/60 bg-[#06090f]/95 backdrop-blur-2xl p-3 shadow-2xl text-slate-200 pointer-events-auto"
             >
               <div className="flex items-center justify-between pb-3 mb-3.5 border-b border-slate-800/80">
                 <div>
@@ -2447,10 +2446,14 @@ export function LeewayAgentVTBackground({
             aria-label="Change Background"
             title="Change Background"
             aria-expanded={open}
-            className="absolute bottom-4 right-4 z-40 pointer-events-auto flex items-center gap-2 px-3 py-1.5 rounded-full border border-cyan-400/50 bg-[#07131f]/90 hover:bg-[#0c2238] hover:border-cyan-300 text-cyan-300 hover:text-white shadow-[0_4px_16px_rgba(0,0,0,0.6)] backdrop-blur-md transition-all text-xs font-semibold select-none group"
+            className="absolute bottom-3 right-3 z-40 pointer-events-auto rounded-xl border border-cyan-400/60 bg-[#07131f]/90 p-1 hover:bg-[#0c2238] hover:border-cyan-300 shadow-[0_4px_16px_rgba(0,0,0,0.6)] backdrop-blur-md transition-all select-none group"
           >
-            <Palette size={14} className="group-hover:rotate-12 transition-transform" />
-            <span>Background</span>
+            <img
+              src={tabletAssetUrl('/app-icons/background-button.png')}
+              alt="Background"
+              className="h-10 w-20 rounded-lg object-cover transition-transform group-hover:scale-[1.03]"
+              draggable={false}
+            />
           </button>
         </>
       )}

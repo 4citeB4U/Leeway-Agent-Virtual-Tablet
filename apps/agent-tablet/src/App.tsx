@@ -136,7 +136,7 @@ const DATA_SOURCES = [
 // These entries are launchers for the canonical Agent Virtual Tablet surfaces;
 // they do not create a second backend or capability authority.
 const TABLET_WIDGETS = [
-  { id: 'desktop' as const, label: 'Home', icon: TerminalIcon, color: 'from-cyan-300 to-teal-700' },
+  { id: 'desktop' as const, label: 'Home', image: '/app-icons/home-button.png', icon: TerminalIcon, color: 'from-cyan-300 to-teal-700' },
   { id: 'contentVault' as const, label: 'Vault', image: '/app-icons/content-vault.jpg', color: 'from-amber-300 via-fuchsia-600 to-indigo-900' },
   { id: 'employmentCenter' as const, label: 'Employment', image: '/app-icons/employment-center.png', color: 'from-amber-200 to-orange-800' },
   { id: 'notepad' as const, label: 'Blackboard', image: '/app-icons/blackboard.jpg', color: 'from-fuchsia-300 to-violet-800' },
