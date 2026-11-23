@@ -111,15 +111,15 @@ function clearSessionCookie(res: any, name: string): void {
 function oidcSettings(): { ok: true; issuer: URL; clientId: string; redirectUri: string; scope: string; audience: string } | { ok: false; reason: string } {
   const issuerText = String(process.env.LEEWAY_MCP_AUTH_ISSUER || '').trim().replace(/\/$/, '');
   const clientId = String(process.env.LEEWAY_AGENT_VT_OIDC_CLIENT_ID || '').trim();
-  if (!issuerText) return { ok: false, reason: 'POCKET_ID_OIDC_ISSUER_NOT_CONFIGURED' };
-  if (!clientId) return { ok: false, reason: 'POCKET_ID_OIDC_CLIENT_NOT_CONFIGURED' };
+  if (!issuerText) return { ok: false, reason: 'ZITADEL_OIDC_ISSUER_NOT_CONFIGURED' };
+  if (!clientId) return { ok: false, reason: 'ZITADEL_OIDC_CLIENT_NOT_CONFIGURED' };
   let issuer: URL;
-  try { issuer = new URL(issuerText); } catch { return { ok: false, reason: 'POCKET_ID_OIDC_ISSUER_INVALID' }; }
-  if (issuer.protocol !== 'https:' && !['localhost', '127.0.0.1', '::1'].includes(issuer.hostname)) return { ok: false, reason: 'POCKET_ID_OIDC_ISSUER_MUST_USE_HTTPS' };
+  try { issuer = new URL(issuerText); } catch { return { ok: false, reason: 'ZITADEL_OIDC_ISSUER_INVALID' }; }
+  if (issuer.protocol !== 'https:' && !['localhost', '127.0.0.1', '::1'].includes(issuer.hostname)) return { ok: false, reason: 'ZITADEL_OIDC_ISSUER_MUST_USE_HTTPS' };
   const redirectUri = String(process.env.LEEWAY_AGENT_VT_OIDC_REDIRECT_URI || `http://127.0.0.1:${PORT}/api/auth/callback`).trim();
   let redirect: URL;
-  try { redirect = new URL(redirectUri); } catch { return { ok: false, reason: 'POCKET_ID_OIDC_REDIRECT_URI_INVALID' }; }
-  if (!['http:', 'https:'].includes(redirect.protocol) || !['localhost', '127.0.0.1', '::1'].includes(redirect.hostname)) return { ok: false, reason: 'POCKET_ID_OIDC_REDIRECT_URI_NOT_LOOPBACK' };
+  try { redirect = new URL(redirectUri); } catch { return { ok: false, reason: 'ZITADEL_OIDC_REDIRECT_URI_INVALID' }; }
+  if (!['http:', 'https:'].includes(redirect.protocol) || !['localhost', '127.0.0.1', '::1'].includes(redirect.hostname)) return { ok: false, reason: 'ZITADEL_OIDC_REDIRECT_URI_NOT_LOOPBACK' };
   return { ok: true, issuer, clientId, redirectUri: redirect.toString(), scope: String(process.env.LEEWAY_AGENT_VT_OIDC_SCOPE || 'openid profile read:runtime').trim(), audience: String(process.env.LEEWAY_MCP_AUDIENCE || '').trim() };
 }
 
@@ -132,13 +132,13 @@ async function oidcDiscovery(settings: Extract<ReturnType<typeof oidcSettings>, 
   const timer = setTimeout(() => controller.abort(), 5000);
   try {
     const response = await fetch(new URL('/.well-known/openid-configuration', settings.issuer), { signal: controller.signal, headers: { Accept: 'application/json' } });
-    if (!response.ok) throw new Error('POCKET_ID_OIDC_DISCOVERY_HTTP_' + response.status);
+    if (!response.ok) throw new Error('ZITADEL_OIDC_DISCOVERY_HTTP_' + response.status);
     const body = await response.json() as OidcDiscovery;
-    if (body.issuer && body.issuer.replace(/\/$/, '') !== settings.issuer.toString().replace(/\/$/, '')) throw new Error('POCKET_ID_OIDC_DISCOVERY_ISSUER_MISMATCH');
-    if (!body.authorization_endpoint || !body.token_endpoint) throw new Error('POCKET_ID_OIDC_DISCOVERY_ENDPOINTS_MISSING');
+    if (body.issuer && body.issuer.replace(/\/$/, '') !== settings.issuer.toString().replace(/\/$/, '')) throw new Error('ZITADEL_OIDC_DISCOVERY_ISSUER_MISMATCH');
+    if (!body.authorization_endpoint || !body.token_endpoint) throw new Error('ZITADEL_OIDC_DISCOVERY_ENDPOINTS_MISSING');
     for (const endpoint of [body.authorization_endpoint, body.token_endpoint]) {
       const parsed = new URL(endpoint);
-      if (parsed.protocol !== 'https:' && !['localhost', '127.0.0.1', '::1'].includes(parsed.hostname)) throw new Error('POCKET_ID_OIDC_ENDPOINT_MUST_USE_HTTPS');
+      if (parsed.protocol !== 'https:' && !['localhost', '127.0.0.1', '::1'].includes(parsed.hostname)) throw new Error('ZITADEL_OIDC_ENDPOINT_MUST_USE_HTTPS');
     }
     return body;
   } finally { clearTimeout(timer); }
@@ -192,15 +192,15 @@ app.get('/api/auth/callback', async (req, res) => {
   const returnedState = String(req.query.state || '').trim();
   const state = cookieValue(req.headers.cookie, VT_OIDC_STATE_COOKIE);
   const verifier = cookieValue(req.headers.cookie, VT_OIDC_VERIFIER_COOKIE);
-  if (req.query.error) return res.status(401).json({ state: 'BLOCKED', reason: 'POCKET_ID_OIDC_AUTHORIZATION_DENIED' });
-  if (!code || !returnedState || !state || !verifier) return res.status(400).json({ state: 'BLOCKED', reason: 'POCKET_ID_OIDC_CALLBACK_STATE_MISSING' });
+  if (req.query.error) return res.status(401).json({ state: 'BLOCKED', reason: 'ZITADEL_OIDC_AUTHORIZATION_DENIED' });
+  if (!code || !returnedState || !state || !verifier) return res.status(400).json({ state: 'BLOCKED', reason: 'ZITADEL_OIDC_CALLBACK_STATE_MISSING' });
   const left = Buffer.from(returnedState); const right = Buffer.from(state);
-  if (left.length !== right.length || !timingSafeEqual(left, right)) return res.status(400).json({ state: 'BLOCKED', reason: 'POCKET_ID_OIDC_CALLBACK_STATE_MISMATCH' });
+  if (left.length !== right.length || !timingSafeEqual(left, right)) return res.status(400).json({ state: 'BLOCKED', reason: 'ZITADEL_OIDC_CALLBACK_STATE_MISMATCH' });
   try {
     const discovery = await oidcDiscovery(settings);
     const response = await fetch(discovery.token_endpoint!, { method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: settings.redirectUri, client_id: settings.clientId, code_verifier: verifier }) });
     const body = await response.json() as { access_token?: string; expires_in?: number };
-    if (!response.ok || typeof body.access_token !== 'string' || !scopedBearerFromAuthorization(`Bearer ${body.access_token}`)) return res.status(502).json({ state: 'BLOCKED', reason: 'POCKET_ID_OIDC_TOKEN_EXCHANGE_FAILED' });
+    if (!response.ok || typeof body.access_token !== 'string' || !scopedBearerFromAuthorization(`Bearer ${body.access_token}`)) return res.status(502).json({ state: 'BLOCKED', reason: 'ZITADEL_OIDC_TOKEN_EXCHANGE_FAILED' });
     const maxAge = Math.min(3600, Math.max(60, Number(body.expires_in || 900)));
     setSessionCookie(res, VT_ACCESS_COOKIE, body.access_token, maxAge);
     clearSessionCookie(res, VT_OIDC_STATE_COOKIE); clearSessionCookie(res, VT_OIDC_VERIFIER_COOKIE);
@@ -217,7 +217,7 @@ app.get('/api/workforce/runtime-fabric', async (req, res) => {
   if (!scopedToken) {
     res.setHeader('WWW-Authenticate', 'Bearer realm="LeeWay-Workforce-ReadOnly", scope="read:runtime"');
     return res.status(401).json({
-      state: 'BLOCKED', reason: 'POCKET_ID_BEARER_REQUIRED',
+      state: 'BLOCKED', reason: 'ZITADEL_BEARER_REQUIRED',
       productionExecutionAuthorized: false, veritasAccepted: false, learningAdmitted: false
     });
   }
