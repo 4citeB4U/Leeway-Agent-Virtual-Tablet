@@ -22,7 +22,7 @@ const env = {
   LEEWAY_WORKFORCE_MCP_ACCESS_TOKEN: 'fixture-access-token-not-production'
 };
 const report = {
-  runtimeFabric: { status: 'AVAILABLE', authentication: 'POCKET_ID_ACCESS_TOKEN_VERIFIED' },
+  runtimeFabric: { status: 'AVAILABLE', authentication: 'OIDC_ACCESS_TOKEN_VERIFIED' },
   providerComposition: {
     deviceBridge: 'NOT_PROBED', continuum: 'NOT_PROBED', formula: 'NOT_PROBED',
     independentVeritas: 'NOT_PROBED', receiptAdmission: 'NOT_PROBED'
