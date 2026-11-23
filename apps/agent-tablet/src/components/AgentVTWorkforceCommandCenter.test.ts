@@ -75,10 +75,10 @@ test('projects separate executor identities and collaboration history from local
 
 test('maps missing caller authorization and provider failure to blocked readback', async () => {
   const result = await fetchWorkforceSnapshot(async () => new Response(
-    JSON.stringify({ state: 'BLOCKED', reason: 'POCKET_ID_BEARER_REQUIRED' }),
+    JSON.stringify({ state: 'BLOCKED', reason: 'ZITADEL_BEARER_REQUIRED' }),
     { status: 401, headers: { 'content-type': 'application/json' } },
   ));
   assert.equal(result.state, 'BLOCKED');
-  assert.equal(result.reason, 'POCKET_ID_BEARER_REQUIRED');
+  assert.equal(result.reason, 'ZITADEL_BEARER_REQUIRED');
   assert.equal(result.workers.every((worker) => worker.state === 'UNVERIFIED'), true);
 });
