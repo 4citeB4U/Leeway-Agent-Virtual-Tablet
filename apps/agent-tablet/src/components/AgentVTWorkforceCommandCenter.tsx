@@ -37,7 +37,7 @@ export const WORKFORCE_WORKER_NAMES = Object.freeze([
   'Independent Veritas',
   'Receipt Authority',
   'Learning Ledger',
-  'Device Bridge & Pocket ID',
+  'Device Bridge & Zitadel',
   'Skills & MCP',
   'Continuum & Digital Brain',
   'GPU & VRAM',
@@ -303,7 +303,7 @@ export function AgentVTWorkforceCommandCenter({ authorization, onShowToast }: Ag
     try {
       const next = await fetchWorkforceSnapshot(fetch, authorization);
       setProjection(next);
-      setAuthRequired(next.reason === 'POCKET_ID_BEARER_REQUIRED' || next.reason === 'POCKET_ID_OIDC_TOKEN_EXCHANGE_FAILED');
+      setAuthRequired(next.reason === 'ZITADEL_BEARER_REQUIRED' || next.reason === 'ZITADEL_OIDC_TOKEN_EXCHANGE_FAILED');
       toastRef.current?.(['AUTHENTICATED_READ_ONLY_OBSERVED', 'AUTHENTICATED_LOCAL_RUNTIME_OBSERVED'].includes(next.state)
         ? 'Runtime readback observed; canonical worker identity remains separately qualified.'
         : `Workforce readback: ${next.reason || next.state}`);
