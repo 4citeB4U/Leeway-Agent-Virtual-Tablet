@@ -27,9 +27,10 @@ function valid(){
    displayName:'Customer One',verifiedEmail:'Customer@Example.com',
    accountStatus:'ACTIVE',edition:'PERSONAL',marketingAllowed:false,
    enrolledDeviceCount:2,bridgeEnrollment:'ENROLLED',
+   verifiedExtensionCount:2,extensionFleetStatus:'CURRENT',
    registeredAt:'2026-11-24T12:00:00Z',lastVerifiedDeviceAt:null}],
   nextCursor:null,cachePolicy:'NO_STORE',
-  monitoringScope:'CUSTOMER_ACCOUNT_AND_DEVICE_REGISTRATION_STATUS_ONLY',
+  monitoringScope:'CUSTOMER_ACCOUNT_DEVICE_AND_EXTENSION_REGISTRATION_STATUS_ONLY',
   privateContentAccess:false,extensionDeviceCommands:false
  };
 }
@@ -38,6 +39,8 @@ test('Creator readback shows verified account counts and customer emails, not de
  assert.equal(data.counts.verifiedAccounts,2);
  assert.equal(data.customers[0].verifiedEmail,'customer@example.com');
  assert.equal(data.customers[0].enrolledDeviceCount,2);
+ assert.equal(data.customers[0].verifiedExtensionCount,2);
+ assert.equal(data.customers[0].extensionFleetStatus,'CURRENT');
  assert.equal(data.privateContentAccess,false);
  assert.equal(data.extensionDeviceCommands,false);
 });
@@ -54,6 +57,7 @@ test('unverified email, missing account grants, fake device status and hostile f
  for(const patch of [
   {verifiedEmail:'plain-broken-email'}, {accountStatus:'MASTER'},
   {bridgeEnrollment:'CAMERA_ACTIVE'}, {enrolledDeviceCount:-9},
+  {verifiedExtensionCount:-1},{extensionFleetStatus:'READ_ALL_TABS'},
   {marketingAllowed:'YES'}, {lastVerifiedDeviceAt:'not-a-real-date'}
  ])assert.throws(()=>parseCreatorBusinessOverview({
   ...sample,customers:[{...first,...patch}]
