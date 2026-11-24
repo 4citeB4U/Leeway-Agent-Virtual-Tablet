@@ -58,6 +58,7 @@ import { CoreServiceDock } from './components/CoreServiceDock';
 import { WorkboardRuntimePanel } from './components/WorkboardRuntimePanel';
 import { AgentNotepadBlackboard } from './components/AgentNotepadBlackboard';
 import { PublishedLeeWayApp } from './components/PublishedLeeWayApp';
+import { CreatorCustomerMonitor } from './components/CreatorCustomerMonitor';
 import { ContentVault } from './components/ContentVault';
 import { LeeWayFederated } from './components/LeeWayFederated';
 import { isPublishedLeeWayAppId, PUBLISHED_LEEWAY_APP_BY_ID, PUBLISHED_LEEWAY_APPS } from './publishedApps';
@@ -842,6 +843,7 @@ export default function App() {
                 Open Full CRM/ERP
               </a>
             </div>
+            <CreatorCustomerMonitor />
             <iframe title="LeeWay Agentic CRM/ERP" src="https://4citeb4u.github.io/Leeway-Agentic-CRM-ERP/"
               className="flex-grow w-full border-0 bg-white"
               allow="microphone; geolocation; clipboard-read; clipboard-write" />
