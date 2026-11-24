@@ -161,11 +161,11 @@ export function CreatorCustomerMonitor() {
               {rows.length===0 && <p className="text-xs text-slate-300">No verified customer contacts returned.</p>}
               {rows.length>0 && (
                 <div className="overflow-x-auto">
-                  <table className="w-full min-w-[670px] text-left text-xs">
+                  <table className="w-full min-w-[820px] text-left text-xs">
                     <thead><tr className="border-b border-white/20 text-slate-400">
                       <th className="p-2">Customer</th><th className="p-2">Verified email</th>
                       <th className="p-2">Account</th><th className="p-2">Device enrollment</th>
-                      <th className="p-2">Marketing</th>
+                      <th className="p-2">Browser extensions</th><th className="p-2">Marketing</th>
                     </tr></thead>
                     <tbody>{rows.map(customer=>(
                       <tr key={customer.accountRef} className="border-b border-white/10">
@@ -174,6 +174,7 @@ export function CreatorCustomerMonitor() {
                         <td className="p-2">{customer.edition} · {customer.accountStatus}</td>
                         <td className="p-2"><span className="flex items-center gap-1"><Smartphone size={11}/>
                           {customer.enrolledDeviceCount} · {customer.bridgeEnrollment}</span></td>
+                        <td className="p-2">{customer.verifiedExtensionCount} · {customer.extensionFleetStatus}</td>
                         <td className="p-2">{customer.marketingAllowed?'Opted in':'Not opted in'}</td>
                       </tr>
                     ))}</tbody>
@@ -186,7 +187,7 @@ export function CreatorCustomerMonitor() {
                 {loadingNext?'Checking page…':'Load additional verified customers'}
               </button>}
               <p className="mt-2 text-[10px] text-slate-400">
-                Customer workspace files, conversations, location history, cameras and remote device commands are not included.
+                Browser history, customer workspace files, conversations, location history, cameras and remote device commands are not included.
                 Messaging requires a separate authorized workflow and applicable consent.
               </p>
             </>
