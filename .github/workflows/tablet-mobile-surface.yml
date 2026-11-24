@@ -1,0 +1,38 @@
+# LEEWAY HEADER — DO NOT REMOVE
+# REGION: LEEWAY.TABLET.MOBILE.SURFACE_POLICY.CI
+# TAG: LEEWAY.TABLET.MOBILE.LOGISTICS_PORTABLE_LAUNCH.CI.V1
+# 5WH:
+# WHAT = Run pure mobile Logistics surface and OS-neutral browser UI regressions.
+# WHY = Catch hardcoded PC assumptions and mobile map launch drift.
+# WHO = Creator-authorized Tablet engineering contributors.
+# WHERE = .github/workflows/tablet-mobile-surface.yml.
+# WHEN = 2026-11-23.
+# HOW = GitHub Actions Node 22 source tests, no secrets, no device execution.
+# LICENSE = Existing repository terms.
+name: LeeWay Tablet Mobile Surface Source Contract
+on:
+  pull_request:
+    paths:
+      - 'apps/agent-tablet/src/mobileSurfacePolicy.mjs'
+      - 'apps/agent-tablet/src/mobileSurfacePolicy.d.mts'
+      - 'apps/agent-tablet/src/publishedApps.ts'
+      - 'apps/agent-tablet/src/components/PublishedLeeWayApp.tsx'
+      - 'apps/agent-tablet/src/App.tsx'
+      - 'apps/agent-tablet/tests/mobile-surface-policy.test.mjs'
+      - '.github/workflows/tablet-mobile-surface.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and pure mobile source tests
+        run: |
+          node --check apps/agent-tablet/src/mobileSurfacePolicy.mjs
+          node --test apps/agent-tablet/tests/mobile-surface-policy.test.mjs
