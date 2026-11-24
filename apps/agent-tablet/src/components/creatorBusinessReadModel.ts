@@ -30,6 +30,8 @@ export type CreatorCustomer = {
   marketingAllowed: boolean;
   enrolledDeviceCount: number;
   bridgeEnrollment: 'ENROLLED' | 'PENDING' | 'REVOKED' | 'NO_DEVICE' | 'NOT_PROBED';
+  verifiedExtensionCount: number;
+  extensionFleetStatus: 'CURRENT' | 'UPDATE_REQUIRED' | 'PENDING' | 'REVOKED' | 'NO_EXTENSION' | 'NOT_PROBED';
   registeredAt: string;
   lastVerifiedDeviceAt: string | null;
 };
@@ -45,7 +47,7 @@ export type CreatorBusinessOverview = {
   customers: CreatorCustomer[];
   nextCursor: string | null;
   cachePolicy: 'NO_STORE';
-  monitoringScope: 'CUSTOMER_ACCOUNT_AND_DEVICE_REGISTRATION_STATUS_ONLY';
+  monitoringScope: 'CUSTOMER_ACCOUNT_DEVICE_AND_EXTENSION_REGISTRATION_STATUS_ONLY';
   privateContentAccess: false;
   extensionDeviceCommands: false;
 };
@@ -69,7 +71,7 @@ export function parseCreatorBusinessOverview(raw: unknown): CreatorBusinessOverv
       raw.grant !== 'CRM_ERP_CREATOR_BUSINESS_READ' || raw.verifiedCreator !== true ||
       !validRef(raw.businessTenantRef) || !validTime(raw.observedAt) ||
       raw.cachePolicy !== 'NO_STORE' ||
-      raw.monitoringScope !== 'CUSTOMER_ACCOUNT_AND_DEVICE_REGISTRATION_STATUS_ONLY' ||
+      raw.monitoringScope !== 'CUSTOMER_ACCOUNT_DEVICE_AND_EXTENSION_REGISTRATION_STATUS_ONLY' ||
       raw.privateContentAccess !== false || raw.extensionDeviceCommands !== false ||
       !object(raw.counts) || !Array.isArray(raw.customers) || raw.customers.length > 100 ||
       !(raw.nextCursor === null ||
@@ -94,6 +96,9 @@ export function parseCreatorBusinessOverview(raw: unknown): CreatorBusinessOverv
         typeof entry.enrolledDeviceCount !== 'number' ||
         !Number.isSafeInteger(entry.enrolledDeviceCount) || entry.enrolledDeviceCount < 0 ||
         !['ENROLLED','PENDING','REVOKED','NO_DEVICE','NOT_PROBED'].includes(String(entry.bridgeEnrollment)) ||
+        typeof entry.verifiedExtensionCount !== 'number' ||
+        !Number.isSafeInteger(entry.verifiedExtensionCount) || entry.verifiedExtensionCount < 0 ||
+        !['CURRENT','UPDATE_REQUIRED','PENDING','REVOKED','NO_EXTENSION','NOT_PROBED'].includes(String(entry.extensionFleetStatus)) ||
         !validTime(entry.registeredAt) ||
         !(entry.lastVerifiedDeviceAt === null || validTime(entry.lastVerifiedDeviceAt)))
       return deny();
@@ -106,6 +111,8 @@ export function parseCreatorBusinessOverview(raw: unknown): CreatorBusinessOverv
       marketingAllowed:entry.marketingAllowed,
       enrolledDeviceCount:entry.enrolledDeviceCount,
       bridgeEnrollment:entry.bridgeEnrollment as CreatorCustomer['bridgeEnrollment'],
+      verifiedExtensionCount:entry.verifiedExtensionCount,
+      extensionFleetStatus:entry.extensionFleetStatus as CreatorCustomer['extensionFleetStatus'],
       registeredAt:entry.registeredAt,
       lastVerifiedDeviceAt:entry.lastVerifiedDeviceAt
     });
@@ -117,7 +124,7 @@ export function parseCreatorBusinessOverview(raw: unknown): CreatorBusinessOverv
     businessTenantRef:raw.businessTenantRef,observedAt:raw.observedAt,
     counts:counts as CreatorCounts,customers,nextCursor:raw.nextCursor as string | null,
     cachePolicy:'NO_STORE',
-    monitoringScope:'CUSTOMER_ACCOUNT_AND_DEVICE_REGISTRATION_STATUS_ONLY',
+    monitoringScope:'CUSTOMER_ACCOUNT_DEVICE_AND_EXTENSION_REGISTRATION_STATUS_ONLY',
     privateContentAccess:false,extensionDeviceCommands:false
   };
 }
