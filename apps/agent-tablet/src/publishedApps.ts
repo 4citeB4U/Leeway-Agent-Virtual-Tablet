@@ -1,4 +1,5 @@
 import type { WorkstationAppId } from './types';
+import { tabletSurfaceUrl } from './mobileSurfacePolicy.mjs';
 
 export type PublishedLeeWayAppId = Extract<WorkstationAppId,
   | 'agentSkills'
@@ -230,11 +231,9 @@ export const PUBLISHED_LEEWAY_APP_BY_ID = Object.fromEntries(
 export function publishedAppSurfaceUrl(
   app: PublishedLeeWayApp,
   surface: 'tablet' | 'widget',
+  compact = false,
 ): string {
-  const url = new URL(app.url);
-  url.searchParams.set('leewaySurface', surface);
-  url.searchParams.set('leewaySession', `leeway.app.${app.id}`);
-  return url.toString();
+  return tabletSurfaceUrl(app.url, app.id, surface, compact);
 }
 
 export function isPublishedLeeWayAppId(value: WorkstationAppId): value is PublishedLeeWayAppId {
