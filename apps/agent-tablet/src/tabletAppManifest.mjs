@@ -34,8 +34,8 @@ function string(value, field, max = 256) {
       value.length === 0 || value.length > max || /[\u0000-\u001f]/.test(value)) reject(field + '_INVALID');
   return value;
 }
-function choices(values, field, allowed, max) {
-  if (!Array.isArray(values) || values.length < 1 || values.length > max ||
+function choices(values, field, allowed, max, min = 1) {
+  if (!Array.isArray(values) || values.length < min || values.length > max ||
       values.some(value => !allowed.has(value)) || new Set(values).size !== values.length)
     reject(field + '_INVALID');
   return [...values];
@@ -89,7 +89,7 @@ export function validateTabletAppCandidate(input) {
   const platforms = choices(data.platforms, 'PLATFORMS', KNOWN_PLATFORMS, 4);
   const surfaces = choices(data.surfaces, 'SURFACES', KNOWN_SURFACES, 2);
   const requestedPermissions = data.requestedPermissions === undefined ? [] :
-    choices(data.requestedPermissions, 'REQUESTED_PERMISSIONS', KNOWN_REQUESTS, 8);
+    choices(data.requestedPermissions, 'REQUESTED_PERMISSIONS', KNOWN_REQUESTS, 8, 0);
   return Object.freeze({
     schema: TABLET_APP_SCHEMA, appId, publisherId, title, version,
     source: Object.freeze({ repositoryUrl, commitSha: commitSha.toLowerCase(), license }),
