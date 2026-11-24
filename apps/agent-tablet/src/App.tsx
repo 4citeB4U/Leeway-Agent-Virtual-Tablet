@@ -62,6 +62,7 @@ import { ContentVault } from './components/ContentVault';
 import { LeeWayFederated } from './components/LeeWayFederated';
 import { isPublishedLeeWayAppId, PUBLISHED_LEEWAY_APP_BY_ID, PUBLISHED_LEEWAY_APPS } from './publishedApps';
 import { tabletAssetUrl } from './assetUrl';
+import { browserPlatformFamily } from './mobileSurfacePolicy.mjs';
 
 // Base initial files for LeeCode
 const initialFiles: Record<string, string> = {
@@ -1594,10 +1595,10 @@ export default function App() {
           </span>
           <span className="text-[8px] font-normal tracking-normal text-[#78b9b9]">AGENT VIRTUAL TABLET</span>
           <span
-            aria-label="Current tablet device"
+            aria-label="Browser-reported platform (not an enrolled device identity)"
             className="shrink-0 rounded border border-cyan-200/35 bg-[#0a1a22]/95 px-1.5 py-0.5 text-[8px] font-black tracking-[0.08em] text-cyan-100"
           >
-            WINDOWS 11 · HARMONY
+            {browserPlatformFamily(typeof navigator !== 'undefined' ? navigator.userAgent : '')} · CLIENT VIEW
           </span>
           <button
             id="leeway-vt-widget-move"
