@@ -5,7 +5,7 @@ TAG: WORKFORCE.RUNTIME_FABRIC.READONLY_MCP_CLIENT_V1
 5WH: WHAT=Consume canonical Runtime Fabric MCP runtime_health without claiming production execution;
 WHY=Replace source-only binding with real scoped authenticated discovery; WHO=LeeWay Digital Workforce;
 WHERE=integration/runtime-fabric/workforce-runtime-mcp.mjs; WHEN=2026-10-27;
-HOW=Server-only Pocket ID bearer, fixed MCP lifecycle, bounded response and fail-closed verification.
+HOW=Server-only Zitadel bearer, fixed MCP lifecycle, bounded response and fail-closed verification.
 AUTHORITY: Read-only consumer; does not issue tokens, dispatch tasks, sign Veritas or write ledgers.
 LICENSE: MIT.
 */
@@ -90,7 +90,7 @@ async function parseResponse(response) {
 
 function boundedReport(data) {
   if (!data || data.runtimeFabric?.status !== 'AVAILABLE' ||
-      !['POCKET_ID_ACCESS_TOKEN_VERIFIED', 'OIDC_ACCESS_TOKEN_VERIFIED']
+      !['OIDC_ACCESS_TOKEN_VERIFIED']
         .includes(data.runtimeFabric?.authentication) ||
       typeof data.providerComposition !== 'object' || data.providerComposition === null ||
       data.mutation !== 'NOT_ATTEMPTED' || data.authenticatedDeviceCommand !== 'NOT_PROBED') {
