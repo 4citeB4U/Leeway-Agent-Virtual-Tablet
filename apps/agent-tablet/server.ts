@@ -186,9 +186,10 @@ app.get('/api/creator/business/overview', async (req, res) => {
   if (!(cursor===undefined||typeof cursor==='string'&&/^[A-Za-z0-9_-]{8,128}$/.test(cursor))) {
     return res.status(400).json({state:'BLOCKED',reason:'BUSINESS_PAGE_CURSOR_INVALID'});
   }
+  const cursorValue: string|null = typeof cursor==='string' ? cursor : null;
   try {
     const upstream=createOriginalCreatorBusinessTabletProxy();
-    const response=await upstream.read({origin,bearer,cursor:cursor||null});
+    const response=await upstream.read({origin,bearer,cursor:cursorValue});
     // Revalidate original Runtime's signed business-read response on the
     // Tablet server, not only in the front-end parser.
     return res.json(parseCreatorBusinessOverview(response));
