@@ -33,6 +33,9 @@ export function createOriginalCreatorBusinessTabletProxy({fetchImpl=fetch,timeou
  if(typeof fetchImpl!=='function'||!Number.isInteger(timeoutMs)||timeoutMs<250||timeoutMs>10000)
    throw error('PROXY_DEPENDENCIES_INVALID');
  return Object.freeze({
+  /**
+   * @param {{origin: string, bearer: string, cursor?: string|null}} options
+   */
   async read({origin,bearer,cursor=null}={}){
    if(typeof bearer!=='string'||bearer.length<32||bearer.length>8192||
       !/^[A-Za-z0-9._~+/=-]+$/.test(bearer))

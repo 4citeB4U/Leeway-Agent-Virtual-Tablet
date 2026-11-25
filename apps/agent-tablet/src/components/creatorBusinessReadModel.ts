@@ -114,7 +114,7 @@ export function parseCreatorBusinessOverview(raw: unknown): CreatorBusinessOverv
       verifiedExtensionCount:entry.verifiedExtensionCount,
       extensionFleetStatus:entry.extensionFleetStatus as CreatorCustomer['extensionFleetStatus'],
       registeredAt:entry.registeredAt,
-      lastVerifiedDeviceAt:entry.lastVerifiedDeviceAt
+      lastVerifiedDeviceAt:typeof entry.lastVerifiedDeviceAt === 'string' ? entry.lastVerifiedDeviceAt : null
     });
   }
   return {
