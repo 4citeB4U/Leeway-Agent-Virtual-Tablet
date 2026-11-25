@@ -3,6 +3,7 @@ import { ArrowLeft, MonitorUp } from 'lucide-react';
 import { PUBLISHED_LEEWAY_APP_BY_ID, publishedAppSurfaceUrl, type PublishedLeeWayAppId } from '../publishedApps';
 import type { WorkstationAppId } from '../types';
 import { isCompactTabletViewport } from '../mobileSurfacePolicy.mjs';
+import { CreatorCustomerMonitor } from './CreatorCustomerMonitor';
 
 declare global {
   interface Window {
@@ -38,10 +39,11 @@ export function PublishedLeeWayApp({ appId, onBack }: Props) {
   const surfaceUrl = publishedAppSurfaceUrl(app, 'tablet', compact);
 
   return (
-    <section ref={rootRef} className="relative flex min-h-0 min-w-0 flex-grow overflow-hidden bg-black" aria-label={`${app.title} application surface`}>
+    <section ref={rootRef} className="relative flex min-h-0 min-w-0 flex-grow flex-col overflow-hidden bg-black" aria-label={`${app.title} application surface`}>
       <div className="pointer-events-none absolute left-2 top-2 z-20 hidden items-center gap-2 sm:flex rounded-full border border-cyan-300/30 bg-slate-950/80 px-2 py-1 text-[8px] font-black tracking-[.1em] text-cyan-100 shadow-lg backdrop-blur"><MonitorUp size={11} /><span>{app.title}</span><span className="text-cyan-200">SESSION {appId}</span></div>
       <button type="button" onClick={onBack} aria-label="Return to LeeWay Tablet home" className="absolute right-2 top-2 z-20 flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-full border border-white/20 bg-slate-950/85 px-3 py-2 text-xs font-black text-white shadow-lg backdrop-blur hover:bg-slate-800 focus-visible:outline focus-visible:outline-cyan-300"><ArrowLeft size={11} />HOME</button>
-      <iframe title={`${app.title} tablet application`} src={surfaceUrl} className="h-full w-full border-0 bg-black" allow="camera; microphone; autoplay; clipboard-read; clipboard-write" />
+      {appId === 'erpCrm' && <CreatorCustomerMonitor />}
+      <iframe title={`${app.title} tablet application`} src={surfaceUrl} className="min-h-0 w-full flex-grow border-0 bg-black" allow="camera; microphone; autoplay; clipboard-read; clipboard-write" />
     </section>
   );
 }
