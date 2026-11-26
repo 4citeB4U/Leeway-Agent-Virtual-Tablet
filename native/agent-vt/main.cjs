@@ -4,7 +4,7 @@ TAG: LEEWAY.WIDGET.AGENTVT.GOLDEN
 WHAT: isolated Agent VT side tab + true native floating window
 WHY: test approved Pocket pattern without changing Golden Package
 WHO: Creator / Agent Lee
-WHERE: E:\LeeWay-Work\agent-vt-golden-widget-proof
+WHERE: native/agent-vt/main.cjs
 WHEN: 2026-10-11
 HOW: Electron BrowserWindow native host and bounded controls
 LICENSE: MIT
@@ -13,6 +13,8 @@ const {app,BrowserWindow,ipcMain,screen,webFrameMain}=require('electron');
 const fs=require('fs'),path=require('path'),http=require('http'),{spawn}=require('child_process'),{URL:NodeUrl,pathToFileURL,fileURLToPath}=require('url');
 const {createNativeAppAuthorizer,createRuntimeSurfaceAdapter,isTrustedIpcFrame,NATIVE_APP_AUTHORITY}=require('./native-app-authorization.cjs');
 const {createAuthenticatedRuntimeSurfaceDecisionSource}=require('./native-runtime-decision-source.cjs');
+const {resolveNativeLaunchBindings}=require('./native-launch-bindings.cjs');
+const launchBindings=resolveNativeLaunchBindings({nativeDirectory:__dirname,env:process.env});
 const nativeAppAuthorizer=createNativeAppAuthorizer({
   appDecisionSource:createRuntimeSurfaceAdapter(createAuthenticatedRuntimeSurfaceDecisionSource()),
   authenticatedContextSource:globalThis.__LEEWAY_AUTHENTICATED_RUNTIME_CONTEXT_SOURCE,
@@ -28,18 +30,13 @@ if(!app.requestSingleInstanceLock()){
   app.exit(0);
 }
 const userDataPath=path.join(__dirname,'.userData');try{fs.mkdirSync(userDataPath,{recursive:true});}catch{}app.setPath('userData',userDataPath);
-const LOCAL_TABLET_ROOT=process.env.LEEWAY_AGENT_TABLET_ROOT||'E:/LeeWay-Work/AGENT-LEE-FLOATING-WIDGET-TEST/work/agent-virtual-tablet-target/apps/agent-tablet';
-const TABLET_PORT=Number(process.env.LEEWAY_AGENT_TABLET_PORT||3217);
+const LOCAL_TABLET_ROOT=launchBindings.tabletRoot;
+const TABLET_PORT=launchBindings.tabletPort;
 const URL=`http://127.0.0.1:${TABLET_PORT}/`;
-const LOCAL_OFFICE_ROOT=process.env.LEEWAY_OFFICE_ROOT||'E:/LeeWay-Work/AGENT-LEE-FLOATING-WIDGET-TEST/work/published-app-sources/Leeway-office-suites';
-const OFFICE_PORT=Number(process.env.LEEWAY_OFFICE_PORT||3221);
-const OFFICE_URL=`http://127.0.0.1:${OFFICE_PORT}/`;
-// Model Hub's proven 3D visual stage is a preserved, source-controlled
-// presentation artifact.  The public catalog remains the Model Hub service
-// authority; this local binding restores the actual HARDLINE 3D widget that
-// was previously qualified for the native tablet surface.  A deployment may
-// replace the bootstrap path without changing the app identity.
-const MODEL_HUB_3D_SOURCE=process.env.LEEWAY_MODEL_HUB_3D_SOURCE||'E:/LeeWay-Work/AGENT-LEE-FLOATING-WIDGET-TEST/work/hardline-3d-widget-test-20261013/restore-recorded-overview-evidence/index-native-models-brain-contract.html';
+const LOCAL_OFFICE_ROOT=launchBindings.officeRoot;
+const OFFICE_PORT=launchBindings.officePort;
+const OFFICE_URL=launchBindings.officeUrl;
+const MODEL_HUB_3D_SOURCE=launchBindings.modelHub3dSource;
 let localTabletServer=null,localOfficeServer=null;
 function probeLocalTabletServer(){return new Promise(resolve=>{const req=http.get(`http://127.0.0.1:${TABLET_PORT}/api/health`,res=>{res.resume();resolve(Boolean(res.statusCode&&res.statusCode>=200&&res.statusCode<500));});req.on('error',()=>resolve(false));req.setTimeout(700,()=>{req.destroy();resolve(false);});});}
 async function ensureLocalTabletServer(){
@@ -52,6 +49,7 @@ async function ensureLocalTabletServer(){
 }
 function probeLocalOfficeServer(){return new Promise(resolve=>{const req=http.get(`${OFFICE_URL}api/health`,res=>{res.resume();resolve(Boolean(res.statusCode&&res.statusCode>=200&&res.statusCode<500));});req.on('error',()=>resolve(false));req.setTimeout(700,()=>{req.destroy();resolve(false);});});}
 async function ensureLocalOfficeServer(){
+  if(!LOCAL_OFFICE_ROOT)throw new Error('LOCAL_OFFICE_ROOT_BINDING_REQUIRED');
   const entry=path.join(LOCAL_OFFICE_ROOT,'server.ts'),tsx=path.join(LOCAL_OFFICE_ROOT,'node_modules','tsx','dist','cli.mjs');
   if(!fs.existsSync(entry)||!fs.existsSync(tsx))throw new Error(`LOCAL_OFFICE_SESSION_HOST_MISSING: ${LOCAL_OFFICE_ROOT}`);
   if(await probeLocalOfficeServer())return {state:'REUSED',url:OFFICE_URL};
@@ -69,7 +67,7 @@ const PUBLISHED_APPS=Object.freeze({
   continuum:{title:'LeeWay Continuum',url:`${URL}continuum-ui/widget-index.html`,capabilityRef:'leeway.continuum',action:'continuum.read',designSize:{width:1440,height:900}},
   agentSkills:{title:'LeeWay Agent Skills',url:'https://4citeb4u.github.io/LeeWay-Agent-Skills/',designSize:{width:1440,height:900}},
   leewayIde:{title:'LeeWay IDE',url:'https://4citeb4u.github.io/leeway-ide/',designSize:{width:1600,height:1000}},
-  officeSuite:{title:'LeeWay Office Suites',url:OFFICE_URL,designSize:{width:1440,height:900}},
+  ...(OFFICE_URL?{officeSuite:{title:'LeeWay Office Suites',url:OFFICE_URL,designSize:{width:1440,height:900}}}:{}),
   logistics:{title:'LeeWay Logistics',url:'https://4citeb4u.github.io/leeway_logistics/#v=2&lat=35.1557&lon=-82.5000&alt=15460975&heading=360&pitch=-90&roll=0&style=normal&bloom=0&sharpen=1&bi=0&bv=2&si=49&hud=tactical&hv=1&dm=DENSE&dd=75&da=elastic&kf=7&ko=1&cr=0&sc=1&scf=11&map=osm&l=&lo=f.e.1_k.o.n&ui=c.c.1_c.p.0_l.c.1_l.p.0_d.c.1_v.c.1_i.c.0_r.c.1_s.c.1_g.c.1_p.c.1_m.c.0',designSize:{width:1600,height:900}},
   contentFoundry:{title:'LeeWay Agentic Content Foundry',url:'https://4citeb4u.github.io/Leeway-agentic-content-foundry/',designSize:{width:1440,height:900}},
   erpCrm:{title:'LeeWay Agentic CRM & ERP',url:'https://4citeb4u.github.io/Leeway-Agentic-CRM-ERP/',designSize:{width:2160,height:1080}},
@@ -601,7 +599,7 @@ app.on('second-instance',()=>{
 });
 app.whenReady().then(async()=>{
 await ensureLocalTabletServer();
-await ensureLocalOfficeServer();
+if(LOCAL_OFFICE_ROOT)await ensureLocalOfficeServer();
 const a=work();rect=clamp({...rect,x:rect.x===120?a.x+Math.round((a.width-rect.width)/2):rect.x,y:rect.y===80?a.y+80:rect.y});
 edgeMonitorId=screen.getPrimaryDisplay().id;const edgeFile=path.join(__dirname,'edge-tab-position.json');try{const saved=JSON.parse(fs.readFileSync(edgeFile,'utf8'));if(Number.isFinite(saved.y))edgeY=saved.y;}catch{};edgeY=edgeY??(a.y+Math.round(a.height*.39));const edgeRect=()=>{const display=screen.getAllDisplays().find(d=>d.id===edgeMonitorId)||screen.getPrimaryDisplay(),w=display.workArea;return {x:w.x+w.width-108,y:Math.max(w.y,Math.min(w.y+w.height-108,edgeY)),width:108,height:108};};tab=chrome('Agent Lee Coin',edgeRect(),tabPage);const enforceEdge=()=>{if(edgeLock||!tab||tab.isDestroyed())return;const actual=tab.getBounds(),target=edgeRect();if(actual.x!==target.x||actual.y!==target.y){edgeLock=true;tab.setPosition(target.x,target.y);edgeLock=false;}};tab.show();tab.on('move',()=>{if(edgeLock)return;const b=tab.getBounds(),area=screen.getAllDisplays().find(d=>d.id===edgeMonitorId)?.workArea||screen.getPrimaryDisplay().workArea;edgeY=Math.max(area.y,Math.min(area.y+area.height-b.height,b.y));const x=area.x+area.width-b.width;if(b.x!==x||b.y!==edgeY){edgeLock=true;tab.setPosition(x,edgeY);edgeLock=false}fs.writeFileSync(edgeFile,JSON.stringify({id:EDGE_TAB_ID,monitorId:edgeMonitorId,y:edgeY},null,2));});screen.on('display-metrics-changed',enforceEdge);tab.on('moved',()=>{const b=tab.getBounds(),area=screen.getAllDisplays().find(d=>d.id===edgeMonitorId)?.workArea||screen.getPrimaryDisplay().workArea;const yy=Math.max(area.y,Math.min(area.y+area.height-b.height,b.y));const xx=area.x+area.width-b.width;edgeY=yy;if(b.x!==xx||b.y!==yy)tab.setPosition(xx,yy);fs.writeFileSync(edgeFile,JSON.stringify({id:EDGE_TAB_ID,monitorId:edgeMonitorId,y:edgeY},null,2))});screen.on('display-removed',enforceEdge);
 tablet=new BrowserWindow({title:'LeeWay Agent VT - Native Floating Proof',...rect,frame:false,transparent:true,backgroundColor:'#00000000',hasShadow:false,alwaysOnTop:true,resizable:true,minWidth:420,minHeight:320,show:false,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:false}});
