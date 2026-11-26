@@ -1,5 +1,5 @@
 import type { WorkstationAppId } from './types';
-import { tabletSurfaceUrl } from './mobileSurfacePolicy.mjs';
+import { resolvePublishedAppSurface, tabletSurfaceUrl, type PublishedAppSurfaceDecision } from './mobileSurfacePolicy.mjs';
 
 export type PublishedLeeWayAppId = Extract<WorkstationAppId,
   | 'agentSkills'
@@ -217,6 +217,8 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
   }
 ] as const;
 
+export const LOCAL_ADAPTER_CANDIDATE_APPS = Object.freeze(['officeSuite', 'contentVault', 'workforce', 'notepad', 'diagnostics', 'agentRoster', 'digitalBrain']);
+
 export const PUBLISHED_LEEWAY_APP_BY_ID = Object.fromEntries(
   PUBLISHED_LEEWAY_APPS.map(app => [app.id, app])
 ) as Record<PublishedLeeWayAppId, PublishedLeeWayApp>;
@@ -232,7 +234,11 @@ export function publishedAppSurfaceUrl(
   app: PublishedLeeWayApp,
   surface: 'tablet' | 'widget',
   compact = false,
-): string {
+  decision?: PublishedAppSurfaceDecision,
+): string | null {
+  if (LOCAL_ADAPTER_CANDIDATE_APPS.includes(app.id)) {
+    return resolvePublishedAppSurface(app, surface, compact, decision).url;
+  }
   return tabletSurfaceUrl(app.url, app.id, surface, compact);
 }
 
