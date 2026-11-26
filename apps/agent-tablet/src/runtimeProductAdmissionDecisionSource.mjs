@@ -11,6 +11,8 @@ HOW: Inject existing createCustomerProductAdmission / createCustomerFeaturePolic
 AUTHORITY: SOURCE_CANDIDATE. No Runtime grant, URL, entitlement or revocation is generated here.
 LICENSE: Existing repository terms.
 */
+import { createRuntimeDecisionTransport } from './runtimeDecisionTransport.mjs';
+
 const deny = reason => Object.freeze({ state: 'DENIED', url: null, reason });
 const unavailable = reason => Object.freeze({ state: 'UNAVAILABLE', url: null, reason });
 const ref = value => typeof value === 'string' && /^[A-Za-z0-9._:@/-]{3,160}$/.test(value);
@@ -31,11 +33,14 @@ const nativeRequestId = value => typeof value === 'string' &&
 export function createRuntimeProductAdmissionDecisionSource({
   admission, featurePolicy, capabilityActionMap = Object.freeze({}), supplySurface, now = () => Date.now()
 } = {}) {
-  if (typeof admission?.authorize !== 'function' || typeof featurePolicy?.resolve !== 'function') {
+  const transport = createRuntimeDecisionTransport({ admission, featurePolicy, now });
+  if (transport.status !== 'BOUND') {
     return async function decisionSource() {
-      return unavailable('ORIGINAL_RUNTIME_DECISION_AUTHORITY_UNBOUND');
+      return unavailable('ORIGINAL_RUNTIME_SERVICE_TRANSPORT_UNBOUND');
     };
   }
+  admission = transport;
+  featurePolicy = transport;
   return async function decisionSource(app, surface, context) {
     if (!['tablet', 'widget'].includes(surface)) return deny('SURFACE_NOT_ALLOWLISTED');
     if (!ref(context?.sessionRef) || !ref(context?.tenantRef) ||

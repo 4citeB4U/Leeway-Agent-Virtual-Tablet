@@ -35,7 +35,7 @@ const make = overrides => createRuntimeProductAdmissionDecisionSource({
 test('missing original Runtime authorities fail closed', async () => {
   const d = await createRuntimeProductAdmissionDecisionSource()(app, 'tablet', ctx);
   assert.equal(d.state, 'UNAVAILABLE');
-  assert.equal(d.reason, 'ORIGINAL_RUNTIME_DECISION_AUTHORITY_UNBOUND');
+  assert.equal(d.reason, 'ORIGINAL_RUNTIME_SERVICE_TRANSPORT_UNBOUND');
 });
 
 test('correlated owner, tenant, device and session are required', async () => {

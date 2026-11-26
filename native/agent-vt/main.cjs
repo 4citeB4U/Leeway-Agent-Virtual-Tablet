@@ -12,8 +12,9 @@ LICENSE: MIT
 const {app,BrowserWindow,ipcMain,screen,webFrameMain}=require('electron');
 const fs=require('fs'),path=require('path'),http=require('http'),{spawn}=require('child_process'),{URL:NodeUrl,pathToFileURL,fileURLToPath}=require('url');
 const {createNativeAppAuthorizer,createRuntimeSurfaceAdapter,isTrustedIpcFrame,NATIVE_APP_AUTHORITY}=require('./native-app-authorization.cjs');
+const {createAuthenticatedRuntimeSurfaceDecisionSource}=require('./native-runtime-decision-source.cjs');
 const nativeAppAuthorizer=createNativeAppAuthorizer({
-  appDecisionSource:createRuntimeSurfaceAdapter(globalThis.__LEEWAY_RUNTIME_SURFACE_DECISION_SOURCE),
+  appDecisionSource:createRuntimeSurfaceAdapter(createAuthenticatedRuntimeSurfaceDecisionSource()),
   authenticatedContextSource:globalThis.__LEEWAY_AUTHENTICATED_RUNTIME_CONTEXT_SOURCE,
   coreDecisionSource:globalThis.__LEEWAY_RUNTIME_CREATOR_CORE_DECISION_SOURCE,
   coreAuthority:globalThis.__LEEWAY_RUNTIME_CREATOR_CORE_AUTHORITY,

@@ -217,8 +217,9 @@ function createNativeAppAuthorizer({
     let decision;
     try {
       decision = await source(request, context);
-    } catch {
-      return unavailable('RUNTIME_DECISION_PROVIDER_FAILURE');
+    } catch (error) {
+      return unavailable(error?.code === 'ORIGINAL_RUNTIME_SERVICE_TRANSPORT_UNBOUND'
+        ? error.code : 'RUNTIME_DECISION_PROVIDER_FAILURE');
     }
     return validator(decision, request, now());
   }

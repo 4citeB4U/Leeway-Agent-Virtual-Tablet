@@ -69,6 +69,9 @@ export function createRuntimeDecisionTransport({
       if (![request.sessionRef, request.tenantRef, request.projectRef, request.action].every(ref)) {
         return deny('REQUEST_SCOPE_INVALID');
       }
+      if (request.deviceRef !== undefined && !ref(request.deviceRef)) {
+        return deny('REQUEST_SCOPE_INVALID');
+      }
       let result;
       try {
         result = await admission.authorize(request);
@@ -80,6 +83,7 @@ export function createRuntimeDecisionTransport({
           result.projectRef !== request.projectRef ||
           result.authorizedAction !== request.action ||
           result.executionPerformed !== false ||
+          (result.sessionRef !== undefined && result.sessionRef !== request.sessionRef) ||
           (request.deviceRef !== undefined && result.deviceRef !== undefined &&
            result.deviceRef !== request.deviceRef)) {
         return deny('RUNTIME_ADMISSION_DENIED');

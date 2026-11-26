@@ -41,12 +41,22 @@ test('expired policy, tenant mismatch and revoked grant are denied', async () =>
   assert.equal((await revoked.authorize(request)).reason, 'CREATOR_GRANT_REVOKED_OR_DENIED');
 });
 
-test('incorrect device identity and provider failure are denied', async () => {
+test('device, session and capability mismatches and provider failure are denied', async () => {
   const wrongDevice = createRuntimeDecisionTransport({
     featurePolicy,
-    admission: { authorize: async r => ({ ...await admission.authorize(r), tenantRef: 'tenant-2' }) }
+    admission: { authorize: async r => ({ ...await admission.authorize(r), deviceRef: 'device-2' }) }
   });
   assert.equal((await wrongDevice.authorize(request)).reason, 'RUNTIME_ADMISSION_DENIED');
+  const wrongSession = createRuntimeDecisionTransport({
+    featurePolicy,
+    admission: { authorize: async r => ({ ...await admission.authorize(r), sessionRef: 'session-2' }) }
+  });
+  assert.equal((await wrongSession.authorize(request)).reason, 'RUNTIME_ADMISSION_DENIED');
+  const wrongCapability = createRuntimeDecisionTransport({
+    featurePolicy,
+    admission: { authorize: async r => ({ ...await admission.authorize(r), authorizedAction: 'diagnostics.read' }) }
+  });
+  assert.equal((await wrongCapability.authorize(request)).reason, 'RUNTIME_ADMISSION_DENIED');
   const failure = createRuntimeDecisionTransport({
     featurePolicy, admission: { authorize: async () => { throw new Error('down'); } }
   });
@@ -60,6 +70,7 @@ test('transport binds to O08 decision source and fails closed end to end', async
     capabilityActionMap: { 'leeway.continuum': 'continuum.read' },
     supplySurface: async () => ({
       state: 'HOSTED_APPROVED', url: 'https://4citeb4u.github.io/LeeWay-Continuum/',
+      entitlement: 'ACTIVE',
       serviceAvailability: 'AVAILABLE', adapterConnectivity: 'DISCONNECTED', informationPersistence: 'PERSISTED'
     })
   });

@@ -130,6 +130,27 @@ test('every supported native launch origin requires and accepts a fresh Runtime 
   })).state, 'DENIED');
 });
 
+test('restored Widget sessions obtain a new decision and close on current revocation', async () => {
+  let calls = 0;
+  let revoked = false;
+  const auth = makeAuthorizer({
+    appDecisionSource: async request => {
+      calls += 1;
+      return appDecision(request, revoked ? { entitlement: 'REVOKED' } : {});
+    }
+  });
+  assert.equal((await auth.authorizeAppSurface({
+    appId: 'continuum', surface: 'widget', launchOrigin: 'restored-widget'
+  })).state, 'HOSTED_APPROVED');
+  revoked = true;
+  const restored = await auth.authorizeAppSurface({
+    appId: 'continuum', surface: 'widget', launchOrigin: 'restored-widget'
+  });
+  assert.equal(calls, 2);
+  assert.equal(restored.state, 'DENIED');
+  assert.equal(restored.reason, 'ENTITLEMENT_NOT_USER_ACCESSIBLE');
+});
+
 test('revoked, degraded, creator-exclusive and unbound entitlements deny user-facing apps', async () => {
   for (const entitlement of ['REVOKED', 'DEGRADED', 'CREATOR_EXCLUSIVE', 'UNKNOWN']) {
     const auth = makeAuthorizer({
