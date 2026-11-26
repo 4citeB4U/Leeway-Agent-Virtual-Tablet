@@ -21,12 +21,9 @@ const NATIVE_APP_AUTHORITY = Object.freeze({
   diagnostics: Object.freeze({ capabilityRef: 'leeway.diagnostics', action: 'diagnostics.read' }),
   digitalBrain: Object.freeze({ capabilityRef: 'leeway.digital-brain', action: 'digital-brain.local.read' })
 });
-const CORE_AUTHORITY = Object.freeze({
+const CORE_APP = Object.freeze({
   appId: 'leeWayCore',
-  appSessionId: 'leeway.app.leeWayCore',
-  capabilityRef: 'leeway.creator-core-diagnostics',
-  action: 'creator.core.diagnostics.read',
-  scope: 'creator.core.diagnostics.read'
+  appSessionId: 'leeway.app.leeWayCore'
 });
 const APP_SURFACES = new Set(['tablet', 'widget']);
 const APP_LAUNCH_ORIGINS = new Set([
@@ -144,7 +141,7 @@ function validateAppDecision(decision, request, candidateUrl, now) {
   return Object.freeze({ ...decision, url: surface.url, reason: null });
 }
 
-function validateCoreDecision(decision, request, now) {
+function validateCoreDecision(decision, request, now, coreAuthority) {
   const bindingError = correlatedDecision(decision, request, now, new Set(['AUTHORIZED']));
   if (bindingError) return deny(bindingError);
   if (decision.authority !== 'ORIGINAL_RUNTIME_CREATOR_AUTHORITY') {
@@ -159,11 +156,11 @@ function validateCoreDecision(decision, request, now) {
       principal.subject !== request.subjectRef ||
       principal.issuer !== request.expectedIssuer ||
       !Array.isArray(principal.audiences) || !principal.audiences.includes(request.expectedAudience) ||
-      !Array.isArray(principal.scopes) || !principal.scopes.includes(CORE_AUTHORITY.scope) ||
+      !Array.isArray(principal.scopes) || !principal.scopes.includes(coreAuthority.scope) ||
       !Number.isSafeInteger(principal.expiresAt) || principal.expiresAt <= Math.floor(now / 1000) ||
       principal.sessionRef !== decision.sessionRef ||
       !grant || grant.active !== true || grant.revoked !== false ||
-      grant.scope !== CORE_AUTHORITY.scope || grant.subject !== principal.subject ||
+      grant.scope !== coreAuthority.scope || grant.subject !== principal.subject ||
       grant.sessionRef !== principal.sessionRef) {
     return deny('CURRENT_CREATOR_CORE_GRANT_REQUIRED');
   }
@@ -171,8 +168,8 @@ function validateCoreDecision(decision, request, now) {
     state: 'AUTHORIZED',
     reason: null,
     authority: decision.authority,
-    capabilityRef: CORE_AUTHORITY.capabilityRef,
-    authorizedAction: CORE_AUTHORITY.action,
+    capabilityRef: coreAuthority.capabilityRef,
+    authorizedAction: coreAuthority.action,
     sessionRef: decision.sessionRef,
     tenantRef: decision.tenantRef,
     projectRef: decision.projectRef,
@@ -185,6 +182,7 @@ function createNativeAppAuthorizer({
   appDecisionSource,
   authenticatedContextSource,
   coreDecisionSource,
+  coreAuthority,
   creatorIssuer,
   creatorAudience,
   now = () => Date.now(),
@@ -246,20 +244,24 @@ function createNativeAppAuthorizer({
       if (!CORE_LAUNCH_ORIGINS.has(launchOrigin)) {
         return Promise.resolve(deny('CREATOR_CORE_LAUNCH_ORIGIN_NOT_ALLOWLISTED'));
       }
+      if (!coreAuthority || !isRef(coreAuthority.capabilityRef) ||
+          !isRef(coreAuthority.action) || !isRef(coreAuthority.scope)) {
+        return Promise.resolve(unavailable('CREATOR_CORE_CAPABILITY_REGISTRY_UNBOUND'));
+      }
       if (typeof creatorIssuer !== 'string' || !/^https:\/\//.test(creatorIssuer) ||
           !isRef(creatorAudience)) {
         return Promise.resolve(unavailable('CREATOR_ZITADEL_AUTHORITY_CONFIGURATION_UNBOUND'));
       }
       return resolve(coreDecisionSource, {
-        appId: CORE_AUTHORITY.appId,
-        capabilityRef: CORE_AUTHORITY.capabilityRef,
-        action: CORE_AUTHORITY.action,
+        appId: CORE_APP.appId,
+        capabilityRef: coreAuthority.capabilityRef,
+        action: coreAuthority.action,
         surface: 'core',
         launchOrigin,
-        appSessionId: CORE_AUTHORITY.appSessionId,
+        appSessionId: CORE_APP.appSessionId,
         expectedIssuer: creatorIssuer,
         expectedAudience: creatorAudience
-      }, (decision, request, at) => validateCoreDecision(decision, request, at));
+      }, (decision, request, at) => validateCoreDecision(decision, request, at, coreAuthority));
     }
   });
 }
@@ -294,7 +296,7 @@ function isTrustedIpcFrame(event, expectedWebContents, expectedUrl) {
 }
 
 module.exports = {
-  CORE_AUTHORITY,
+  CORE_APP,
   NATIVE_APP_AUTHORITY,
   createNativeAppAuthorizer,
   createRuntimeSurfaceAdapter,

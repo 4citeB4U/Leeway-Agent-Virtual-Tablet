@@ -16,6 +16,7 @@ const nativeAppAuthorizer=createNativeAppAuthorizer({
   appDecisionSource:createRuntimeSurfaceAdapter(globalThis.__LEEWAY_RUNTIME_SURFACE_DECISION_SOURCE),
   authenticatedContextSource:globalThis.__LEEWAY_AUTHENTICATED_RUNTIME_CONTEXT_SOURCE,
   coreDecisionSource:globalThis.__LEEWAY_RUNTIME_CREATOR_CORE_DECISION_SOURCE,
+  coreAuthority:globalThis.__LEEWAY_RUNTIME_CREATOR_CORE_AUTHORITY,
   creatorIssuer:globalThis.__LEEWAY_ZITADEL_ISSUER,
   creatorAudience:globalThis.__LEEWAY_RUNTIME_AUDIENCE
 });

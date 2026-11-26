@@ -21,6 +21,11 @@ const {
 } = require('./native-app-authorization.cjs');
 
 const now = 1_800_000_000_000;
+const testCoreAuthority = Object.freeze({
+  capabilityRef: 'runtime.core.diagnostics',
+  action: 'runtime.core.read',
+  scope: 'runtime.core.read'
+});
 const scope = {
   sessionRef: 'session-001',
   tenantRef: 'tenant-001',
@@ -51,6 +56,7 @@ function makeAuthorizer({
   appDecisionSource = async request => appDecision(request),
   authenticatedContextSource = async () => scope,
   coreDecisionSource,
+  coreAuthority = testCoreAuthority,
   clock = () => now,
   requestId = () => 'request-0001'
 } = {}) {
@@ -58,6 +64,7 @@ function makeAuthorizer({
     appDecisionSource,
     authenticatedContextSource,
     coreDecisionSource,
+    coreAuthority,
     creatorIssuer: 'https://identity.example.test/',
     creatorAudience: 'leeway-runtime',
     now: clock,
@@ -222,14 +229,14 @@ test('only separately scoped, current Creator Core grants authorize Core', async
         issuer: 'https://identity.example.test/',
         audiences: ['leeway-runtime'],
         subject: 'creator-subject-001',
-        scopes: ['creator.core.diagnostics.read'],
+        scopes: [testCoreAuthority.scope],
         expiresAt: Math.floor(now / 1000) + 60,
         sessionRef: 'session-001'
       },
       currentGrant: {
         active: true,
         revoked: false,
-        scope: 'creator.core.diagnostics.read',
+        scope: testCoreAuthority.scope,
         subject: 'creator-subject-001',
         sessionRef: 'session-001'
       }
@@ -238,14 +245,30 @@ test('only separately scoped, current Creator Core grants authorize Core', async
   assert.equal((await auth.authorizeCreatorCore()).state, 'AUTHORIZED');
 });
 
-test('business overview scope, missing grants and stale Core grants do not authorize Core', async () => {
+test('Core access remains unavailable until the original Runtime capability registry is bound', async () => {
+  const auth = createNativeAppAuthorizer({
+    authenticatedContextSource: async () => scope,
+    coreDecisionSource: async () => {
+      throw new Error('Core decision source must not run without the capability registry');
+    },
+    creatorIssuer: 'https://identity.example.test/',
+    creatorAudience: 'leeway-runtime',
+    now: () => now,
+    createRequestId: () => 'request-0001'
+  });
+  const decision = await auth.authorizeCreatorCore();
+  assert.equal(decision.state, 'UNAVAILABLE');
+  assert.equal(decision.reason, 'CREATOR_CORE_CAPABILITY_REGISTRY_UNBOUND');
+});
+
+test('business overview scope, missing grants and revoked Core grants do not authorize Core', async () => {
   const current = {
     ...scope,
     appId: 'leeWayCore',
     appSessionId: 'leeway.app.leeWayCore',
-    capabilityRef: 'leeway.creator-core-diagnostics',
-    action: 'creator.core.diagnostics.read',
-    authorizedAction: 'creator.core.diagnostics.read',
+    capabilityRef: testCoreAuthority.capabilityRef,
+    action: testCoreAuthority.action,
+    authorizedAction: testCoreAuthority.action,
     surface: 'core',
     launchOrigin: 'core-dock',
     requestId: 'request-0001',
@@ -278,6 +301,27 @@ test('business overview scope, missing grants and stale Core grants do not autho
   const result = await auth.authorizeCreatorCore();
   assert.equal(result.state, 'DENIED');
   assert.equal(result.reason, 'CURRENT_CREATOR_CORE_GRANT_REQUIRED');
+
+  const revokedAuth = makeAuthorizer({
+    coreDecisionSource: async request => ({
+      ...current,
+      ...request,
+      principal: {
+        ...current.principal,
+        scopes: [testCoreAuthority.scope]
+      },
+      currentGrant: {
+        active: true,
+        revoked: true,
+        scope: testCoreAuthority.scope,
+        subject: 'creator-subject-001',
+        sessionRef: 'session-001'
+      }
+    })
+  });
+  const revoked = await revokedAuth.authorizeCreatorCore();
+  assert.equal(revoked.state, 'DENIED');
+  assert.equal(revoked.reason, 'CURRENT_CREATOR_CORE_GRANT_REQUIRED');
 });
 
 test('IPC authorization requires the trusted main frame and expected origin', () => {
