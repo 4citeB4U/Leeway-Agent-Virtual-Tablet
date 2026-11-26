@@ -27,7 +27,9 @@ test('Tablet owns the visible core-service launcher and persistent popout', () =
   assert.match(app, /import \{ CoreServiceDock \}/);
   assert.match(app, /<CoreServiceDock onOpenSurface=\{setCurrentApp\}/);
   assert.match(dock, /aria-label="Toggle LeeWay core service widget"/);
-  assert.match(dock, /setVisible\(v => !v\)/);
+  assert.match(dock, /if \(await reauthorize\(\)\) setVisible\(true\)/);
+  assert.match(dock, /if \(result\.state !== 'AUTHORIZED'\)/);
+  assert.match(app, /const authorize = window\.leewayNative\?\.authorizeCoreSurface/);
   assert.match(dock, /onOpenSurface\(selected\.relatedTabletView!/);
 });
 
@@ -47,7 +49,7 @@ test('no fabricated authority, automatic mic or device-command execution in dock
 });
 
 test('taskbar owns core control, removes federation from the user surface, and supports overflow moves', () => {
-  assert.match(app, /<CoreServiceDock onOpenSurface=\{setCurrentApp\} embedded \/>/);
+  assert.match(app, /<CoreServiceDock onOpenSurface=\{setCurrentApp\} authorizeCoreSurface=\{authorizeCoreSurface\} embedded \/>/);
   assert.match(app, /TABLET_APP_CATALOG/);
   assert.match(app, /AGENT TABLET APPLICATIONS/);
   assert.match(app, /text\/leeway-source/);

@@ -29,6 +29,8 @@ import { createServer as createViteServer } from 'vite';
 import { exec as execCb, execFile as execFileCb, spawn } from 'child_process';
 import { promisify } from 'util';
 import { CANONICAL_LIFECYCLE_PLAYBOOK } from './src/data/canonicalLifecyclePlaybook';
+import { createOriginalCreatorBusinessTabletProxy } from '../../integration/runtime-fabric/creator-business-tablet-proxy.mjs';
+import { parseCreatorBusinessOverview } from './src/components/creatorBusinessReadModel';
 
 const app = express();
 const PORT = Number(process.env.PORT || 3200);
@@ -150,6 +152,55 @@ function callerBearer(req: express.Request): string | null {
   const cookieToken = cookieValue(req.headers.cookie, VT_ACCESS_COOKIE);
   return cookieToken ? scopedBearerFromAuthorization(`Bearer ${cookieToken}`) : null;
 }
+
+
+// Original Creator-only CRM/ERP customer and extension-fleet status. The
+// extension opens this Tablet; it NEVER receives customer data or Zitadel
+// credentials. Existing original Runtime must independently verify Creator
+// business grants and authorized customer tenant scope for EVERY page.
+app.get('/api/creator/business/overview', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  if (req.headers['sec-fetch-site'] &&
+      !['same-origin','none'].includes(String(req.headers['sec-fetch-site']))) {
+    return res.status(403).json({state:'BLOCKED',reason:'CREATOR_BUSINESS_SAME_ORIGIN_REQUIRED'});
+  }
+  if (req.headers.origin) {
+    let origin: URL;
+    try { origin=new URL(String(req.headers.origin)); }
+    catch { return res.status(403).json({state:'BLOCKED',reason:'CREATOR_BUSINESS_ORIGIN_INVALID'}); }
+    if (origin.host !== String(req.headers.host||'')) {
+      return res.status(403).json({state:'BLOCKED',reason:'CREATOR_BUSINESS_ORIGIN_DENIED'});
+    }
+  }
+  const bearer=callerBearer(req);
+  if (!bearer) {
+    return res.status(401).json({state:'BLOCKED',reason:'OWNER_ZITADEL_SESSION_REQUIRED'});
+  }
+  const origin=String(process.env.LEEWAY_AGENT_VT_CREATOR_BUSINESS_RUNTIME_ORIGIN||'').trim();
+  if (!origin) {
+    return res.status(503).json({state:'BLOCKED',reason:'ORIGINAL_RUNTIME_CREATOR_BUSINESS_UNBOUND'});
+  }
+  const cursor=req.query.cursor;
+  if (!(cursor===undefined||typeof cursor==='string'&&/^[A-Za-z0-9_-]{8,128}$/.test(cursor))) {
+    return res.status(400).json({state:'BLOCKED',reason:'BUSINESS_PAGE_CURSOR_INVALID'});
+  }
+  const cursorValue: string|null = typeof cursor==='string' ? cursor : null;
+  try {
+    const upstream=createOriginalCreatorBusinessTabletProxy();
+    const response=await upstream.read({origin,bearer,cursor:cursorValue});
+    // Revalidate original Runtime's signed business-read response on the
+    // Tablet server, not only in the front-end parser.
+    return res.json(parseCreatorBusinessOverview(response));
+  } catch(error: any) {
+    const reason=String(error?.code||error?.message||'');
+    if (reason==='LEEWAY_CREATOR_BUSINESS_RUNTIME_CREATOR_SCOPE_DENIED') {
+      return res.status(403).json({state:'BLOCKED',reason:'CREATOR_BUSINESS_GRANT_REQUIRED'});
+    }
+    return res.status(503).json({state:'BLOCKED',reason:'ORIGINAL_RUNTIME_CREATOR_BUSINESS_READ_UNAVAILABLE'});
+  }
+});
 
 app.get('/api/auth/status', (req, res) => {
   const settings = oidcSettings();

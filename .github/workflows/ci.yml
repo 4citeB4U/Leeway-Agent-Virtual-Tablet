@@ -25,6 +25,9 @@ jobs:
         run: npm ci
       - name: Lint tablet
         run: npm run lint
+      - name: Test Creator business read model, extension fleet permissions and data denial
+        working-directory: apps/agent-tablet
+        run: npx tsx --test src/components/creatorBusinessReadModel.test.ts
       - name: Test Runtime Fabric adapter contracts
         run: npm run test:integration
       - name: Build isolated tablet
