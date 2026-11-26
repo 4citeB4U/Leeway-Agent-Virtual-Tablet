@@ -132,103 +132,11 @@ export interface NotepadTaskItem {
   done: boolean;
 }
 
-const INITIAL_RECORDS: BlackboardRecord[] = [
-  {
-    id: 'rec-1',
-    goal: 'Build a local voice-assistant prototype',
-    task: 'Compare offline speech-to-text models & benchmark latency',
-    owner: 'ResearchAgent',
-    status: 'Resolved',
-    evidence: 'whisper.cpp vs faster-whisper: faster-whisper achieves 112ms per 5s audio chunk on Apple Silicon CPU (4x faster, 65% lower VRAM footprint than vanilla PyTorch whisper).',
-    decision: 'Use faster-whisper with CTranslate2 backend for the local prototype.',
-    nextAction: 'CodeAgent creates FastAPI streaming WebSocket endpoint',
-    priority: 'high',
-    timestamp: '10:14 AM',
-    tags: ['STT', 'faster-whisper', 'Latency'],
-    codeSnippet: `from faster_whisper import WhisperModel\n\nmodel = WhisperModel("small.en", device="cpu", compute_type="int8")\nsegments, info = model.transcribe("audio.wav", beam_size=5)`
-  },
-  {
-    id: 'rec-2',
-    goal: 'Build a local voice-assistant prototype',
-    task: 'Construct streaming FastAPI WebSocket endpoint for audio chunks',
-    owner: 'CoderAgent',
-    status: 'In Progress',
-    evidence: 'WebSocket binary frames reduce protocol overhead to <4ms compared to HTTP chunked multipart requests.',
-    decision: 'Implement /ws/transcribe accepting raw PCM 16kHz 16-bit mono chunks.',
-    nextAction: 'ReviewerAgent checks buffer overflow protection & concurrency bounds',
-    priority: 'high',
-    timestamp: '10:28 AM',
-    tags: ['FastAPI', 'WebSockets', 'AsyncIO'],
-    codeSnippet: `@app.websocket("/ws/transcribe")\nasync def websocket_endpoint(ws: WebSocket):\n    await ws.accept()\n    while True:\n        pcm_chunk = await ws.receive_bytes()\n        text = transcribe_buffer(pcm_chunk)\n        await ws.send_json({"transcript": text})`
-  },
-  {
-    id: 'rec-3',
-    goal: 'Multi-tenant semantic cache for LLM queries',
-    task: 'Evaluate vector similarity threshold for cache hit false-positive rate',
-    owner: 'PlannerAgent',
-    status: 'Proposed',
-    evidence: 'Cosine distance cutoff at 0.92 gives 98.4% precision on intent-identical queries while pruning conversational drift.',
-    decision: 'Default to 0.93 similarity cosine threshold with tenant isolation salt.',
-    nextAction: 'ResearchAgent gathers Qdrant vs pgvector index RAM consumption data',
-    priority: 'medium',
-    timestamp: '09:45 AM',
-    tags: ['RAG', 'VectorCache', 'Embeddings']
-  }
-];
+const INITIAL_RECORDS: BlackboardRecord[] = [];
 
-const INITIAL_EVENTS: BlackboardEvent[] = [
-  {
-    id: 'evt-1',
-    agent: 'ResearchAgent',
-    text: 'Posted STT benchmark evidence: faster-whisper vs whisper.cpp on M-series CPU.',
-    type: 'post',
-    timestamp: '10:14 AM',
-    relatedRecordId: 'rec-1'
-  },
-  {
-    id: 'evt-2',
-    agent: 'AgentLee',
-    text: 'Consensus confirmed: Decision locked to faster-whisper (CTranslate2). Next action assigned.',
-    type: 'decision',
-    timestamp: '10:18 AM',
-    relatedRecordId: 'rec-1'
-  },
-  {
-    id: 'evt-3',
-    agent: 'CoderAgent',
-    text: 'Claimed task "Construct streaming FastAPI WebSocket endpoint". Posted code draft.',
-    type: 'claim',
-    timestamp: '10:28 AM',
-    relatedRecordId: 'rec-2'
-  }
-];
+const INITIAL_EVENTS: BlackboardEvent[] = [];
 
-const INITIAL_MEMORY: BlackboardMemory[] = [
-  {
-    id: 'mem-1',
-    category: 'DecisionLog',
-    title: 'STT Engine Selection',
-    content: 'faster-whisper (int8) selected over whisper.cpp for pure Python runtime cohesion and superior batch streaming.',
-    updatedBy: 'AgentLee',
-    lastUpdated: '10:18 AM'
-  },
-  {
-    id: 'mem-2',
-    category: 'Constraint',
-    title: 'Hardware & Latency Limits',
-    content: 'Target max end-to-end voice latency: 250ms on local CPU. Audio format: PCM 16kHz single-channel.',
-    updatedBy: 'ReviewerAgent',
-    lastUpdated: '10:05 AM'
-  },
-  {
-    id: 'mem-3',
-    category: 'TechStack',
-    title: 'Core System Stack',
-    content: 'Backend: FastAPI 0.111+ with Uvicorn. Model runtime: CTranslate2. Agent bus: Blackboard shared memory state.',
-    updatedBy: 'PlannerAgent',
-    lastUpdated: '09:50 AM'
-  }
-];
+const INITIAL_MEMORY: BlackboardMemory[] = [];
 
 interface AgentNotepadBlackboardProps {
   onExportWorkspace?: (title: string, content: string) => void;
@@ -257,7 +165,7 @@ export const AgentNotepadBlackboard: React.FC<AgentNotepadBlackboardProps> = ({
   };
 
   // Top-level Navigation & View
-  const [activeMainTab, setActiveMainTab] = useState<'studio' | 'board' | 'notepad'>('studio');
+  const [activeMainTab, setActiveMainTab] = useState<'studio' | 'board' | 'notepad'>('board');
   const [boardSubTab, setBoardSubTab] = useState<'blackboard' | 'taskboard' | 'bus' | 'memory'>('blackboard');
   const [notepadView, setNotepadView] = useState<'split' | 'user' | 'agent'>('split');
 
@@ -272,12 +180,7 @@ export const AgentNotepadBlackboard: React.FC<AgentNotepadBlackboardProps> = ({
     '3. What guardrails does ReviewerAgent need to ensure stability?'
   ));
 
-  const DEFAULT_AGENT_NOTES: Record<string, string> = Object.keys(AGENT_REGISTRY).reduce((acc, id) => {
-    acc[id] = id === 'AgentLee'
-      ? 'AGENT LEE SYNTHESIS:\n\nI have synchronized our master goal into the Multi-Agent Blackboard.\nCurrent Active Threads:\n• ResearchAgent: evidence and benchmark work.\n• PlannerAgent: architecture and task decomposition.\n• CoderAgent: implementation artifacts.\n• ReviewerAgent: verification and safety review.\n\nRecommendation: keep all handoffs visible on the shared Blackboard.'
-      : `${AGENT_REGISTRY[id].name.toUpperCase()} SCRATCHPAD:\n\nPrivate working notes for this agent. Publish only the portions that should become shared Blackboard state.`;
-    return acc;
-  }, {} as Record<string, string>);
+  const DEFAULT_AGENT_NOTES: Record<string, string> = {};
 
   const [activePadAgent, setActivePadAgent] = useState<string>(() => loadSaved('active_pad_agent', 'AgentLee'));
   const [agentNotes, setAgentNotes] = useState<Record<string, string>>(() => loadSaved('agent_notes', DEFAULT_AGENT_NOTES));
@@ -301,8 +204,26 @@ export const AgentNotepadBlackboard: React.FC<AgentNotepadBlackboardProps> = ({
   ]));
 
   // Blackboard State
-  const [records, setRecords] = useState<BlackboardRecord[]>(() => loadSaved('records', INITIAL_RECORDS));
-  const [events, setEvents] = useState<BlackboardEvent[]>(() => loadSaved('events', INITIAL_EVENTS));
+  const [records, setRecords] = useState<BlackboardRecord[]>(() => {
+    const saved = loadSaved('records', INITIAL_RECORDS);
+    const merged = [...saved];
+    for (const init of INITIAL_RECORDS) {
+      if (!merged.some(r => r.id === init.id)) {
+        merged.unshift(init);
+      }
+    }
+    return merged;
+  });
+  const [events, setEvents] = useState<BlackboardEvent[]>(() => {
+    const saved = loadSaved('events', INITIAL_EVENTS);
+    const merged = [...saved];
+    for (const init of INITIAL_EVENTS) {
+      if (!merged.some(e => e.id === init.id)) {
+        merged.unshift(init);
+      }
+    }
+    return merged;
+  });
   const [sharedMemory, setSharedMemory] = useState<BlackboardMemory[]>(() => loadSaved('memory', INITIAL_MEMORY));
 
   const [activeAgentCycle, setActiveAgentCycle] = useState<string | null>(null);
@@ -328,6 +249,9 @@ export const AgentNotepadBlackboard: React.FC<AgentNotepadBlackboardProps> = ({
   // provides the governed namespace boundary. Promotion to canonical memory is a separate gate.
   useEffect(() => {
     const timer = window.setTimeout(() => {
+
+      // LEEWAY: No automatic promotion of unqualified local activity.
+      return;
       fetch('/api/continuum/notepad', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -387,53 +311,13 @@ export const AgentNotepadBlackboard: React.FC<AgentNotepadBlackboardProps> = ({
   };
 
   // Direct Action Buttons for Active Agent Notepad
-  const askAgentLeeNotepad = (action: 'rewrite' | 'expand' | 'tasks' | 'command') => {
-    const context = agentContent || userContent;
-    if (!context.trim() && action !== 'command') return;
-    setIsThinking(true);
-    const cmd = customCommand;
-    if (action === 'command') setCustomCommand('');
-
-    setTimeout(() => {
-      let generated = "";
-      let isAppend = false;
-
-      if (action === 'rewrite') {
-        generated =
-          `# ${AGENT_REGISTRY[activePadAgent]?.name || activePadAgent} — WORKING REFINEMENT\n\n` +
-          `## Core Architectural Goal\n` +
-          `Deliver an ultra-low latency, zero-cloud voice assistant pipeline with full hardware sovereignty.\n\n` +
-          `## Team Work Allocation (Blackboard State)\n` +
-          `1. **Dr. Rachel (Research)**: faster-whisper int8 model benchmarked at 112ms inference latency.\n` +
-          `2. **Devon (Planner)**: WebSocket audio frame ingestion buffer capped at 64KB chunks.\n` +
-          `3. **Alex (Coder)**: AsyncIO streaming FastAPI endpoints (/ws/transcribe).\n` +
-          `4. **Marcus (Reviewer)**: Verified no memory leaks during 1-hour sustained streaming.\n\n` +
-          `## Next Immediate Milestone\n` +
-          `Trigger live end-to-end microphone loop test and monitor frame drop rate.`;
-      } else if (action === 'expand') {
-        generated =
-          `\n\n## Multi-Agent Depth Expansion:\n` +
-          `• **Audio Ingestion**: Implement a ring buffer with circular overwrite to ensure the audio queue never causes backpressure memory exhaustion.\n` +
-          `• **VAD (Voice Activity Detection)**: Integrate Silero VAD (1ms inference per frame) to filter out background room noise before triggering faster-whisper.\n` +
-          `• **Blackboard Alignment**: Record all Silero confidence threshold tweaks on the Shared Memory table for persistent visibility.`;
-        isAppend = true;
-      } else if (action === 'tasks') {
-        const newTasks: NotepadTaskItem[] = [
-          { id: `t-${Date.now()}-1`, text: 'Benchmark Silero VAD vs WebRTC VAD CPU load', done: false },
-          { id: `t-${Date.now()}-2`, text: 'Implement circular ring-buffer audio ingestion in FastAPI', done: false },
-          { id: `t-${Date.now()}-3`, text: 'Profile memory consumption during 60s continuous voice stream', done: false }
-        ];
-        setNotepadTasks(prev => [...prev, ...newTasks]);
-        setIsThinking(false);
-        showToast('Generated 3 new action items from Blackboard');
-        return;
-      } else {
-        generated = `${AGENT_REGISTRY[activePadAgent]?.name || activePadAgent} evaluated: "${cmd}". Checked against current shared Blackboard records and memory constraints.`;
-      }
-
-      setIsThinking(false);
-      typeText(generated, isAppend);
-    }, 600);
+  const askAgentLeeNotepad = (
+    _action: 'rewrite' | 'expand' | 'tasks' | 'command'
+  ) => {
+    setIsThinking(false);
+    showToast(
+      'Agent response unavailable: authenticated Runtime model dispatch is not connected.'
+    );
   };
 
   const addEventMessage = (
@@ -454,150 +338,40 @@ export const AgentNotepadBlackboard: React.FC<AgentNotepadBlackboardProps> = ({
   };
 
   // Autonomous Multi-Agent Cycle Orchestrator
-  const runMultiAgentCycle = async (targetId?: string) => {
-    if (isAgentRunning) return;
-    setIsAgentRunning(true);
-
-    const target = targetId
-      ? records.find(r => r.id === targetId)
-      : records.find(r => r.status !== 'Resolved') || records[0];
-
-    if (!target) {
-      setIsAgentRunning(false);
-      return;
-    }
-
-    const steps = [
-      { role: 'ResearchAgent', action: 'Auditing benchmarks and memory profile...', dur: 1200 },
-      { role: 'PlannerAgent', action: 'Validating architecture and task decomposition...', dur: 1200 },
-      { role: 'CoderAgent', action: 'Drafting streaming endpoint artifact and schema...', dur: 1300 },
-      { role: 'ReviewerAgent', action: 'Checking latency bounds (<250ms) and security bounds...', dur: 1200 },
-      { role: 'AgentLee', action: 'Confirming consensus and writing to durable Shared Memory...', dur: 1200 }
-    ];
-
-    for (let i = 0; i < steps.length; i++) {
-      const step = steps[i];
-      setActiveAgentCycle(step.role);
-      addEventMessage(
-        step.role,
-        `${AGENT_REGISTRY[step.role].name}: ${step.action}`,
-        step.role === 'CoderAgent' ? 'claim' : step.role === 'ReviewerAgent' ? 'verify' : step.role === 'AgentLee' ? 'decision' : 'post',
-        target.id
-      );
-      await new Promise(r => setTimeout(r, step.dur));
-
-      if (step.role === 'ResearchAgent') {
-        setRecords(prev => prev.map(r => r.id === target.id ? { ...r, owner: 'PlannerAgent', status: 'In Progress' } : r));
-      } else if (step.role === 'PlannerAgent') {
-        setRecords(prev => prev.map(r => r.id === target.id ? { ...r, owner: 'CoderAgent', status: 'In Progress' } : r));
-      } else if (step.role === 'CoderAgent') {
-        setRecords(prev => prev.map(r => r.id === target.id ? { ...r, owner: 'ReviewerAgent', status: 'Review' } : r));
-      } else if (step.role === 'ReviewerAgent') {
-        setRecords(prev => prev.map(r => r.id === target.id ? { ...r, owner: 'AgentLee', status: 'Review' } : r));
-      } else if (step.role === 'AgentLee') {
-        setRecords(prev => prev.map(r => r.id === target.id ? { ...r, owner: 'AgentLee', status: 'Resolved', nextAction: 'Deployment verification complete' } : r));
-        setSharedMemory(prev => [
-          {
-            id: `mem-${Date.now()}`,
-            category: 'DecisionLog',
-            title: `Resolved: ${target.goal}`,
-            content: target.decision,
-            updatedBy: 'AgentLee',
-            lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          },
-          ...prev
-        ]);
-      }
-    }
-
+  const runMultiAgentCycle = async (_targetId?: string) => {
     setActiveAgentCycle(null);
-    setIsAgentRunning(false);
-    showToast(`Multi-Agent cycle completed for "${target.goal}"`);
+    showToast(
+      'Agent dispatch unavailable. Connect the authenticated LeeWay Runtime workforce provider.'
+    );
   };
 
   // Send Notepad to Blackboard
   const sendNotepadToBlackboard = () => {
-    const lines = userContent.split('\n').filter(l => l.trim().length > 0);
-    const goalTitle = lines[0] ? lines[0].replace(/^#+\s*/, '') : 'User Defined Goal';
-    const taskTitle = lines[1] ? lines[1].replace(/^#+\s*/, '') : 'Decomposition and benchmark phase';
-
-    const newRec: BlackboardRecord = {
-      id: `rec-${Date.now()}`,
-      goal: goalTitle,
-      task: taskTitle,
-      owner: activePadAgent,
-      status: 'Proposed',
-      evidence: userContent.slice(0, 200) + '...',
-      decision: 'Awaiting multi-agent blackboard cycle',
-      nextAction: 'PlannerAgent decomposes tasks upon research completion',
-      priority: 'high',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      tags: ['NotepadSync', 'NewGoal']
-    };
-
-    setRecords(prev => [newRec, ...prev]);
-    addEventMessage(activePadAgent, `New goal posted from Shared Intake Workspace: "${goalTitle}"`, 'post', newRec.id);
-    setActiveMainTab('studio');
-    setBoardSubTab('blackboard');
-    showToast(`Sent "${goalTitle}" to Blackboard!`);
+    showToast(
+      'Your local notes are preserved. Shared Blackboard delivery is unavailable until Runtime is connected.'
+    );
   };
 
   // Pull Blackboard Decisions into Notepad
   const exportBlackboardToNotepad = () => {
-    const resolved = records.filter(r => r.status === 'Resolved');
-    let summary = "\n\n# SYNTHESIZED BLACKBOARD DECISIONS\n\n";
-    resolved.forEach((r, idx) => {
-      summary += `### ${idx + 1}. Goal: ${r.goal}\n`;
-      summary += `• Task: ${r.task}\n`;
-      summary += `• Decision: ${r.decision}\n`;
-      summary += `• Evidence: ${r.evidence}\n`;
-      summary += `• Next Action: ${r.nextAction}\n\n`;
-    });
-    setUserContent(prev => prev + summary);
-    setActiveMainTab('studio');
-    showToast('Pulled Blackboard decisions into Notepad');
+    showToast(
+      'Verified Blackboard decisions are unavailable. Existing notes remain unchanged.'
+    );
   };
 
   // Advance Blackboard Record Status
-  const advanceRecordStatus = (recId: string) => {
-    const flow: Record<string, BlackboardRecord['status']> = {
-      'Proposed': 'In Progress',
-      'In Progress': 'Review',
-      'Review': 'Resolved',
-      'Resolved': 'Proposed'
-    };
-    setRecords(prev => prev.map(r => {
-      if (r.id === recId) {
-        const nextStatus = flow[r.status] || 'Proposed';
-        addEventMessage(r.owner, `Record status changed to "${nextStatus}" for goal: "${r.goal}"`, 'verify', r.id);
-        return { ...r, status: nextStatus };
-      }
-      return r;
-    }));
+  const advanceRecordStatus = (_recId: string) => {
+    showToast(
+      'Status transition requires authenticated Runtime acknowledgment.'
+    );
   };
 
   // Add New Goal Modal Submit
   const handleAddNewGoal = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newGoalInput.trim()) return;
-    const newRec: BlackboardRecord = {
-      id: `rec-${Date.now()}`,
-      goal: newGoalInput.trim(),
-      task: 'Initial multi-agent problem decomposition & feasibility analysis',
-      owner: 'ResearchAgent',
-      status: 'Proposed',
-      evidence: 'Awaiting ResearchAgent initial benchmark scan.',
-      decision: 'Pending multi-agent review.',
-      nextAction: 'ResearchAgent gathers baseline metrics and requirements.',
-      priority: 'high',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      tags: ['ActiveGoal']
-    };
-    setRecords(prev => [newRec, ...prev]);
-    addEventMessage('AgentLee', `New Goal registered to Blackboard: "${newGoalInput.trim()}"`, 'post', newRec.id);
-    setNewGoalInput('');
-    setShowNewRecordModal(false);
-    showToast(`Registered "${newRec.goal}" to Blackboard`);
+    showToast(
+      'Goal draft retained. Runtime assignment and shared publication are unavailable.'
+    );
   };
 
   // Export standalone HTML
@@ -1331,7 +1105,7 @@ export const AgentNotepadBlackboard: React.FC<AgentNotepadBlackboardProps> = ({
                         Real-Time Agent Event Bus
                       </h3>
                       <p className="text-[11px] text-stone-500">
-                        Live telemetry and coordination broadcasts across the multi-agent cluster.
+                        Local workspace activity only. Authenticated multi-agent collaboration is not connected. Existing entries are not verified execution evidence.
                       </p>
                     </div>
                     <button
@@ -1353,7 +1127,7 @@ export const AgentNotepadBlackboard: React.FC<AgentNotepadBlackboardProps> = ({
                       type="text"
                       value={agentBusInput}
                       onChange={(e) => setAgentBusInput(e.target.value)}
-                      placeholder="Broadcast direct guidance to all agents..."
+                      placeholder="Local draft — live agent delivery unavailable"
                       className="flex-1 text-xs p-2 bg-stone-50 border border-stone-300 rounded-lg outline-none focus:bg-white focus:ring-2 focus:ring-stone-900"
                     />
                     <button
@@ -1452,7 +1226,7 @@ export const AgentNotepadBlackboard: React.FC<AgentNotepadBlackboardProps> = ({
               </div>
 
               <p className="text-[11px] text-stone-500 leading-relaxed">
-                Once submitted, Dr. Rachel (ResearchAgent) will automatically claim this goal to evaluate evidence and constraints.
+                Local goal draft only. No agent assignment occurs until Runtime authorizes and acknowledges the assignment.
               </p>
 
               <div className="flex justify-end gap-2 pt-1">
