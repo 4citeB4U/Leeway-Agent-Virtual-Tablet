@@ -236,10 +236,7 @@ export function publishedAppSurfaceUrl(
   compact = false,
   decision?: PublishedAppSurfaceDecision,
 ): string | null {
-  if (LOCAL_ADAPTER_CANDIDATE_APPS.includes(app.id)) {
-    return resolvePublishedAppSurface(app, surface, compact, decision).url;
-  }
-  return tabletSurfaceUrl(app.url, app.id, surface, compact);
+  return resolvePublishedAppSurface(app, surface, compact, decision).url;
 }
 
 export function isPublishedLeeWayAppId(value: WorkstationAppId): value is PublishedLeeWayAppId {

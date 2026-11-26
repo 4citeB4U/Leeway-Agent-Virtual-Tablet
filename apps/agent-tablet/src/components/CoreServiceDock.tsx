@@ -11,7 +11,7 @@ WHEN = 2026-11-16.
 HOW = User-initiated popout, truth-preserving unverified states and existing Tablet navigation only.
 LICENSE = Existing repository terms (Apache-2.0), no new rights asserted.
 */
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Settings2 } from 'lucide-react';
 import type { WorkstationAppId } from '../types';
 import { DeviceBridgeControl } from './DeviceBridgeControl';
@@ -40,14 +40,58 @@ const coreSurfaces: readonly CoreSurface[] = [
   { id: 'edge-rtc', title: 'Edge RTC', group: 'Network', description: 'Real-time voice/video transport; sessions and client authority are separate from this UI.' },
 ];
 
-export function CoreServiceDock({ onOpenSurface, embedded = false }: { onOpenSurface: (surface: WorkstationAppId) => void; embedded?: boolean }) {
+export function CoreServiceDock({ onOpenSurface, authorizeCoreSurface, embedded = false }: {
+  onOpenSurface: (surface: WorkstationAppId) => void;
+  authorizeCoreSurface: () => Promise<{ state: string; reason?: string }>;
+  embedded?: boolean;
+}) {
   const [visible, setVisible] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [authorizationStatus, setAuthorizationStatus] = useState('UNVERIFIED');
+  const authorizationRef = useRef(authorizeCoreSurface);
+  authorizationRef.current = authorizeCoreSurface;
   const selected = coreSurfaces.find(surface => surface.id === selectedId);
+
+  const reauthorize = async () => {
+    const result = await authorizeCoreSurface();
+    const allowed = result.state === 'AUTHORIZED';
+    setAuthorizationStatus(allowed ? 'AUTHORIZED' : result.reason || result.state);
+    if (!allowed) {
+      setVisible(false);
+      setSelectedId(null);
+    }
+    return allowed;
+  };
+
+  useEffect(() => {
+    if (!visible) return;
+    let active = true;
+    const check = async () => {
+      try {
+        const result = await authorizationRef.current();
+        if (!active) return;
+        if (result.state !== 'AUTHORIZED') {
+          setAuthorizationStatus(result.reason || result.state);
+          setVisible(false);
+          setSelectedId(null);
+        }
+      } catch {
+        if (!active) return;
+        setAuthorizationStatus('CREATOR_CORE_AUTHORITY_FAILURE');
+        setVisible(false);
+        setSelectedId(null);
+      }
+    };
+    const intervalId = window.setInterval(() => { void check(); }, 5_000);
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+    };
+  }, [visible]);
 
   return (
     <div className={embedded ? 'relative z-[90] text-zinc-100' : 'fixed bottom-10 right-3 z-[90] max-w-[calc(100vw-1.5rem)] text-zinc-100'}>
-      {visible && (
+      {visible && authorizationStatus === 'AUTHORIZED' && (
         <section aria-label="LeeWay core service controls" className={`${embedded ? 'fixed bottom-[4.5rem] right-3' : 'mb-2'} max-h-[min(70vh,620px)] w-[min(90vw,440px)] overflow-y-auto rounded-xl border border-cyan-700 bg-[#0b1422] p-4 shadow-2xl`}>
           <header className="mb-3 flex items-center justify-between gap-2">
             <div>
@@ -64,7 +108,13 @@ export function CoreServiceDock({ onOpenSurface, embedded = false }: { onOpenSur
               <p role="status" className="rounded border border-amber-700 bg-amber-950/20 p-2 text-xs text-amber-200">LIVE SERVICE: NOT VERIFIED IN THIS TABLET SESSION. This panel does not execute device commands or claim connected cameras, models or voice.</p>
               {selected.id === 'device-bridge' && <DeviceBridgeControl />}
               {selected.relatedTabletView ? (
-                <button type="button" className="rounded bg-cyan-900 px-3 py-2 text-xs font-bold" onClick={() => { onOpenSurface(selected.relatedTabletView!); setVisible(false); setSelectedId(null); }}>
+                <button type="button" className="rounded bg-cyan-900 px-3 py-2 text-xs font-bold" onClick={async () => {
+                  if (await reauthorize()) {
+                    onOpenSurface(selected.relatedTabletView!);
+                    setVisible(false);
+                    setSelectedId(null);
+                  }
+                }}>
                   Open related Tablet workspace
                 </button>
               ) : (
@@ -74,7 +124,9 @@ export function CoreServiceDock({ onOpenSurface, embedded = false }: { onOpenSur
           ) : (
             <div className="grid grid-cols-2 gap-2">
               {coreSurfaces.map(surface => (
-                <button type="button" key={surface.id} onClick={() => setSelectedId(surface.id)}
+                <button type="button" key={surface.id} onClick={async () => {
+                  if (await reauthorize()) setSelectedId(surface.id);
+                }}
                   className="rounded border border-zinc-700 bg-zinc-900/80 p-2.5 text-left hover:border-cyan-600"
                   aria-label={'Inspect ' + surface.title}>
                   <span className="block text-[9px] uppercase tracking-wider text-cyan-300">{surface.group}</span>
@@ -86,7 +138,14 @@ export function CoreServiceDock({ onOpenSurface, embedded = false }: { onOpenSur
           <p className="mt-3 text-[10px] text-zinc-500">Existing authorities remain external. Studios and additional products enter only after core execution is qualified.</p>
         </section>
       )}
-      <button type="button" aria-expanded={visible} aria-label="Toggle LeeWay core service widget" onClick={() => { setVisible(v => !v); setSelectedId(null); }}
+      <button type="button" aria-expanded={visible} aria-label="Toggle LeeWay core service widget" onClick={async () => {
+        if (visible) {
+          setVisible(false);
+          setSelectedId(null);
+          return;
+        }
+        if (await reauthorize()) setVisible(true);
+      }}
         className={embedded
           ? 'group relative flex w-16 shrink-0 flex-col items-center gap-0.5 rounded-2xl p-1 text-[7px] font-bold text-zinc-200 transition hover:-translate-y-1 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300'
           : 'ml-auto block rounded-full border border-cyan-500 bg-[#10243a] px-4 py-2 text-xs font-black shadow-lg hover:bg-[#174263]'}>
@@ -94,6 +153,11 @@ export function CoreServiceDock({ onOpenSurface, embedded = false }: { onOpenSur
         <span>LeeWay Core</span>
         {embedded && <span className={`h-0.5 w-3 rounded-full ${visible ? 'bg-cyan-300 shadow-[0_0_8px_#22d3ee]' : 'bg-transparent'}`} />}
       </button>
+      {authorizationStatus !== 'AUTHORIZED' && (
+        <p role="status" className="mt-1 max-w-48 text-[9px] text-amber-200">
+          LeeWay Core: {authorizationStatus}
+        </p>
+      )}
     </div>
   );
 }

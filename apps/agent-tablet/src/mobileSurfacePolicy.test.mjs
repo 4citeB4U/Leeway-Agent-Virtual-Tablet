@@ -4,6 +4,7 @@ import { resolvePublishedAppSurface } from './mobileSurfacePolicy.mjs';
 
 const app = { id: 'officeSuite', capabilityRef: 'leeway.office' };
 const base = {
+  capabilityRef: app.capabilityRef,
   entitlement: 'ACTIVE',
   serviceAvailability: 'AVAILABLE',
   adapterConnectivity: 'CONNECTED',
@@ -54,6 +55,7 @@ test('revoked, degraded, denied or unauthorized session never resolves a surface
   for (const decision of [
     { ...base, state: 'HOSTED_APPROVED', url: 'https://4citeb4u.github.io/app/', entitlement: 'REVOKED' },
     { ...base, state: 'HOSTED_APPROVED', url: 'https://4citeb4u.github.io/app/', entitlement: 'DEGRADED' },
+    { ...base, state: 'HOSTED_APPROVED', url: 'https://4citeb4u.github.io/app/', entitlement: 'CREATOR_EXCLUSIVE' },
     { ...base, state: 'DENIED', url: 'https://4citeb4u.github.io/app/' },
     { ...base, state: 'HOSTED_APPROVED', url: 'https://4citeb4u.github.io/app/', sessionAuthorization: 'UNAUTHORIZED' },
   ]) {
@@ -61,6 +63,13 @@ test('revoked, degraded, denied or unauthorized session never resolves a surface
     assert.equal(r.url, null);
     assert.equal(r.state, 'DENIED');
   }
+});
+
+test('hosted applications do not use catalog URLs without an authorized decision', () => {
+  const missing = resolvePublishedAppSurface(app, 'tablet', false, {
+    state: 'UNAVAILABLE', entitlement: 'UNKNOWN'
+  });
+  assert.equal(missing.url, null);
 });
 
 test('capability mismatch and unbound persistence are unavailable, not entitlement changes', () => {

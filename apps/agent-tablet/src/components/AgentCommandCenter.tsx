@@ -15,12 +15,13 @@ import {
 } from 'lucide-react';
 import type { WorkstationAppId } from '../types';
 import { PUBLISHED_LEEWAY_APPS, PUBLISHED_LEEWAY_APP_BY_ID, type PublishedLeeWayAppId } from '../publishedApps';
+import type { PublishedAppLaunchOrigin } from './PublishedLeeWayApp';
 import { LeewayAgentVTBackground } from '../LeewayAgentVTBackground';
 import { tabletAssetUrl } from '../assetUrl';
 
 type Props = {
   workboardStatus: string;
-  onOpenSurface: (surface: WorkstationAppId) => void;
+  onOpenSurface: (surface: WorkstationAppId, launchOrigin?: PublishedAppLaunchOrigin) => void;
   onPinToTaskbar?: (appId: WorkstationAppId) => void;
 };
 
@@ -184,9 +185,9 @@ export function AgentCommandCenter({ workboardStatus, onOpenSurface, onPinToTask
     setContextMenu({ x, y, app: null });
   };
 
-  const handleLaunchWidget = (appId: WorkstationAppId) => {
-    if (window.leewayNative?.openAppWidget) {
-      void window.leewayNative.openAppWidget(appId as any);
+  const handleLaunchWidget = (appId: WorkstationAppId, launchOrigin: PublishedAppLaunchOrigin) => {
+    if (window.leewayNative?.openAppWidget && PUBLISHED_LEEWAY_APPS.some(app => app.id === appId)) {
+      void window.leewayNative.openAppWidget(appId as PublishedLeeWayAppId, launchOrigin);
     }
   };
 
@@ -249,7 +250,7 @@ export function AgentCommandCenter({ workboardStatus, onOpenSurface, onPinToTask
               onDragLeave={() => setDragOverAppId(null)}
               onDrop={e => handleDrop(e, app)}
               onContextMenu={e => handleAppContextMenu(e, app)}
-              onClick={() => onOpenSurface(app.id)}
+              onClick={() => onOpenSurface(app.id, 'desktop')}
               title={`${app.detail} (Right click for Jump List)`}
               className={`group relative flex h-[92px] w-[88px] flex-col items-center justify-start rounded-2xl p-1.5 text-center transition cursor-pointer hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${isDragOver ? 'scale-105 ring-2 ring-cyan-400 bg-white/15' : ''}`}
             >
@@ -302,7 +303,7 @@ export function AgentCommandCenter({ workboardStatus, onOpenSurface, onPinToTask
                 <button
                   type="button"
                   onClick={() => {
-                    onOpenSurface(contextMenu.app!.id);
+                    onOpenSurface(contextMenu.app!.id, 'context-menu');
                     setContextMenu(null);
                   }}
                   className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[11px] font-bold text-white hover:bg-cyan-500/20 hover:text-cyan-200"
@@ -314,7 +315,7 @@ export function AgentCommandCenter({ workboardStatus, onOpenSurface, onPinToTask
                 <button
                   type="button"
                   onClick={() => {
-                    handleLaunchWidget(contextMenu.app!.id);
+                    handleLaunchWidget(contextMenu.app!.id, 'context-menu');
                     setContextMenu(null);
                   }}
                   className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[11px] font-bold text-white hover:bg-cyan-500/20 hover:text-cyan-200"

@@ -57,12 +57,12 @@ import { AgentCommandCenter } from './components/AgentCommandCenter';
 import { CoreServiceDock } from './components/CoreServiceDock';
 import { WorkboardRuntimePanel } from './components/WorkboardRuntimePanel';
 import { AgentNotepadBlackboard } from './components/AgentNotepadBlackboard';
-import { PublishedLeeWayApp } from './components/PublishedLeeWayApp';
+import { PublishedLeeWayApp, type PublishedAppLaunchOrigin } from './components/PublishedLeeWayApp';
 import { ContentVault } from './components/ContentVault';
 import { LeeWayFederated } from './components/LeeWayFederated';
-import { isPublishedLeeWayAppId, PUBLISHED_LEEWAY_APP_BY_ID, PUBLISHED_LEEWAY_APPS } from './publishedApps';
+import { isPublishedLeeWayAppId, PUBLISHED_LEEWAY_APP_BY_ID, PUBLISHED_LEEWAY_APPS, type PublishedLeeWayAppId } from './publishedApps';
 import { tabletAssetUrl } from './assetUrl';
-import { browserPlatformFamily } from './mobileSurfacePolicy.mjs';
+import { browserPlatformFamily, resolvePublishedAppSurface, type PublishedAppSurfaceDecision } from './mobileSurfacePolicy.mjs';
 
 // Base initial files for LeeCode
 const initialFiles: Record<string, string> = {
@@ -206,14 +206,10 @@ const LOCAL_SURFACE_APP_IDS = new Set<WorkstationAppId>([
 
 export default function App() {
   // Main Navigation App
-  const [currentApp, setCurrentApp] = useState<WorkstationAppId>(() => {
-    const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-    const requestedView = params?.get('view');
-    if (requestedView) {
-      return requestedView as WorkstationAppId;
-    }
-    return 'desktop';
-  });
+  const [currentApp, setCurrentAppState] = useState<WorkstationAppId>('desktop');
+  const [currentLaunchOrigin, setCurrentLaunchOrigin] = useState<PublishedAppLaunchOrigin>('desktop');
+  const [surfaceResolutions, setSurfaceResolutions] = useState<Partial<Record<PublishedLeeWayAppId, PublishedAppSurfaceDecision>>>({});
+  const appLaunchRequestId = useRef(0);
   const [pinnedAppIds, setPinnedAppIds] = useState<WorkstationAppId[]>(() => {
     try {
       const saved = localStorage.getItem(TASKBAR_STORAGE_KEY) ?? localStorage.getItem(LEGACY_TASKBAR_STORAGE_KEY);
@@ -381,6 +377,105 @@ export default function App() {
     setTimeout(() => setToastMsg(null), 3000);
   };
 
+  const setCurrentApp = (appId: WorkstationAppId, launchOrigin: PublishedAppLaunchOrigin = 'desktop') => {
+    const requestId = ++appLaunchRequestId.current;
+    if (appId === 'desktop') {
+      setCurrentLaunchOrigin('desktop');
+      setSurfaceResolutions({});
+      setCurrentAppState('desktop');
+      return;
+    }
+    if (!isPublishedLeeWayAppId(appId)) {
+      setCurrentAppState(appId);
+      return;
+    }
+    const resolveAppSurface = window.leewayNative?.resolveAppSurface;
+    if (!resolveAppSurface) {
+      if (currentApp === appId) setCurrentAppState('desktop');
+      showToast(`Could not open ${appId}: authenticated Runtime decision source unavailable.`);
+      return;
+    }
+    void resolveAppSurface(appId, 'tablet', launchOrigin).then(decision => {
+      if (appLaunchRequestId.current !== requestId) return;
+      const app = PUBLISHED_LEEWAY_APP_BY_ID[appId];
+      const resolved = resolvePublishedAppSurface(app, 'tablet', false, decision);
+      if (!resolved.url) {
+        if (currentApp === appId) {
+          setCurrentAppState('desktop');
+          setSurfaceResolutions({});
+        }
+        showToast(`Could not open ${appId}: ${resolved.reason || decision.state}.`);
+        return;
+      }
+      setSurfaceResolutions(previous => ({ ...previous, [appId]: decision }));
+      setCurrentLaunchOrigin(launchOrigin);
+      setCurrentAppState(appId);
+    }).catch(() => {
+      if (appLaunchRequestId.current !== requestId) return;
+      if (currentApp === appId) {
+        setCurrentAppState('desktop');
+        setSurfaceResolutions({});
+      }
+      showToast(`Could not open ${appId}: authenticated Runtime decision failed.`);
+    });
+  };
+
+  const authorizeCoreSurface = async () => {
+    const authorize = window.leewayNative?.authorizeCoreSurface;
+    if (!authorize) return { state: 'UNAVAILABLE', reason: 'CREATOR_CORE_AUTHORITY_UNBOUND' };
+    try {
+      return await authorize();
+    } catch {
+      return { state: 'UNAVAILABLE', reason: 'CREATOR_CORE_AUTHORITY_FAILURE' };
+    }
+  };
+
+  useEffect(() => {
+    const requestedView = new URLSearchParams(window.location.search).get('view');
+    if (requestedView && requestedView !== 'desktop' &&
+        isPublishedLeeWayAppId(requestedView as WorkstationAppId)) {
+      setCurrentApp(requestedView as WorkstationAppId, 'open-request-file');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isPublishedLeeWayAppId(currentApp)) return;
+    const resolveAppSurface = window.leewayNative?.resolveAppSurface;
+    if (!resolveAppSurface) return;
+    let cancelled = false;
+    const revalidate = async () => {
+      try {
+        const decision = await resolveAppSurface(currentApp, 'tablet', currentLaunchOrigin);
+        if (cancelled) return;
+        const resolved = resolvePublishedAppSurface(
+          PUBLISHED_LEEWAY_APP_BY_ID[currentApp], 'tablet', false, decision
+        );
+        if (!resolved.url) {
+          setSurfaceResolutions({});
+          setCurrentAppState('desktop');
+          showToast(`Access to ${currentApp} was withdrawn: ${resolved.reason || decision.state}.`);
+          return;
+        }
+        setSurfaceResolutions(previous => ({ ...previous, [currentApp]: decision }));
+      } catch {
+        if (cancelled) return;
+        setSurfaceResolutions({});
+        setCurrentAppState('desktop');
+        showToast(`Access to ${currentApp} could not be revalidated.`);
+      }
+    };
+    const refresh = () => { void revalidate(); };
+    const intervalId = window.setInterval(refresh, 5_000);
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, [currentApp, currentLaunchOrigin]);
+
   // Save files to localStorage
   useEffect(() => {
     try {
@@ -535,11 +630,11 @@ export default function App() {
   // LeeWay floating-widget host.  Browser preview retains its in-tablet
   // fallback because it has no native window authority.
   useEffect(() => {
-    if (isWidgetSurface || currentApp === 'desktop') return;
+    if (isWidgetSurface || !isPublishedLeeWayAppId(currentApp)) return;
     const launchWidget = window.leewayNative?.openAppWidget;
     if (!launchWidget) return;
     let cancelled = false;
-    void launchWidget(currentApp as Exclude<WorkstationAppId, 'desktop'>)
+    void launchWidget(currentApp, currentLaunchOrigin)
       .then(result => {
         if (cancelled) return;
         if (result.state !== 'WIDGET_OPENED' && result.state !== 'WIDGET_RESTORED') {
@@ -550,7 +645,7 @@ export default function App() {
         if (!cancelled) showToast(`Could not open ${currentApp} as a floating widget.`);
       });
     return () => { cancelled = true; };
-  }, [currentApp]);
+  }, [currentApp, currentLaunchOrigin]);
 
   const appContent = (
     <div className="flex flex-col h-full w-full overflow-hidden bg-[#18191f]">
@@ -592,7 +687,7 @@ export default function App() {
                     e.dataTransfer.setData('text/leeway-source', 'taskbar');
                     e.dataTransfer.effectAllowed = 'move';
                   }}
-                  onClick={() => setCurrentApp(appId)}
+                  onClick={() => setCurrentApp(appId, 'taskbar')}
                   onContextMenu={e => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -615,7 +710,7 @@ export default function App() {
                 </button>
               );
             })}
-            <CoreServiceDock onOpenSurface={setCurrentApp} embedded />
+            <CoreServiceDock onOpenSurface={setCurrentApp} authorizeCoreSurface={authorizeCoreSurface} embedded />
           </div>
 
           {/* Taskbar Right-Click Jump List */}
@@ -636,7 +731,7 @@ export default function App() {
                           key={app.id}
                           type="button"
                           onClick={() => {
-                            setCurrentApp(app.id);
+                            setCurrentApp(app.id, 'context-menu');
                             setTaskbarMenu(null);
                           }}
                           className="flex min-w-0 items-center gap-2 rounded-lg border border-white/10 bg-white/[.04] px-2 py-1.5 text-left hover:border-cyan-400/60 hover:bg-cyan-500/15"
@@ -658,7 +753,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => {
-                        setCurrentApp(taskbarMenu.appId);
+                        setCurrentApp(taskbarMenu.appId, 'context-menu');
                         setTaskbarMenu(null);
                       }}
                       className="flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-[11px] font-bold text-white hover:bg-cyan-500/20 hover:text-cyan-200"
@@ -669,8 +764,8 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => {
-                        if (window.leewayNative?.openAppWidget) {
-                          void window.leewayNative.openAppWidget(taskbarMenu.appId);
+                        if (window.leewayNative?.openAppWidget && isPublishedLeeWayAppId(taskbarMenu.appId)) {
+                          void window.leewayNative.openAppWidget(taskbarMenu.appId, 'context-menu');
                         }
                         setTaskbarMenu(null);
                       }}
@@ -720,7 +815,7 @@ export default function App() {
         {currentApp === 'desktop' && (
           <AgentCommandCenter
             workboardStatus={workboardStatus}
-            onOpenSurface={(surface) => setCurrentApp(surface)}
+            onOpenSurface={(surface, launchOrigin) => setCurrentApp(surface, launchOrigin)}
           />
         )}
         {false && (
@@ -1430,7 +1525,7 @@ export default function App() {
         )}
 
         {!LOCAL_SURFACE_APP_IDS.has(currentApp) && isPublishedLeeWayAppId(currentApp) && (
-          <PublishedLeeWayApp appId={currentApp} onBack={() => setCurrentApp('desktop')} />
+          <PublishedLeeWayApp appId={currentApp} onBack={() => setCurrentApp('desktop')} resolution={surfaceResolutions[currentApp]} />
         )}
 
         {currentApp === 'agentRoster' && <AgentRosterBoard />}

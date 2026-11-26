@@ -23,6 +23,7 @@ const admission = {
 const surface = {
   state: 'HOSTED_APPROVED',
   url: 'https://4citeb4u.github.io/LeeWay-Continuum/',
+  entitlement: 'ACTIVE',
   serviceAvailability: 'AVAILABLE', adapterConnectivity: 'DISCONNECTED',
   informationPersistence: 'PERSISTED'
 };
@@ -81,4 +82,52 @@ test('missing surface supplier is explicit unavailable, not a fallback URL', asy
   const d = await make({ supplySurface: undefined })(app, 'tablet', ctx);
   assert.equal(d.state, 'UNAVAILABLE');
   assert.equal(d.reason, 'SURFACE_SUPPLIER_UNBOUND');
+});
+
+test('native decision echoes a fresh request binding and exact Runtime identity', async () => {
+  const request = {
+    appId: app.id,
+    capabilityRef: app.capabilityRef,
+    surface: 'widget',
+    launchOrigin: 'taskbar',
+    appSessionId: 'leeway.app.continuum',
+    requestId: '6d481e27-47c0-4b2f-9f62-63ed364fe473',
+    requestedAt: Date.now()
+  };
+  const d = await make({
+    supplySurface: async supplied => ({ ...surface, requestId: supplied.requestId })
+  })(app, 'widget', { ...ctx, sessionAuthorization: 'AUTHORIZED', nativeRequest: request });
+  assert.equal(d.state, 'HOSTED_APPROVED');
+  assert.equal(d.appId, app.id);
+  assert.equal(d.capabilityRef, app.capabilityRef);
+  assert.equal(d.authorizedAction, 'continuum.read');
+  assert.equal(d.surface, 'widget');
+  assert.equal(d.launchOrigin, 'taskbar');
+  assert.equal(d.appSessionId, 'leeway.app.continuum');
+  assert.equal(d.requestId, request.requestId);
+  assert.equal(d.sessionRef, ctx.sessionRef);
+  assert.equal(d.tenantRef, ctx.tenantRef);
+  assert.equal(d.deviceRef, ctx.deviceRef);
+  assert.equal(d.expiresAt <= d.issuedAt + 15_000, true);
+});
+
+test('native decisions do not invent active entitlement or accept a stale supplier response', async () => {
+  const request = {
+    appId: app.id,
+    capabilityRef: app.capabilityRef,
+    surface: 'tablet',
+    launchOrigin: 'desktop',
+    appSessionId: 'leeway.app.continuum',
+    requestId: '6d481e27-47c0-4b2f-9f62-63ed364fe473',
+    requestedAt: Date.now()
+  };
+  const unknown = await make({
+    supplySurface: async () => ({ ...surface, entitlement: undefined, requestId: request.requestId })
+  })(app, 'tablet', { ...ctx, sessionAuthorization: 'AUTHORIZED', nativeRequest: request });
+  assert.equal(unknown.state, 'UNAVAILABLE');
+  const stale = await make({
+    supplySurface: async () => ({ ...surface, requestId: 'stale-request' })
+  })(app, 'tablet', { ...ctx, sessionAuthorization: 'AUTHORIZED', nativeRequest: request });
+  assert.equal(stale.state, 'UNAVAILABLE');
+  assert.equal(stale.reason, 'NATIVE_DECISION_NONCE_MISMATCH');
 });

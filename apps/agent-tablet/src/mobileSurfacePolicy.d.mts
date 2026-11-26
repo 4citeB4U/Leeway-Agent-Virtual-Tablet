@@ -18,12 +18,25 @@ export function tabletSurfaceUrl(rawUrl: string, appId: string, surface: 'tablet
 export interface PublishedAppSurfaceDecision {
   state: 'HOSTED_APPROVED' | 'LOCAL_ADAPTER_AUTHORIZED' | 'UNAVAILABLE' | 'DENIED';
   url?: string;
+  appId?: string;
   capabilityRef?: string;
-  entitlement?: 'ACTIVE' | 'DEGRADED' | 'REVOKED';
+  authorizedAction?: string;
+  entitlement?: 'ACTIVE' | 'DEGRADED' | 'REVOKED' | 'CREATOR_EXCLUSIVE';
   serviceAvailability?: 'AVAILABLE' | 'UNAVAILABLE';
   adapterConnectivity?: 'CONNECTED' | 'DISCONNECTED';
   sessionAuthorization?: 'AUTHORIZED' | 'UNAUTHORIZED';
   informationPersistence?: 'PERSISTED' | 'UNBOUND';
+  sessionRef?: string;
+  tenantRef?: string;
+  projectRef?: string;
+  deviceRef?: string;
+  surface?: 'tablet' | 'widget';
+  launchOrigin?: string;
+  appSessionId?: string;
+  requestId?: string;
+  issuedAt?: number;
+  expiresAt?: number;
+  policyRevision?: number;
 }
 export interface PublishedAppSurfaceResult {
   state: 'HOSTED_APPROVED' | 'LOCAL_ADAPTER_AUTHORIZED' | 'UNAVAILABLE' | 'DENIED';

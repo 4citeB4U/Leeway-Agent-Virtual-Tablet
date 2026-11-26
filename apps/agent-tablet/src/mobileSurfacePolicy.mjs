@@ -70,12 +70,14 @@ function surfaceResult(state, url, reason, decision) {
 }
 export function resolvePublishedAppSurface(app, surface, compact, decision) {
   if (!decision || typeof decision !== 'object') return surfaceResult('UNAVAILABLE', null, 'RESOLVER_DECISION_REQUIRED');
-  if (decision.entitlement === 'REVOKED' || decision.entitlement === 'DEGRADED' || decision.state === 'DENIED') {
+  if (decision.entitlement === 'REVOKED' || decision.entitlement === 'DEGRADED' ||
+      decision.entitlement === 'CREATOR_EXCLUSIVE' || decision.state === 'DENIED') {
     return surfaceResult('DENIED', null, 'ENTITLEMENT_OR_AUTHORIZATION_DENIED', decision);
   }
   if (!RESOLVER_STATES.has(decision.state)) return surfaceResult('UNAVAILABLE', null, 'RESOLVER_STATE_INVALID', decision);
   if (decision.state === 'UNAVAILABLE') return surfaceResult('UNAVAILABLE', null, 'PROVIDER_UNAVAILABLE', decision);
-  if (decision.capabilityRef && decision.capabilityRef !== app.capabilityRef) {
+  if (decision.entitlement !== 'ACTIVE') return surfaceResult('UNAVAILABLE', null, 'RUNTIME_ENTITLEMENT_UNVERIFIED', decision);
+  if (decision.capabilityRef !== app.capabilityRef) {
     return surfaceResult('UNAVAILABLE', null, 'CAPABILITY_REF_MISMATCH', decision);
   }
   if (decision.sessionAuthorization !== 'AUTHORIZED') {

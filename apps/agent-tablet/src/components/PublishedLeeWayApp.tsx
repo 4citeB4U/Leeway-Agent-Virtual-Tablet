@@ -8,14 +8,24 @@ import { isCompactTabletViewport } from '../mobileSurfacePolicy.mjs';
 declare global {
   interface Window {
     leewayNative?: {
-      openAppWidget: (appId: Exclude<WorkstationAppId, 'desktop'>) => Promise<{ state: string; appId: string }>;
+      openAppWidget: (appId: Exclude<WorkstationAppId, 'desktop'>, launchOrigin?: PublishedAppLaunchOrigin) => Promise<{ state: string; appId: string; reason?: string }>;
       closeAppWidget: (appId: Exclude<WorkstationAppId, 'desktop'>) => Promise<{ state: string; appId: string }>;
       controlAppWidget: (appId: Exclude<WorkstationAppId, 'desktop'>, action: 'center' | 'larger' | 'smaller' | 'reload') => Promise<{ state: string; appId: string }>;
+      resolveAppSurface: (appId: Exclude<WorkstationAppId, 'desktop'>, surface: 'tablet' | 'widget', launchOrigin: PublishedAppLaunchOrigin) => Promise<PublishedAppSurfaceDecision>;
+      authorizeCoreSurface: () => Promise<{ state: string; reason?: string }>;
     };
   }
 }
 
 type Props = { appId: PublishedLeeWayAppId; onBack: () => void; resolution?: PublishedAppSurfaceDecision };
+export type PublishedAppLaunchOrigin =
+  | 'desktop'
+  | 'context-menu'
+  | 'taskbar'
+  | 'floating-widget'
+  | 'restored-widget'
+  | 'widget-control'
+  | 'open-request-file';
 
 // The tablet renders the real application directly.  It intentionally does
 // not paint a captured widget frame or replay tablet input into another page:
