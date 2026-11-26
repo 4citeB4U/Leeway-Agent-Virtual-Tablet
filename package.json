@@ -11,6 +11,7 @@
     "lint": "npm --prefix apps/agent-tablet run lint",
     "build": "npm --prefix apps/agent-tablet run build",
     "test:integration": "node --test integration/runtime-fabric/*.test.mjs",
+    "test:native-widget": "node --test native/agent-vt/widget-geometry.test.cjs",
     "test": "npm run lint && npm run test:integration && npm run build"
   }
 }
