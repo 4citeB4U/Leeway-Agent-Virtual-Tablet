@@ -1700,6 +1700,23 @@ export default function App() {
               {browserPlatformFamily(typeof navigator !== 'undefined' ? navigator.userAgent : '')} · CLIENT VIEW
             </span>
             <button
+              id="leeway-vt-widget-update"
+              type="button"
+              aria-label="Update tablet from GitHub main"
+              title="Update tablet from GitHub main"
+              onClick={async () => {
+                const result = await window.leewayNative?.runTabletUpdate?.();
+                if (result?.state === 'UPDATE_COMPLETED') {
+                  showToast(`Update complete: ${result.status?.state || 'OK'} ${result.status?.current?.slice(0, 7) || ''}`.trim());
+                } else {
+                  showToast(`Update failed: ${result?.status?.reason || result?.state || 'NO_NATIVE_BRIDGE'}`);
+                }
+              }}
+              className="rounded border border-[#66c6ff] bg-[#0077ff] px-2.5 py-1 text-[10px] font-black tracking-[0.08em] text-white shadow-[0_0_12px_rgba(0,119,255,.85)] hover:bg-[#2a95ff]"
+            >
+              UPDATE
+            </button>
+            <button
               id="leeway-vt-widget-move"
               type="button"
               aria-label="Move LeeWay Agentic Workflow System window"
