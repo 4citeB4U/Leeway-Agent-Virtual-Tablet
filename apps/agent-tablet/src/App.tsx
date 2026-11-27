@@ -399,8 +399,12 @@ export default function App() {
     }
     const resolveAppSurface = window.leewayNative?.resolveAppSurface;
     if (!resolveAppSurface) {
-      if (currentApp === appId) setCurrentAppState('desktop');
-      showToast(`Could not open ${appId}: authenticated Runtime decision source unavailable.`);
+      // Browser preview has no native window authority. Use the documented
+      // in-tablet fallback instead of failing closed on every app button.
+      setCurrentLaunchOrigin(launchOrigin);
+      setSurfaceResolutions({});
+      setCurrentAppState(appId);
+      showToast(`${appId}: browser preview (native Runtime decision source unavailable).`);
       return;
     }
     void resolveAppSurface(appId, 'tablet', launchOrigin).then(decision => {
