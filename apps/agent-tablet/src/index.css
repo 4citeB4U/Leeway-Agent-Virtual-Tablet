@@ -15,11 +15,15 @@
 .leeway-header-logo {
   --logo-hue: 0deg;
   --logo-saturation: 1.15;
-  animation: leeway-logo-flip 2.4s ease-in-out infinite;
   filter: hue-rotate(var(--logo-hue)) saturate(var(--logo-saturation)) contrast(1.18) brightness(1.12)
     drop-shadow(0 0 8px rgba(34, 211, 238, .75));
+  transform: perspective(420px) rotateY(0deg) scale(1);
   transform-origin: center;
   will-change: filter, transform;
+}
+
+.leeway-header-logo.leeway-logo-spinning {
+  animation: leeway-logo-flip 1.2s ease-in-out 1;
 }
 
 /* Each flip lands on a new color treatment. Exact supplied images are used

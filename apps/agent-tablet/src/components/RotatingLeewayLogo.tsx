@@ -15,13 +15,15 @@ import React, { useEffect, useState } from 'react';
 import { tabletAssetUrl } from '../assetUrl';
 
 const SLOT_COUNT = 8;
-const ROTATION_MS = 2400;
+const HOLD_MS = 6000;
+const SPIN_MS = 1200;
 const baseLogo = tabletAssetUrl('/leeway-true-logo.png');
 const slots = Array.from({ length: SLOT_COUNT }, (_, index) =>
   tabletAssetUrl(`/leeway-logos/leeway-logo-${String(index + 1).padStart(2, '0')}.png`));
 
 export function RotatingLeewayLogo({ className = '' }: { className?: string }) {
   const [index, setIndex] = useState(0);
+  const [spinning, setSpinning] = useState(false);
   const [available, setAvailable] = useState<boolean[]>(() => Array(SLOT_COUNT).fill(false));
 
   useEffect(() => {
@@ -37,10 +39,18 @@ export function RotatingLeewayLogo({ className = '' }: { className?: string }) {
     });
   }, []);
 
+  // Hold one distinct color/image, spin once, switch, then hold the next one.
   useEffect(() => {
-    const timer = window.setInterval(() => setIndex(current => (current + 1) % SLOT_COUNT), ROTATION_MS);
-    return () => window.clearInterval(timer);
-  }, []);
+    if (spinning) {
+      const timer = window.setTimeout(() => {
+        setIndex(current => (current + 1) % SLOT_COUNT);
+        setSpinning(false);
+      }, SPIN_MS);
+      return () => window.clearTimeout(timer);
+    }
+    const timer = window.setTimeout(() => setSpinning(true), HOLD_MS);
+    return () => window.clearTimeout(timer);
+  }, [spinning, index]);
 
   const src = available[index] ? slots[index] : baseLogo;
   return (
@@ -49,7 +59,7 @@ export function RotatingLeewayLogo({ className = '' }: { className?: string }) {
       src={src}
       alt=""
       aria-hidden="true"
-      className={`leeway-header-logo leeway-logo-variant-${index} ${className}`}
+      className={`leeway-header-logo leeway-logo-variant-${index} ${spinning ? 'leeway-logo-spinning' : ''} ${className}`}
     />
   );
 }
