@@ -49,7 +49,7 @@ const EMPLOYMENT_STEPS = [
 ];
 
 export function SettingsCenter({ onClose, onOpenAbout, onUpdate, edition = 'PERSONAL' }: Props) {
-  const [tab, setTab] = useState<'discover'|'operations'|'permissions'|'capabilities'|'employment'>('discover');
+  const [tab, setTab] = useState<'discover'|'operations'|'permissions'|'capabilities'|'employment'>('operations');
   const [api, setApi] = useState<{ state: string; detail: string }>({ state: 'CHECKING', detail: 'Probing same-origin tablet APIs…' });
 
   useEffect(() => {

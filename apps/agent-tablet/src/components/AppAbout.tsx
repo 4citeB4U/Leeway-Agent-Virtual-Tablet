@@ -110,7 +110,7 @@ export function AppAbout({ appId, onClose }: Props) {
 
   const nodes = useMemo(() => markdown ? parseMarkdown(markdown, url) : [], [markdown, url]);
   const images = useMemo(() => nodes.filter(node => node.kind === 'image').slice(0, 8), [nodes]);
-  const githubUrl = binding ? `https://github.com/4citeB4U/${binding.repo}` : '';
+  const githubUrl = binding ? `https://github.com/${binding.owner || '4citeB4U'}/${binding.repo}` : '';
 
   return (
     <section className="absolute inset-0 z-40 flex flex-col overflow-hidden bg-[#050a10] text-zinc-100" aria-label={`${appId} About`}>

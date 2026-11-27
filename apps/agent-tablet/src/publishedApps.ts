@@ -19,6 +19,10 @@ export type PublishedLeeWayAppId = Extract<WorkstationAppId,
   | 'diagnostics'
   | 'agentRoster'
   | 'digitalBrain'
+  | 'globalP2p'
+  | 'directConnect'
+  | 'motionGlyph'
+  | 'watchWinSale'
 >;
 
 export type PublishedLeeWayApp = {
@@ -226,6 +230,50 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     accent: 'border-blue-700 bg-blue-950/20',
     iconImage: '/app-icons/digital-brain.png',
     gradient: 'from-blue-200 via-cyan-600 to-indigo-950'
+  },
+  {
+    id: 'globalP2p',
+    title: 'LeeWay Global P2P',
+    shortTitle: 'Global P2P',
+    description: 'Private peer-to-peer family communication, invitations, messaging and offline delivery.',
+    url: 'https://agentlee2116-ctrl.github.io/Leeway-Global-P2P/',
+    capabilityRef: 'leeway.global-p2p',
+    accent: 'border-amber-700 bg-amber-950/20',
+    iconImage: '/app-icons/global-p2p.png',
+    gradient: 'from-amber-200 via-blue-700 to-slate-950'
+  },
+  {
+    id: 'directConnect',
+    title: 'Direct Connect Portal',
+    shortTitle: 'Direct Connect',
+    description: 'Authorized phone dialer, email workspace and companion-device connection portal.',
+    url: 'https://larrylee2912-ux.github.io/Direct-Connect-Portal/',
+    capabilityRef: 'leeway.direct-connect',
+    accent: 'border-cyan-700 bg-cyan-950/20',
+    iconImage: '/app-icons/direct-connect.png',
+    gradient: 'from-cyan-200 via-blue-700 to-indigo-950'
+  },
+  {
+    id: 'motionGlyph',
+    title: 'Motion-Glyph-LAB',
+    shortTitle: 'Motion Glyph',
+    description: 'KineticGlyph Studio: interactive buttons, logo animation, favicon and export workbench.',
+    url: 'https://larrylee2912-ux.github.io/Motion-Glyph-LAB/',
+    capabilityRef: 'leeway.motion-glyph',
+    accent: 'border-fuchsia-700 bg-fuchsia-950/20',
+    iconImage: '/app-icons/motion-glyph.png',
+    gradient: 'from-fuchsia-300 via-violet-700 to-slate-950'
+  },
+  {
+    id: 'watchWinSale',
+    title: 'Watch-Win-Sale',
+    shortTitle: 'Watch & Win',
+    description: 'Animated commercial viewing experience with authorized offers and campaigns.',
+    url: 'https://larrylee2912-ux.github.io/Watch-Win-Sale/',
+    capabilityRef: 'leeway.watch-win-sale',
+    accent: 'border-emerald-700 bg-emerald-950/20',
+    iconImage: '/app-icons/watch-win-sale.png',
+    gradient: 'from-emerald-200 via-green-700 to-slate-950'
   }
 ] as const;
 

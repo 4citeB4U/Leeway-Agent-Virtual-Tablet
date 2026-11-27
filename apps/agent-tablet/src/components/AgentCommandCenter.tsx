@@ -57,7 +57,11 @@ const DESKTOP_APP_ORDER: PublishedLeeWayAppId[] = [
   'contentVault',
   'notepad',
   'agentRoster',
-  'digitalBrain'
+  'digitalBrain',
+  'globalP2p',
+  'directConnect',
+  'motionGlyph',
+  'watchWinSale'
 ];
 
 const INITIAL_DESKTOP_APPS: DesktopItem[] = DESKTOP_APP_ORDER.map(id => {

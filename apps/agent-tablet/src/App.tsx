@@ -152,6 +152,10 @@ const TABLET_WIDGETS = [
   { id: 'agentVision' as const, label: 'Vision', image: '/app-icons/agent-vision.png', color: 'from-emerald-300 to-teal-900' },
   { id: 'creatorControl' as const, label: 'LeeWay Core', image: '/app-icons/leeway-core.png', color: 'from-amber-300 via-orange-700 to-slate-950' },
   { id: 'settings' as const, label: 'Settings', image: '/app-icons/home-button.png', icon: Settings2, color: 'from-slate-300 via-cyan-700 to-slate-950' },
+  { id: 'globalP2p' as const, label: 'Global P2P', image: '/app-icons/global-p2p.png', color: 'from-amber-200 via-blue-700 to-slate-950' },
+  { id: 'directConnect' as const, label: 'Direct Connect', image: '/app-icons/direct-connect.png', color: 'from-cyan-200 via-blue-700 to-indigo-950' },
+  { id: 'motionGlyph' as const, label: 'Motion Glyph', image: '/app-icons/motion-glyph.png', color: 'from-fuchsia-300 via-violet-700 to-slate-950' },
+  { id: 'watchWinSale' as const, label: 'Watch & Win', image: '/app-icons/watch-win-sale.png', color: 'from-emerald-200 via-green-700 to-slate-950' },
   { id: 'modelHub' as const, label: 'Model Hub', image: '/app-icons/model-hub-button.png', icon: Layers, color: 'from-cyan-300 via-blue-700 to-indigo-950' }
 ] as const;
 
@@ -243,7 +247,7 @@ export default function App() {
         return normalized;
       }
     } catch {}
-    return ['desktop', 'contentVault', 'employmentCenter', 'notepad', 'officeSuite', 'leewayIde', 'erpCrm', 'logistics', 'agentVision', 'modelHub', 'creatorControl', 'settings'];
+    return ['desktop', 'contentVault', 'employmentCenter', 'notepad', 'officeSuite', 'leewayIde', 'erpCrm', 'logistics', 'agentVision', 'modelHub', 'creatorControl', 'settings', 'globalP2p', 'directConnect', 'motionGlyph', 'watchWinSale'];
   });
   const [taskbarMenu, setTaskbarMenu] = useState<{ x: number; y: number; appId: WorkstationAppId } | null>(null);
 

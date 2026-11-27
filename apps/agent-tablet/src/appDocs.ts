@@ -15,6 +15,7 @@ import type { WorkstationAppId } from './types';
 
 export type AppDocBinding = {
   repo: string;
+  owner?: string;
   title: string;
   purpose: string;
   scope: string;
@@ -22,8 +23,8 @@ export type AppDocBinding = {
   screenshots: Array<{ url: string; caption: string }>;
 };
 
-const rawReadme = (repo: string, branch = 'main') =>
-  `https://raw.githubusercontent.com/4citeB4U/${repo}/${branch}/README.md`;
+const rawReadme = (repo: string, branch = 'main', owner = '4citeB4U') =>
+  `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/README.md`;
 
 export const APP_DOC_BINDINGS: Partial<Record<WorkstationAppId, AppDocBinding>> = {
   desktop: {
@@ -158,9 +159,37 @@ export const APP_DOC_BINDINGS: Partial<Record<WorkstationAppId, AppDocBinding>> 
     scope: 'Listing is not inference; weights require owner admission and materialization.',
     agentLeeTasks: ['List a model', 'Explain an inference route', 'Check resident assets'],
     screenshots: []
+  },
+  globalP2p: {
+    repo: 'Leeway-Global-P2P', owner: 'agentlee2116-ctrl', title: 'LeeWay Global P2P',
+    purpose: 'Private peer-to-peer family communication, invitations, messaging and offline delivery.',
+    scope: 'Private communication under organizer and member onboarding; no independent identity authority.',
+    agentLeeTasks: ['Explain onboarding', 'Describe an invitation', 'Check offline delivery state'],
+    screenshots: [{ url: '/app-icons/global-p2p.png', caption: 'LeeWay Global Family Connect specialized application button.' }]
+  },
+  directConnect: {
+    repo: 'Direct-Connect-Portal', owner: 'larrylee2912-ux', title: 'Direct Connect Portal',
+    purpose: 'Connect an authorized phone dialer, email accounts and companion devices in one workspace.',
+    scope: 'Consequential external communications require explicit human approval; static Pages cannot execute its backend alone.',
+    agentLeeTasks: ['Explain dialer pairing', 'Describe email connection', 'Check approval boundary'],
+    screenshots: [{ url: '/app-icons/direct-connect.png', caption: 'Direct Connect Portal specialized application button.' }]
+  },
+  motionGlyph: {
+    repo: 'Motion-Glyph-LAB', owner: 'larrylee2912-ux', title: 'Motion-Glyph-LAB',
+    purpose: 'KineticGlyph Studio converts technical icons into animated buttons, logos and favicons.',
+    scope: 'Client-side segmentation and deterministic exports; Formula adapter reports unbound capability honestly.',
+    agentLeeTasks: ['Segment an image', 'Export an animated button', 'Prepare a favicon set'],
+    screenshots: [{ url: '/app-icons/motion-glyph.png', caption: 'Motion-Glyph-LAB specialized application button.' }]
+  },
+  watchWinSale: {
+    repo: 'Watch-Win-Sale', owner: 'larrylee2912-ux', title: 'Watch-Win-Sale',
+    purpose: 'Animated commercial viewing experience with featured ads, categories and authorized offers.',
+    scope: 'No fictional rewards or simulated transactions; live rewards require verified merchant eligibility.',
+    agentLeeTasks: ['Explain a campaign', 'Open a category', 'Check offer eligibility'],
+    screenshots: [{ url: '/app-icons/watch-win-sale.png', caption: 'Watch-Win-Sale specialized application button.' }]
   }
 };
 
 export function docUrl(binding: AppDocBinding, branch = 'main') {
-  return rawReadme(binding.repo, branch);
+  return rawReadme(binding.repo, branch, binding.owner);
 }

@@ -1,0 +1,192 @@
+/*
+LEEWAY HEADER — DO NOT REMOVE
+
+REGION: LEEWAY.UI.STYLES
+TAG: LEEWAY.UI.THEME.GLOBAL
+
+5WH:
+WHAT = Global Tailwind CSS v4 stylesheet, font family tokens, and composable procedural micro-animation keyframes.
+WHY = Establish consistent studio typography, dark industrial surface contrast, and GPU-composited sub-layer animations.
+WHO = Leeway Innovations — KineticGlyph Studio UI Component
+WHERE = src/index.css
+WHEN = 2026-11-27
+HOW = Imported by src/main.tsx using Tailwind v4 @import syntax.
+
+LICENSE = Apache-2.0
+*/
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #0B0F17;
+    color: #F1F5F9;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display);
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Procedural Micro-Animation Keyframes (Compositor-Only Transforms & Opacity) */
+@keyframes kg-scanline {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(240%);
+    opacity: 0.15;
+  }
+}
+
+@keyframes kg-wave-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes kg-code-scroll {
+  0% {
+    transform: translateY(0%);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes kg-radar-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes kg-fluid-level {
+  0%, 100% {
+    transform: translateY(42%) scaleY(0.95);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateY(10%) scaleY(1.04);
+    opacity: 1;
+  }
+}
+
+@keyframes kg-circuit-sweep {
+  0% {
+    transform: translate(-120%, -120%) rotate(35deg);
+    opacity: 0.15;
+  }
+  45% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(140%, 140%) rotate(35deg);
+    opacity: 0.15;
+  }
+}
+
+@keyframes kg-circuit-dash {
+  0% {
+    stroke-dashoffset: 64;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes kg-click-ripple {
+  0% {
+    transform: scale(0.35);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
+@keyframes kg-discharge-flash {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.92);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+}
+
+@keyframes kg-reveal-fade {
+  0% {
+    opacity: 0;
+    transform: scale(0.84) translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes kg-reveal-unfold {
+  0% {
+    opacity: 0;
+    transform: scale(0.65) rotate(-14deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.03) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes kg-logo-loading-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.kg-checker-bg {
+  background-color: #111827;
+  background-image:
+    linear-gradient(45deg, #1a2232 25%, transparent 25%),
+    linear-gradient(-45deg, #1a2232 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #1a2232 75%),
+    linear-gradient(-45deg, transparent 75%, #1a2232 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kg-motion-target {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
