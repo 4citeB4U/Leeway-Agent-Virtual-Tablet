@@ -14,7 +14,12 @@ LICENSE: Existing repository terms.
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, BookOpen, BriefcaseBusiness, CheckCircle2, CircleAlert, Cpu, LockKeyhole, Settings2, ShieldCheck, Sparkles, Workflow } from 'lucide-react';
 
-type Props = { onClose: () => void };
+type Props = {
+  onClose: () => void;
+  onOpenAbout: () => void;
+  onUpdate: () => void | Promise<void>;
+  edition?: 'PERSONAL' | 'BUSINESS' | 'CREATOR';
+};
 
 const LOOP = ['INVESTIGATE','DIAGNOSE','PLAN','IMPLEMENT','TEST','VALIDATE','REPAIR','RETEST','VERIFY','EVIDENCE','CHECKPOINT','CONTINUE'];
 const STATES = ['CONFIGURED','AWAITING_APPROVAL','STAGED','BLOCKED','NOT_EXECUTED','EXECUTED_UNVERIFIED','VERIFIED','FAILED'];
@@ -43,8 +48,8 @@ const EMPLOYMENT_STEPS = [
   'Inspect the resulting state under EXECUTED_UNVERIFIED until verification is genuinely bound.'
 ];
 
-export function SettingsCenter({ onClose }: Props) {
-  const [tab, setTab] = useState<'operations'|'permissions'|'capabilities'|'employment'>('operations');
+export function SettingsCenter({ onClose, onOpenAbout, onUpdate, edition = 'PERSONAL' }: Props) {
+  const [tab, setTab] = useState<'discover'|'operations'|'permissions'|'capabilities'|'employment'>('discover');
   const [api, setApi] = useState<{ state: string; detail: string }>({ state: 'CHECKING', detail: 'Probing same-origin tablet APIs…' });
 
   useEffect(() => {
@@ -66,11 +71,14 @@ export function SettingsCenter({ onClose }: Props) {
           <div className="text-[10px] text-zinc-400">Operations · Permissions · Capabilities · Employment Center</div>
         </div>
         <span className={`rounded-full border px-3 py-1 text-[10px] font-black ${api.state === 'CONNECTED' ? 'border-emerald-300/40 bg-emerald-950/30 text-emerald-200' : 'border-amber-300/40 bg-amber-950/30 text-amber-100'}`}>{api.state}</span>
+        <span className="hidden rounded-full border border-cyan-300/40 bg-cyan-950/30 px-3 py-1 text-[10px] font-black text-cyan-100 md:block">{edition} EDITION</span>
+        <button type="button" onClick={onOpenAbout} className="rounded-lg border border-[#66c6ff] bg-[#0077ff] px-3 py-2 text-[10px] font-black text-white hover:bg-[#2a95ff]">ABOUT</button>
+        <button type="button" onClick={onUpdate} className="rounded-lg border border-[#66c6ff] bg-[#0077ff] px-3 py-2 text-[10px] font-black text-white hover:bg-[#2a95ff]">UPDATE</button>
         <button type="button" onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full border border-[#ff9aa3] bg-[#dc2626] text-lg font-black text-white hover:bg-[#ef4444]" aria-label="Close">×</button>
       </header>
 
       <nav className="flex shrink-0 gap-2 overflow-x-auto border-b border-white/10 bg-[#081019] px-3 py-2">
-        {([['operations','System Operations',Workflow],['permissions','User Permissions',LockKeyhole],['capabilities','Capability Guide',Cpu],['employment','Employment Center',BriefcaseBusiness]] as const).map(([key,label,Icon]) => (
+        {([['discover','Discover LeeWay',BookOpen],['operations','System Operations',Workflow],['permissions','User Permissions',LockKeyhole],['capabilities','Capability Guide',Cpu],['employment','Employment Center',BriefcaseBusiness]] as const).map(([key,label,Icon]) => (
           <button key={key} type="button" onClick={() => setTab(key)} className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[11px] font-black ${tab === key ? 'border-cyan-300/60 bg-cyan-400/15 text-cyan-100' : 'border-white/10 bg-white/5 text-zinc-400 hover:bg-white/10'}`}><Icon size={13} />{label}</button>
         ))}
       </nav>
@@ -81,6 +89,79 @@ export function SettingsCenter({ onClose }: Props) {
             <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-cyan-300"><BookOpen size={14} /> LeeWay operating contract</div>
             <p className="mt-2 text-sm leading-relaxed text-zinc-300">{api.detail} Nothing in this Settings surface grants an entitlement, performs deployment, issues a receipt, or substitutes for independent verification.</p>
           </div>
+
+          {tab === 'discover' && (
+            <>
+              <div className="rounded-2xl border border-cyan-300/25 bg-gradient-to-br from-[#0c2536] to-[#061018] p-5">
+                <div className="text-[10px] font-black uppercase tracking-[.2em] text-cyan-300/80">Discover LeeWay · Integrated About Center</div>
+                <h2 className="mt-2 text-xl font-black text-cyan-50">A living architecture of human creativity, independent computation and generational continuity.</h2>
+                <p className="mt-3 text-sm leading-relaxed text-zinc-300">LeeWay begins with a real person, an incomplete vocabulary and a reason to keep going. It exists to reduce the distance between a useful idea and a durable working reality — without making the human become the machine.</p>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
+                {[
+                  ['Logic','Structure before assertion'],['Ethics','Authority with consent'],['Evidence','Truthful states and receipts'],
+                  ['Workflow','Bounded, repeatable action'],['Adaptation','Repair and learning'],['Yield','Durable value returned']
+                ].map(([word, meaning]) => (
+                  <div key={word} className="rounded-xl border border-cyan-300/20 bg-[#07121b] p-4">
+                    <div className="text-sm font-black tracking-wide text-cyan-200">{word}</div>
+                    <div className="mt-1 text-[11px] text-zinc-400">{meaning}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="rounded-2xl border border-white/10 bg-[#070d14] p-5">
+                  <h3 className="text-sm font-black text-cyan-100">Understanding Agent Lee</h3>
+                  <p className="mt-2 text-sm text-zinc-300">One governed personified entity across many bodies. The machine consciousness is singular; devices, widgets and work orders are organs of that one identity, not separate consciousnesses. Models are replaceable capability limbs, never the authority or identity.</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-[#070d14] p-5">
+                  <h3 className="text-sm font-black text-cyan-100">Getting started</h3>
+                  <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-zinc-300">
+                    <li>Open an app from desktop or taskbar.</li>
+                    <li>Drag icons anywhere; wheel resizes; right-click gives the user guide.</li>
+                    <li>Use Settings for updates, permissions and capability state.</li>
+                    <li>Ask Agent Lee for bounded, authorized help.</li>
+                  </ol>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-[#070d14] p-5">
+                <h3 className="text-sm font-black text-cyan-100">Application encyclopedia</h3>
+                <p className="mt-1 text-xs text-zinc-400">Every installed app has a README-backed instruction manual. Open Properties / About &amp; User Guide from any desktop icon.</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {['Employment','Continuum','Agent Skills','IDE','Office Suites','Logistics','CRM & ERP','Vision','Voice','Content Vault','Blackboard','Diagnostics','Agent Roster','Digital Brain','Model Hub', ...(edition === 'CREATOR' ? ['LeeWay Core'] : [])].map(name => (
+                    <span key={name} className="rounded-full border border-cyan-300/20 bg-cyan-400/5 px-3 py-1 text-[10px] font-bold text-cyan-100">{name}</span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
+                {[
+                  ['Digital employee & workforce','Work orders carry mission, work, correlation and authorization. Badges never grant permission.'],
+                  ['Device Bridge','Physical actions route through the owner-governed bridge. Browser preview is not device enrollment.'],
+                  ['Continuum · Brain · Vault','Durable storage, digital-brain surface and content custody remain owner-admitted and per-request.']
+                ].map(([title, body]) => (
+                  <div key={title} className="rounded-xl border border-emerald-300/20 bg-emerald-950/15 p-4">
+                    <div className="text-xs font-black text-emerald-100">{title}</div>
+                    <p className="mt-2 text-[11px] leading-relaxed text-emerald-50/80">{body}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="rounded-2xl border border-white/10 bg-[#070d14] p-5">
+                  <h3 className="text-sm font-black text-cyan-100">Technology & governance</h3>
+                  <p className="mt-2 text-sm text-zinc-300">Standards, Formula, Runtime, Veritas, Receipt Authority and Learning Ledger are separate owners. LeeWay holds them together through shared request identity, permission, provenance and recoverable state — not by merging authorities.</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-[#070d14] p-5">
+                  <h3 className="text-sm font-black text-cyan-100">Privacy, support & version</h3>
+                  <p className="mt-2 text-sm text-zinc-300">Nothing here grants production authority. Unavailable, restricted, planned and unverified functions are labelled. Use UPDATE to apply GitHub main; review About for app versions and README provenance.</p>
+                  <div className="mt-3 text-[10px] font-bold text-cyan-300/70">Powered by Leeway Innovations — A Leeway Industries Product</div>
+                </div>
+              </div>
+            </>
+          )}
 
           {tab === 'operations' && (
             <>

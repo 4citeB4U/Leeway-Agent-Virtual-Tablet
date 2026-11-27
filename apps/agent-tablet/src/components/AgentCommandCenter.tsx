@@ -23,6 +23,7 @@ type Props = {
   workboardStatus: string;
   access?: Record<string, { allowed: boolean; reason?: string }>;
   onOpenSurface: (surface: WorkstationAppId, launchOrigin?: PublishedAppLaunchOrigin) => void;
+  onOpenAbout: (appId: WorkstationAppId) => void;
   onPinToTaskbar?: (appId: WorkstationAppId) => void;
 };
 type IconBox = { x: number; y: number; w: number; h: number };
@@ -73,7 +74,7 @@ const INITIAL_DESKTOP_APPS: DesktopItem[] = DESKTOP_APP_ORDER.map(id => {
 
 const STORAGE_KEY = 'leeway_tablet_desktop_apps_v2';
 
-export function AgentCommandCenter({ workboardStatus, access, onOpenSurface, onPinToTaskbar }: Props) {
+export function AgentCommandCenter({ workboardStatus, access, onOpenSurface, onOpenAbout, onPinToTaskbar }: Props) {
   const [runtimeState, setRuntimeState] = useState('CHECKING');
   const [observed, setObserved] = useState<ProviderObservation[]>([]);
   const [desktopApps, setDesktopApps] = useState<DesktopItem[]>(() => {
@@ -107,6 +108,15 @@ export function AgentCommandCenter({ workboardStatus, access, onOpenSurface, onP
     return {};
   });
   const iconDrag = useRef<{ id: WorkstationAppId; startX: number; startY: number; origin: IconBox; moved: boolean } | null>(null);
+  const [groups, setGroups] = useState<Record<string, WorkstationAppId[]>>(() => {
+    try { return (JSON.parse(localStorage.getItem('leeway_tablet_groups_v1') || '{}') || {}) as Record<string, WorkstationAppId[]>; } catch { return {}; }
+  });
+  const [activeGroup, setActiveGroup] = useState<string | null>(null);
+  const membership = Object.fromEntries((Object.entries(groups) as Array<[string, WorkstationAppId[]]>).flatMap(([groupId, ids]) => ids.map(id => [id, groupId]))) as Record<string, string>;
+  const persistGroups = (next: Record<string, WorkstationAppId[]>) => {
+    setGroups(next);
+    try { localStorage.setItem('leeway_tablet_groups_v1', JSON.stringify(next)); } catch { /* ignore */ }
+  };
   const persistBoxes = (update: Record<string, IconBox> | ((previous: Record<string, IconBox>) => Record<string, IconBox>)) => {
     setIconBoxes(previous => {
       const next = typeof update === 'function' ? update(previous) : update;
@@ -114,8 +124,8 @@ export function AgentCommandCenter({ workboardStatus, access, onOpenSurface, onP
       return next;
     });
   };
-  const visibleApps = desktopApps.filter(app => access && Object.keys(access).length > 0
-    ? access[app.id]?.allowed === true : app.id !== 'creatorControl');
+  const visibleApps = desktopApps.filter(app => !membership[app.id] && (access && Object.keys(access).length > 0
+    ? access[app.id]?.allowed === true : app.id !== 'creatorControl'));
   const boxFor = (id: WorkstationAppId, index: number) => iconBoxes[id] || defaultIconBox(index);
 
   // Context Menu State
@@ -287,7 +297,20 @@ export function AgentCommandCenter({ workboardStatus, access, onOpenSurface, onP
                 iconDrag.current = null;
                 if (!drag || drag.id !== app.id) return;
                 if (!drag.moved) onOpenSurface(app.id, 'desktop');
-                else persistBoxes(previous => previous);
+                else {
+                  const currentBox = iconBoxes[drag.id] || defaultIconBox(desktopApps.findIndex(a => a.id === drag.id));
+                  const target = desktopApps.find(candidate => {
+                    if (candidate.id === drag.id || membership[candidate.id]) return false;
+                    const box = iconBoxes[candidate.id] || defaultIconBox(desktopApps.findIndex(a => a.id === candidate.id));
+                    return currentBox.x < box.x + box.w && currentBox.x + currentBox.w > box.x &&
+                      currentBox.y < box.y + box.h && currentBox.y + currentBox.h > box.y;
+                  });
+                  if (target) {
+                    const groupId = `GROUP-${String.fromCharCode(65 + Object.keys(groups).length)}`;
+                    persistGroups({ ...groups, [groupId]: [target.id, drag.id] });
+                    persistBoxes(previous => ({ ...previous, [groupId]: previous[drag.id] || currentBox }));
+                  } else persistBoxes(previous => previous);
+                }
               }}
               onWheel={e => {
                 const delta = e.deltaY < 0 ? 6 : -6;
@@ -311,6 +334,22 @@ export function AgentCommandCenter({ workboardStatus, access, onOpenSurface, onP
               </span>
               <strong className="mt-1.5 line-clamp-2 max-w-full text-[10px] font-extrabold leading-[12px] text-white [text-shadow:0_2px_3px_#000,0_0_5px_#000]">{app.label}</strong>
             </div>
+          );
+        })}
+        {(Object.entries(groups) as Array<[string, WorkstationAppId[]]>).map(([groupId, ids]) => {
+          const first = desktopApps.find(app => app.id === ids[0]);
+          const box = iconBoxes[groupId] || (first ? iconBoxes[first.id] || defaultIconBox(desktopApps.findIndex(a => a.id === first.id)) : defaultIconBox(0));
+          return (
+            <button key={groupId} type="button"
+              onClick={() => setActiveGroup(groupId)}
+              onContextMenu={e => { e.preventDefault(); const next = { ...groups }; delete next[groupId]; persistGroups(next); }}
+              style={{ left: box.x, top: box.y, width: Math.max(96, box.w), height: Math.max(80, box.h) }}
+              className="absolute z-20 flex flex-col items-center justify-center rounded-2xl border-2 border-[#66c6ff] bg-[#0077ff]/80 text-white shadow-[0_0_16px_rgba(0,119,255,.8)] hover:bg-[#2a95ff]"
+              aria-label={`Open ${groupId}`}>
+              <Layers size={24} />
+              <span className="mt-1 text-[10px] font-black tracking-wide">{groupId.replace('GROUP-', 'GROUP ')}</span>
+              <span className="text-[8px] text-cyan-100">{ids.length} apps</span>
+            </button>
           );
         })}
       </section>
@@ -408,13 +447,13 @@ export function AgentCommandCenter({ workboardStatus, access, onOpenSurface, onP
                 <button
                   type="button"
                   onClick={() => {
-                    setPropModalApp(contextMenu.app);
+                    onOpenAbout(contextMenu.app!.id);
                     setContextMenu(null);
                   }}
                   className="flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-[10px] text-zinc-400 hover:bg-white/10 hover:text-white"
                 >
                   <Info size={12} />
-                  <span>Properties</span>
+                  <span>Properties / About &amp; User Guide</span>
                 </button>
               </div>
             </>
@@ -445,6 +484,34 @@ export function AgentCommandCenter({ workboardStatus, access, onOpenSurface, onP
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {activeGroup && groups[activeGroup] && (
+        <div className="absolute inset-0 z-40 grid place-items-center bg-black/70 p-6 backdrop-blur-sm" onClick={() => setActiveGroup(null)}>
+          <div className="w-full max-w-lg rounded-2xl border border-cyan-300/40 bg-[#06121c] p-5 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="text-sm font-black text-cyan-100">{activeGroup.replace('GROUP-', 'GROUP ')} · Select an application</div>
+              <button type="button" onClick={() => setActiveGroup(null)} className="flex h-9 w-9 items-center justify-center rounded-full border border-[#ff9aa3] bg-[#dc2626] text-lg font-black text-white">×</button>
+            </div>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              {groups[activeGroup].map(id => {
+                const app = desktopApps.find(item => item.id === id);
+                if (!app) return null;
+                return (
+                  <button key={id} type="button"
+                    onClick={() => { onOpenSurface(app.id, 'desktop'); setActiveGroup(null); }}
+                    className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 text-left hover:border-cyan-300/50 hover:bg-cyan-400/10">
+                    <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-white/10">
+                      {app.image ? <img src={tabletAssetUrl(app.image)} alt="" className="h-full w-full object-cover" /> : app.icon ? React.createElement(app.icon, { size: 20 }) : <Layers size={20} />}
+                    </span>
+                    <span className="min-w-0"><span className="block truncate text-xs font-black text-white">{app.label}</span><span className="block truncate text-[10px] text-zinc-400">{app.detail}</span></span>
+                  </button>
+                );
+              })}
+            </div>
+            <button type="button" onClick={() => { const next = { ...groups }; delete next[activeGroup]; persistGroups(next); setActiveGroup(null); }} className="mt-4 w-full rounded-lg border border-rose-400/40 py-2 text-[11px] font-bold text-rose-200 hover:bg-rose-500/10">Ungroup</button>
+          </div>
         </div>
       )}
 
