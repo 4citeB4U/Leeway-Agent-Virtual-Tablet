@@ -1,0 +1,37 @@
+import React, { useState } from 'react';
+import { Skill, Branch } from '../types/skills';
+import { X, Copy, Check, Shield, ExternalLink, ArrowRight, Database, Activity } from 'lucide-react';
+import { sounds } from '../utils/audio';
+
+interface SkillInspectorModalProps { skill: Skill | null; branch: Branch | null; basket: Skill[]; onClose: () => void; onToggleAttach: (skill: Skill) => void; onSelectNeighbor: (neighborId: string) => void; }
+
+export const SkillInspectorModal: React.FC<SkillInspectorModalProps> = ({ skill, branch, basket, onClose, onToggleAttach, onSelectNeighbor }) => {
+  const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<'source'|'contract'|'io'>('source');
+  if (!skill || !branch) return null;
+  const isAttached=basket.some((s)=>s.id===skill.id);
+  const sourceText=`${skill.githubPath || ''}\n${skill.githubUrl || ''}`.trim();
+  const copySource=()=>{navigator.clipboard.writeText(sourceText);setCopied(true);sounds.playClick();setTimeout(()=>setCopied(false),1600)};
+  return <div onClick={onClose} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity animate-in fade-in">
+    <div onClick={(e)=>e.stopPropagation()} className="w-full max-w-xl bg-[#081116] border-[1.5px] rounded-2xl p-5 md:p-6 shadow-[0_20px_60px_rgba(0,0,0,0.95)] max-h-[90vh] overflow-y-auto relative" style={{borderColor:branch.color}}>
+      <button onClick={onClose} className="absolute top-4 right-4 text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"><X className="w-5 h-5"/></button>
+      <div className="flex items-center gap-3.5 mb-5 pr-8"><div className="w-12 h-12 rounded-full flex items-center justify-center text-xl shrink-0 border-[1.5px]" style={{backgroundColor:`${branch.color}20`,borderColor:branch.color,color:branch.color}}>{branch.icon}</div><div><h2 className="text-lg md:text-xl font-black text-white">{skill.name}</h2><p className="text-xs font-bold font-mono" style={{color:branch.color}}>{branch.title} • {skill.subtitle}</p></div></div>
+      <div className="grid grid-cols-3 gap-2.5 mb-5">
+        <div className="bg-[#0c141a]/80 border border-white/10 rounded-xl p-2.5 text-center"><div className="text-[9px] font-mono font-bold text-zinc-400 uppercase">Registry</div><div className="text-[11px] font-black text-[#39FF14] font-mono mt-1 break-words">{skill.registryState}</div></div>
+        <div className="bg-[#0c141a]/80 border border-white/10 rounded-xl p-2.5 text-center"><div className="text-[9px] font-mono font-bold text-zinc-400 uppercase">Qualification</div><div className="text-[10px] font-black text-[#38edf8] font-mono mt-1 break-words">{skill.qualificationState}</div></div>
+        <div className="bg-[#0c141a]/80 border border-white/10 rounded-xl p-2.5 text-center"><div className="text-[9px] font-mono font-bold text-zinc-400 uppercase">Execution</div><div className="text-[10px] font-black text-amber-300 font-mono mt-1 break-words">{skill.executionState}</div></div>
+      </div>
+      <div className="space-y-3 mb-5">
+        <div><div className="text-[10px] font-mono font-bold text-zinc-400 uppercase mb-1 flex items-center gap-1.5"><Database className="w-3 h-3 text-[#38edf8]"/>Canonical Skill Description</div><p className="text-xs text-zinc-300 leading-relaxed bg-white/[0.02] p-2.5 rounded-lg border border-white/5">{skill.desc}</p></div>
+        <div><div className="text-[10px] font-mono font-bold text-zinc-400 uppercase mb-1 flex items-center gap-1.5"><Shield className="w-3 h-3 text-[#39FF14]"/>Authority Boundary</div><div className="text-xs font-mono text-emerald-300 bg-emerald-950/20 border border-emerald-500/30 px-2.5 py-1.5 rounded-lg">{skill.perms}</div></div>
+      </div>
+      <div className="flex border-b border-white/10 mb-3 gap-4">{([['source','Canonical Source'],['contract','Runtime Contract'],['io','I/O Channels']] as const).map(([id,label])=><button key={id} onClick={()=>setActiveTab(id)} className={`pb-2 text-xs font-mono font-bold transition-colors ${activeTab===id?'text-[#39FF14] border-b-2 border-[#39FF14]':'text-zinc-400 hover:text-white'}`}>{label}</button>)}</div>
+      {activeTab==='source'&&<div className="relative mb-5"><pre className="bg-[#020406] border border-white/15 rounded-xl p-3 font-mono text-[11px] text-zinc-200 overflow-x-auto max-h-48 leading-relaxed"><code>{skill.codeSnippet}</code></pre><button onClick={copySource} className="absolute top-2.5 right-2.5 text-zinc-400 hover:text-white p-1 rounded hover:bg-white/10 transition-colors" title="Copy source path">{copied?<Check className="w-4 h-4 text-[#39FF14]"/>:<Copy className="w-4 h-4"/>}</button></div>}
+      {activeTab==='contract'&&<div className="mb-5 space-y-2"><div className="bg-[#020406] border border-white/15 rounded-xl p-3 font-mono text-[11px] text-[#39FF14] break-all">{skill.cli}</div><div className="text-[10px] text-zinc-400">This URI identifies the selected skill. It is not an OS command and does not prove execution from GitHub Pages.</div></div>}
+      {activeTab==='io'&&<div className="grid grid-cols-2 gap-2 mb-5 text-xs font-mono"><div className="bg-white/[0.02] border border-white/5 p-2.5 rounded-xl"><span className="text-[10px] text-zinc-400 font-bold uppercase block mb-1">Inputs</span><ul className="space-y-1 text-zinc-300 text-[11px]">{skill.inputs.map((x,i)=><li key={i} className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#38edf8]"/>{x}</li>)}</ul></div><div className="bg-white/[0.02] border border-white/5 p-2.5 rounded-xl"><span className="text-[10px] text-zinc-400 font-bold uppercase block mb-1">Outputs</span><ul className="space-y-1 text-[#39FF14] text-[11px]">{skill.outputs.map((x,i)=><li key={i} className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#39FF14]"/>{x}</li>)}</ul></div></div>}
+      {skill.compatibleNeighbors.length>0&&<div className="mb-5"><div className="text-[10px] font-mono font-bold text-zinc-400 uppercase mb-1.5">Grapevine Near Registry Neighbors</div><div className="flex flex-wrap gap-1.5">{skill.compatibleNeighbors.map((nid)=><button key={nid} onClick={()=>onSelectNeighbor(nid)} className="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#39FF14] text-[10px] font-mono text-zinc-300 hover:text-[#39FF14] flex items-center gap-1 transition-colors"><span>{nid}</span><ArrowRight className="w-2.5 h-2.5 text-zinc-500"/></button>)}</div></div>}
+      <div className="flex gap-2"><button onClick={()=>{sounds.playPop();onToggleAttach(skill)}} className={`flex-1 py-3.5 rounded-xl font-black text-xs tracking-wider uppercase transition-all shadow-lg active:scale-98 ${isAttached?'bg-red-950/80 hover:bg-red-900 border border-red-500 text-red-200':'bg-[#39FF14] hover:bg-[#32e012] text-black shadow-[#39FF14]/30'}`}>{isAttached?'Remove from Harvest Basket':'Attach to Active Harvest Basket'}</button>{skill.githubUrl&&<a href={skill.githubUrl} target="_blank" rel="noreferrer" className="px-4 py-3.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs font-mono font-bold text-white flex items-center gap-2"><ExternalLink className="w-4 h-4"/>Source</a>}</div>
+      <div className="mt-4 text-[9px] font-mono text-zinc-500 flex items-center gap-1.5"><Activity className="w-3 h-3"/>Evidence state: {skill.evidenceState}</div>
+    </div>
+  </div>;
+};

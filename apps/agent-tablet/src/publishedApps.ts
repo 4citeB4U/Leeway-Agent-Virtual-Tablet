@@ -66,7 +66,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     title: 'LeeWay Agent Skills',
     shortTitle: 'Agent Skills',
     description: 'Canonical Grapevine 3D registry and governed skill pipeline UI.',
-    url: 'https://4citeb4u.github.io/LeeWay-Agent-Skills/',
+    url: 'http://127.0.0.1:3217/agent-skills-vine/',
     capabilityRef: 'leeway.agent-skills',
     accent: 'border-lime-700 bg-lime-950/20',
     iconImage: '/app-icons/agent-skills.png',
