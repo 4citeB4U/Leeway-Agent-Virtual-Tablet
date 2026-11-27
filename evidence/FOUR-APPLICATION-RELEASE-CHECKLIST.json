@@ -1,6 +1,6 @@
 {
   "schema": "leeway.tablet.four-app-checklist.v1",
-  "updatedAt": "2026-11-27T18:20:00Z",
+  "updatedAt": "2026-11-27T18:45:00Z",
   "authority": "Creator-directed installation into the existing Agent Virtual Tablet; no production acceptance claim",
   "authenticatedGitHubAccount": "4citeB4U",
   "applications": [
@@ -24,8 +24,8 @@
       "githubPages": "https://larrylee2912-ux.github.io/Direct-Connect-Portal/",
       "pagesState": "NOT_PUBLISHED",
       "buttonAsset": "apps/agent-tablet/public/app-icons/direct-connect.png",
-      "tabletInstall": "REGISTERED_BUTTON_PRESENT",
-      "browserTest": "PENDING_PUBLISH",
+      "tabletInstall": "REGISTERED_BUTTON_PRESENT_SAME_ORIGIN_BUILD",
+      "browserTest": "TABLET_STATIC_PREVIEW_PASS; BACKEND_UNBOUND_TRUTHFUL",
       "backend": "NOT_BOUND_STATIC_PAGES_CANNOT_EXECUTE_EXPRESS",
       "blockers": [
         "No authenticated GitHub account with push permission to larrylee2912-ux/Direct-Connect-Portal; active 4citeB4U has push=false and larrylee2912-ux is not authenticated in this environment."
@@ -39,8 +39,8 @@
       "pagesState": "SOURCE_PUSHED_PAGES_ACTIVATION_BLOCKED",
       "readme": "https://github.com/larrylee2912-ux/Motion-Glyph-LAB/blob/main/README.md",
       "buttonAsset": "apps/agent-tablet/public/app-icons/motion-glyph.png",
-      "tabletInstall": "REGISTERED_BUTTON_PRESENT",
-      "browserTest": "BUILD_AND_12_TESTS_PASS; PAGES_BROWSER_RENDER_PENDING",
+      "tabletInstall": "REGISTERED_BUTTON_PRESENT_SAME_ORIGIN_BUILD",
+      "browserTest": "BUILD_AND_12_TESTS_PASS; TABLET_LOCAL_RENDER_PASS; PAGES_BROWSER_RENDER_PENDING",
       "backend": "CLIENT_SIDE_FORMULA_ADAPTER_FAILS_CLOSED",
       "blockers": [
         "4citeB4U has push but not admin permission, so GitHub Pages API activation returned 404; repository owner must enable Pages from main/docs."
@@ -54,8 +54,8 @@
       "pagesState": "SOURCE_PUSHED_PAGES_ACTIVATION_BLOCKED",
       "readme": "https://github.com/larrylee2912-ux/Watch-Win-Sale/blob/main/README.md",
       "buttonAsset": "apps/agent-tablet/public/app-icons/watch-win-sale.png",
-      "tabletInstall": "REGISTERED_BUTTON_PRESENT",
-      "browserTest": "PENDING_PAGES_RENDER",
+      "tabletInstall": "REGISTERED_BUTTON_PRESENT_SAME_ORIGIN_BUILD",
+      "browserTest": "TABLET_LOCAL_RENDER_PASS; PAGES_RENDER_PENDING",
       "backend": "STATIC_FRONTEND_ONLY_UPLOAD_AND_REWARDS_REQUIRE_OWNER_BACKEND",
       "blockers": [
         "4citeB4U has push but not admin permission, so GitHub Pages activation requires repository owner."
