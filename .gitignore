@@ -4,6 +4,7 @@ dist/
 apps/agent-tablet/dist/
 coverage/
 apps/agent-tablet/public/crm/
+apps/agent-tablet/public/config/surface-access.json
 .env
 apps/agent-tablet/.env
 *.log

@@ -41,7 +41,8 @@ import {
   Share2,
   Pin,
   Bot,
-  Github
+  Github,
+  Settings2
 } from 'lucide-react';
 import { WorkstationAppId } from './types';
 import { LeeWayEditor } from './components/editor/LeeWayEditor';
@@ -55,6 +56,8 @@ import { TabletDestination } from './components/TabletDestination';
 import { AgentRosterBoard } from './components/AgentRosterBoard';
 import { AgentCommandCenter } from './components/AgentCommandCenter';
 import { RotatingLeewayLogo } from './components/RotatingLeewayLogo';
+import { SettingsCenter } from './components/SettingsCenter';
+import { AppAbout } from './components/AppAbout';
 import { WorkboardRuntimePanel } from './components/WorkboardRuntimePanel';
 import { AgentNotepadBlackboard } from './components/AgentNotepadBlackboard';
 import { PublishedLeeWayApp, type PublishedAppLaunchOrigin } from './components/PublishedLeeWayApp';
@@ -148,6 +151,7 @@ const TABLET_WIDGETS = [
   { id: 'logistics' as const, label: 'Logistics', image: '/app-icons/logistics.png', color: 'from-sky-300 to-blue-900' },
   { id: 'agentVision' as const, label: 'Vision', image: '/app-icons/agent-vision.png', color: 'from-emerald-300 to-teal-900' },
   { id: 'creatorControl' as const, label: 'LeeWay Core', image: '/app-icons/leeway-core.png', color: 'from-amber-300 via-orange-700 to-slate-950' },
+  { id: 'settings' as const, label: 'Settings', image: '/app-icons/home-button.png', icon: Settings2, color: 'from-slate-300 via-cyan-700 to-slate-950' },
   { id: 'modelHub' as const, label: 'Model Hub', image: '/app-icons/model-hub-button.png', icon: Layers, color: 'from-cyan-300 via-blue-700 to-indigo-950' }
 ] as const;
 
@@ -209,6 +213,18 @@ const LOCAL_SURFACE_APP_IDS = new Set<WorkstationAppId>([
 export default function App() {
   // Main Navigation App
   const [currentApp, setCurrentAppState] = useState<WorkstationAppId>('desktop');
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [surfaceAccess, setSurfaceAccess] = useState<Record<string, { allowed: boolean; reason?: string }>>({});
+  useEffect(() => {
+    let alive = true;
+    fetch('/config/surface-access.json', { cache: 'no-store' })
+      .then(r => { if (!r.ok) throw new Error('NO_LOCAL_ACCESS_CONFIG'); return r.json(); })
+      .then(j => { if (alive) setSurfaceAccess(j.apps || {}); })
+      .catch(() => { if (alive) setSurfaceAccess({}); });
+    return () => { alive = false; };
+  }, []);
+  const isSurfaceAllowed = (id: WorkstationAppId) =>
+    Object.keys(surfaceAccess).length > 0 ? surfaceAccess[id]?.allowed === true : id !== 'creatorControl';
   const [currentLaunchOrigin, setCurrentLaunchOrigin] = useState<PublishedAppLaunchOrigin>('desktop');
   const [surfaceResolutions, setSurfaceResolutions] = useState<Partial<Record<PublishedLeeWayAppId, PublishedAppSurfaceDecision>>>({});
   const appLaunchRequestId = useRef(0);
@@ -227,7 +243,7 @@ export default function App() {
         return normalized;
       }
     } catch {}
-    return ['desktop', 'contentVault', 'employmentCenter', 'notepad', 'officeSuite', 'leewayIde', 'erpCrm', 'logistics', 'agentVision', 'modelHub', 'creatorControl'];
+    return ['desktop', 'contentVault', 'employmentCenter', 'notepad', 'officeSuite', 'leewayIde', 'erpCrm', 'logistics', 'agentVision', 'modelHub', 'creatorControl', 'settings'];
   });
   const [taskbarMenu, setTaskbarMenu] = useState<{ x: number; y: number; appId: WorkstationAppId } | null>(null);
 
@@ -677,10 +693,10 @@ export default function App() {
               }
             }
           }}
-          className="order-2 z-30 flex h-[70px] shrink-0 items-center justify-start overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border-t border-white/10 bg-[#07111b]/95 px-3 py-2 select-none backdrop-blur-2xl"
+          className="order-2 z-30 flex h-[70px] w-full shrink-0 items-center justify-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border-t border-white/10 bg-[#07111b]/95 px-1 py-2 select-none backdrop-blur-2xl"
         >
-          <div className="mx-auto flex min-w-max shrink-0 items-center gap-2 rounded-[26px] border border-white/15 bg-white/[.08] px-3 py-1.5 shadow-[0_10px_34px_rgba(0,0,0,.5),inset_0_1px_1px_rgba(255,255,255,.15)]">
-            {pinnedAppIds.map(appId => {
+          <div className="mx-0 flex min-w-full shrink-0 items-center justify-between gap-1 rounded-[26px] border border-white/15 bg-white/[.08] px-2 py-1.5 shadow-[0_10px_34px_rgba(0,0,0,.5),inset_0_1px_1px_rgba(255,255,255,.15)]">
+            {pinnedAppIds.filter(isSurfaceAllowed).map(appId => {
               const appMeta = TABLET_WIDGETS.find(w => w.id === appId) ||
                 (PUBLISHED_LEEWAY_APP_BY_ID[appId as any] ? {
                   id: appId,
@@ -826,9 +842,11 @@ export default function App() {
         {currentApp === 'desktop' && (
           <AgentCommandCenter
             workboardStatus={workboardStatus}
+            access={surfaceAccess}
             onOpenSurface={(surface, launchOrigin) => setCurrentApp(surface, launchOrigin)}
           />
         )}
+        {currentApp === 'settings' && <SettingsCenter onClose={() => setCurrentApp('desktop')} />}
         {false && (
           <div className="flex-grow bg-[#008080] p-6 flex flex-wrap content-start gap-6 overflow-y-auto relative select-none">
             <div className="absolute inset-0 bg-black/10 pointer-events-none"></div>
@@ -1700,6 +1718,16 @@ export default function App() {
               {browserPlatformFamily(typeof navigator !== 'undefined' ? navigator.userAgent : '')} · CLIENT VIEW
             </span>
             <button
+              id="leeway-vt-widget-about"
+              type="button"
+              aria-label="About this application"
+              title="About this application"
+              onClick={() => setAboutOpen(true)}
+              className="rounded border border-[#66c6ff] bg-[#0077ff] px-2.5 py-1 text-[10px] font-black tracking-[0.08em] text-white shadow-[0_0_12px_rgba(0,119,255,.85)] hover:bg-[#2a95ff]"
+            >
+              ABOUT
+            </button>
+            <button
               id="leeway-vt-widget-update"
               type="button"
               aria-label="Update tablet from GitHub main"
@@ -1739,6 +1767,9 @@ export default function App() {
         <div className="relative min-h-0 flex-1 overflow-hidden rounded-b-[15px] border-t-[3px] border-[#615f51] bg-[#078184]">
           {appContent}
         </div>
+        {aboutOpen && currentApp !== 'desktop' && (
+          <AppAbout appId={currentApp} onClose={() => setAboutOpen(false)} />
+        )}
       </section>
     </div>
   );

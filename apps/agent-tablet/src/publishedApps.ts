@@ -199,7 +199,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     title: 'LeeWay Diagnostics',
     shortTitle: 'Diagnostics',
     description: 'Canonical device health, compute diagnostics, and telemetry console.',
-    url: 'http://127.0.0.1:3218/?view=diagnostics&leewaySurface=widget',
+    url: 'http://127.0.0.1:3217/?view=diagnostics&leewaySurface=widget',
     capabilityRef: 'leeway.diagnostics',
     accent: 'border-rose-700 bg-rose-950/20',
     iconImage: '/app-icons/diagnostics-new.png',

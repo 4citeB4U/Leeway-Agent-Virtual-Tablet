@@ -21,9 +21,13 @@ import { tabletAssetUrl } from '../assetUrl';
 
 type Props = {
   workboardStatus: string;
+  access?: Record<string, { allowed: boolean; reason?: string }>;
   onOpenSurface: (surface: WorkstationAppId, launchOrigin?: PublishedAppLaunchOrigin) => void;
   onPinToTaskbar?: (appId: WorkstationAppId) => void;
 };
+type IconBox = { x: number; y: number; w: number; h: number };
+const ICON_LAYOUT_KEY = 'leeway_tablet_icon_layout_v1';
+const defaultIconBox = (index: number): IconBox => ({ x: 18 + (index % 6) * 108, y: 18 + Math.floor(index / 6) * 112, w: 88, h: 92 });
 
 type ProviderObservation = { id: string; configured?: boolean };
 
@@ -69,7 +73,7 @@ const INITIAL_DESKTOP_APPS: DesktopItem[] = DESKTOP_APP_ORDER.map(id => {
 
 const STORAGE_KEY = 'leeway_tablet_desktop_apps_v2';
 
-export function AgentCommandCenter({ workboardStatus, onOpenSurface, onPinToTaskbar }: Props) {
+export function AgentCommandCenter({ workboardStatus, access, onOpenSurface, onPinToTaskbar }: Props) {
   const [runtimeState, setRuntimeState] = useState('CHECKING');
   const [observed, setObserved] = useState<ProviderObservation[]>([]);
   const [desktopApps, setDesktopApps] = useState<DesktopItem[]>(() => {
@@ -95,6 +99,24 @@ export function AgentCommandCenter({ workboardStatus, onOpenSurface, onPinToTask
 
   const [draggedAppId, setDraggedAppId] = useState<WorkstationAppId | null>(null);
   const [dragOverAppId, setDragOverAppId] = useState<WorkstationAppId | null>(null);
+  const [iconBoxes, setIconBoxes] = useState<Record<string, IconBox>>(() => {
+    try {
+      const saved = localStorage.getItem(ICON_LAYOUT_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch { /* ignore */ }
+    return {};
+  });
+  const iconDrag = useRef<{ id: WorkstationAppId; startX: number; startY: number; origin: IconBox; moved: boolean } | null>(null);
+  const persistBoxes = (update: Record<string, IconBox> | ((previous: Record<string, IconBox>) => Record<string, IconBox>)) => {
+    setIconBoxes(previous => {
+      const next = typeof update === 'function' ? update(previous) : update;
+      try { localStorage.setItem(ICON_LAYOUT_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  };
+  const visibleApps = desktopApps.filter(app => access && Object.keys(access).length > 0
+    ? access[app.id]?.allowed === true : app.id !== 'creatorControl');
+  const boxFor = (id: WorkstationAppId, index: number) => iconBoxes[id] || defaultIconBox(index);
 
   // Context Menu State
   const [contextMenu, setContextMenu] = useState<{
@@ -235,40 +257,59 @@ export function AgentCommandCenter({ workboardStatus, onOpenSurface, onPinToTask
       <LeewayAgentVTBackground />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_45%,rgba(37,99,235,.14),transparent_34%),linear-gradient(90deg,rgba(0,0,0,.18),transparent_52%,rgba(0,0,0,.12))]" />
 
-      {/* Desktop Icons Grid */}
-      <section
-        aria-label="Desktop Shortcuts"
-        className="absolute inset-y-0 left-0 z-10 grid auto-cols-[92px] grid-flow-col grid-rows-4 content-start gap-x-3 gap-y-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden p-5 pr-40"
-      >
-        {desktopApps.map(app => {
+      {/* Freely movable desktop shortcuts; positions and sizes persist locally. */}
+      <section aria-label="Desktop Shortcuts" className="absolute inset-0 z-10 overflow-hidden">
+        {visibleApps.map((app, index) => {
           const Icon = app.icon;
+          const box = boxFor(app.id, index);
           const isDragOver = dragOverAppId === app.id;
           return (
             <div
               key={app.id}
-              draggable
-              onDragStart={e => handleDragStart(e, app)}
-              onDragOver={e => handleDragOver(e, app)}
-              onDragLeave={() => setDragOverAppId(null)}
-              onDrop={e => handleDrop(e, app)}
               onContextMenu={e => handleAppContextMenu(e, app)}
-              onClick={() => onOpenSurface(app.id, 'desktop')}
-              title={`${app.detail} (Right click for Jump List)`}
-              className={`group relative flex h-[92px] w-[88px] flex-col items-center justify-start rounded-2xl p-1.5 text-center transition cursor-pointer hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${isDragOver ? 'scale-105 ring-2 ring-cyan-400 bg-white/15' : ''}`}
+              onPointerDown={e => {
+                if (e.button !== 0) return;
+                e.currentTarget.setPointerCapture(e.pointerId);
+                iconDrag.current = { id: app.id, startX: e.clientX, startY: e.clientY, origin: box, moved: false };
+              }}
+              onPointerMove={e => {
+                const drag = iconDrag.current;
+                if (!drag || drag.id !== app.id) return;
+                const dx = e.clientX - drag.startX, dy = e.clientY - drag.startY;
+                if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+                setIconBoxes(previous => ({
+                  ...previous,
+                  [app.id]: { ...drag.origin, x: Math.max(0, drag.origin.x + dx), y: Math.max(0, drag.origin.y + dy) }
+                }));
+              }}
+              onPointerUp={e => {
+                const drag = iconDrag.current;
+                iconDrag.current = null;
+                if (!drag || drag.id !== app.id) return;
+                if (!drag.moved) onOpenSurface(app.id, 'desktop');
+                else persistBoxes(previous => previous);
+              }}
+              onWheel={e => {
+                const delta = e.deltaY < 0 ? 6 : -6;
+                persistBoxes(previous => ({ ...previous, [app.id]: {
+                  ...box,
+                  w: Math.max(64, Math.min(180, box.w + delta)),
+                  h: Math.max(72, Math.min(200, box.h + delta))
+                } }));
+              }}
+              title={`${app.detail} — drag to move, wheel to resize, right click for Jump List`}
+              style={{ left: box.x, top: box.y, width: box.w, height: box.h }}
+              className={`group absolute flex flex-col items-center justify-start rounded-2xl p-1.5 text-center transition cursor-grab hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 active:cursor-grabbing ${isDragOver ? 'scale-105 ring-2 ring-cyan-400 bg-white/15' : ''}`}
             >
               <span
                 className={`relative flex h-[58px] w-[58px] shrink-0 items-center justify-center overflow-hidden rounded-[18px] border border-white/30 bg-gradient-to-br ${app.gradient} shadow-[0_10px_24px_rgba(0,0,0,.55),inset_0_1px_1px_rgba(255,255,255,.4)] transition group-hover:-translate-y-1 group-hover:scale-105`}
               >
                 {app.image ? (
                   <img src={tabletAssetUrl(app.image)} alt="" className="h-full w-full object-cover" draggable={false} />
-                ) : Icon ? (
-                  <Icon size={29} />
-                ) : null}
+                ) : Icon ? <Icon size={29} /> : null}
                 <span className="absolute inset-0 bg-gradient-to-b from-white/15 via-transparent to-black/25" />
               </span>
-              <strong className="mt-1.5 line-clamp-2 max-w-[86px] text-[10px] font-extrabold leading-[12px] text-white [text-shadow:0_2px_3px_#000,0_0_5px_#000]">
-                {app.label}
-              </strong>
+              <strong className="mt-1.5 line-clamp-2 max-w-full text-[10px] font-extrabold leading-[12px] text-white [text-shadow:0_2px_3px_#000,0_0_5px_#000]">{app.label}</strong>
             </div>
           );
         })}

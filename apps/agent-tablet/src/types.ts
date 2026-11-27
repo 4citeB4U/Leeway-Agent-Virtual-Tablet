@@ -21,6 +21,7 @@ export type WorkstationAppId =
   | 'apps'
   | 'agentSkills'
 | 'creatorControl'
+| 'settings'
   | 'leewayIde'
   | 'officeSuite'
   | 'contentFoundry'
