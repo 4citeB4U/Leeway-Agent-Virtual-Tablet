@@ -46,6 +46,7 @@ const DESKTOP_APP_ORDER: PublishedLeeWayAppId[] = [
   'contentFoundry',
   'erpCrm',
   'agentVision',
+  'diagnostics',
   'voiceFabric',
   'contentVault',
   'notepad',

@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
+    "test:diagnostics": "tsx --test test/diagnostics/contract.test.ts test/diagnostics/surface.test.ts test/diagnostics/sync.test.ts test/diagnostics/assets.test.ts",
     "prepare:crm": "node scripts/sync-crm-runtime.mjs"
   },
   "dependencies": {

@@ -48,13 +48,14 @@ import { LeeWayEditor } from './components/editor/LeeWayEditor';
 import { OpenNotebookApp } from './components/opennotebook/OpenNotebookApp';
 import { OpenNotebookDrawer } from './components/opennotebook/OpenNotebookDrawer';
 import { TerminalGateway } from './components/TerminalGateway';
-import { DiagnosticsBoard } from './components/DiagnosticsBoard';
+import { OriginalDiagnosticsMatrix } from './components/OriginalDiagnosticsMatrix';
 import { GitHubSyncModal } from './components/GitHubSyncModal';
 import { AgentVTWorkforceCommandCenter } from './components/AgentVTWorkforceCommandCenter';
 import { TabletDestination } from './components/TabletDestination';
 import { AgentRosterBoard } from './components/AgentRosterBoard';
 import { AgentCommandCenter } from './components/AgentCommandCenter';
 import { CoreServiceDock } from './components/CoreServiceDock';
+import { RotatingLeewayLogo } from './components/RotatingLeewayLogo';
 import { WorkboardRuntimePanel } from './components/WorkboardRuntimePanel';
 import { AgentNotepadBlackboard } from './components/AgentNotepadBlackboard';
 import { PublishedLeeWayApp, type PublishedAppLaunchOrigin } from './components/PublishedLeeWayApp';
@@ -142,7 +143,7 @@ const TABLET_WIDGETS = [
   { id: 'contentVault' as const, label: 'Vault', image: '/app-icons/content-vault.jpg', color: 'from-amber-300 via-fuchsia-600 to-indigo-900' },
   { id: 'employmentCenter' as const, label: 'Employment', image: '/app-icons/employment-center.png', color: 'from-amber-200 to-orange-800' },
   { id: 'notepad' as const, label: 'Blackboard', image: '/app-icons/blackboard.jpg', color: 'from-fuchsia-300 to-violet-800' },
-  { id: 'officeSuite' as const, label: 'Office', image: '/app-icons/office-suite.png', color: 'from-blue-300 to-indigo-800' },
+  { id: 'officeSuite' as const, label: 'Office Suites', image: '/app-icons/Gemini_Generated_Image_y6aytty6aytty6ay.jpg', color: 'from-blue-300 to-indigo-800' },
   { id: 'leewayIde' as const, label: 'IDE', image: '/app-icons/ide.jpg', color: 'from-cyan-300 to-blue-800' },
   { id: 'erpCrm' as const, label: 'CRM / ERP', image: '/app-icons/crm-erp.png', color: 'from-violet-300 to-indigo-900' },
   { id: 'logistics' as const, label: 'Logistics', image: '/app-icons/logistics.png', color: 'from-sky-300 to-blue-900' },
@@ -202,7 +203,7 @@ const TABLET_APP_CATALOG: readonly TabletCatalogItem[] = Array.from(
 // mounted through PublishedLeeWayApp: doing so embeds the tablet route inside
 // itself and produces the repeated narrow window stack seen in widgets.
 const LOCAL_SURFACE_APP_IDS = new Set<WorkstationAppId>([
-  'contentVault', 'workforce', 'notepad', 'diagnostics', 'agentRoster', 'federated'
+  'contentVault', 'workforce', 'notepad', 'diagnostics', 'agentRoster', 'federated', 'workboard'
 ]);
 
 export default function App() {
@@ -325,11 +326,15 @@ export default function App() {
   const [dataStatus, setDataStatus] = useState<'IDLE' | 'QUERYING' | 'CONNECTED' | 'UNBOUND'>('IDLE');
 
   // Workboard state
-  const [workboardUrl, setWorkboardUrl] = useState('http://localhost:5339');
-  const [workboardStatus, setWorkboardStatus] = useState('CHECKING');
+  const [workboardUrl, setWorkboardUrl] = useState('');
+  const [workboardStatus, setWorkboardStatus] = useState('UNCONFIGURED');
 
   useEffect(() => {
     let stopped = false;
+    if (!workboardUrl.trim()) {
+      setWorkboardStatus('UNCONFIGURED');
+      return;
+    }
     const checkWorkboard = async () => {
       try {
         const parsed = new URL(workboardUrl);
@@ -386,7 +391,9 @@ export default function App() {
       setCurrentAppState('desktop');
       return;
     }
-    if (!isPublishedLeeWayAppId(appId)) {
+    if (!isPublishedLeeWayAppId(appId) || appId === 'diagnostics') {
+      setCurrentLaunchOrigin(launchOrigin);
+      setSurfaceResolutions({});
       setCurrentAppState(appId);
       return;
     }
@@ -433,6 +440,10 @@ export default function App() {
 
   useEffect(() => {
     const requestedView = new URLSearchParams(window.location.search).get('view');
+    if (requestedView === 'workboard') {
+      setCurrentApp('workboard', 'open-request-file');
+      return;
+    }
     if (requestedView && requestedView !== 'desktop' &&
         isPublishedLeeWayAppId(requestedView as WorkstationAppId)) {
       setCurrentApp(requestedView as WorkstationAppId, 'open-request-file');
@@ -440,7 +451,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!isPublishedLeeWayAppId(currentApp)) return;
+    if (!isPublishedLeeWayAppId(currentApp) || currentApp === 'diagnostics') return;
     const resolveAppSurface = window.leewayNative?.resolveAppSurface;
     if (!resolveAppSurface) return;
     let cancelled = false;
@@ -484,8 +495,9 @@ export default function App() {
     } catch (_e) {}
   }, [files]);
 
-  // Real host telemetry from the Agent Tablet backend. Unsupported fields remain zero until an adapter exists.
+  // Real host telemetry from the Agent Tablet backend. Unsupported fields remain null until an adapter exists.
   useEffect(() => {
+    if (currentApp === 'diagnostics') return;
     let stopped = false;
     const pollTelemetry = async () => {
       try {
@@ -509,7 +521,7 @@ export default function App() {
       stopped = true;
       window.clearInterval(interval);
     };
-  }, []);
+  }, [currentApp]);
 
   // Save current file in LeeCode
   const handleSaveFile = () => {
@@ -835,7 +847,7 @@ export default function App() {
               { id: 'diagnostics' as const, label: 'Diagnostics Board', icon: Activity, desc: 'Flow Radar & Telemetry', color: 'text-rose-400' },
               { id: 'workforce' as const, label: 'Workforce Center', icon: Bot, desc: 'W00–W17 evidence projection', badge: 'READ ONLY', color: 'text-cyan-300' },
               { id: 'agentRoster' as const, label: 'Agent Roster', icon: Bot, desc: 'Providers · instances · missions · voice', badge: 'OBSERVE', color: 'text-violet-300' },
-              { id: 'workboard' as const, label: 'Workboard Runtime', icon: Layers, desc: 'Docker team runtime · :5339', color: 'text-amber-400' },
+              { id: 'workboard' as const, label: 'Workboard Runtime', icon: Layers, desc: 'Authorized local Workboard service', color: 'text-amber-400' },
               { id: 'database' as const, label: 'Data Fabric', icon: Database, desc: 'Unified Vector & SQL Access', color: 'text-purple-300' },
               { id: 'pallium' as const, label: 'Memory Pallium', icon: Layers, desc: 'Distributed Cognitive Cache', color: 'text-teal-300' },
               { id: 'github' as const, label: 'Push to GitHub', icon: Github, desc: 'Sync & Push under same name', badge: 'GIT SYNC', color: 'text-white' }
@@ -1490,17 +1502,7 @@ export default function App() {
 
         {/* ================= 8. DIAGNOSTICS ================= */}
         {currentApp === 'diagnostics' && (
-          <DiagnosticsBoard
-            telemetry={telemetry}
-            openNotebookStatus="LOCAL API :3200"
-            workboardStatus={workboardStatus}
-            terminalStatus="LOCAL GATEWAY"
-            dataStatus={dataStatus}
-            activeAgentId={activeAgentId}
-            onOptimizeWorkloads={() => {
-              showToast('No workload-optimization adapter is bound; telemetry was not changed.');
-            }}
-          />
+          <OriginalDiagnosticsMatrix />
         )}
 
         {/* ================= 8A. AGENT VT WORKFORCE COMMAND CENTER ================= */}
@@ -1683,38 +1685,41 @@ export default function App() {
       >
         <div
           id="leeway-vt-widget-header"
-          className="flex h-8 shrink-0 items-center gap-2 bg-[#172627] px-2.5 text-[11px] font-bold tracking-[0.08em] text-[#b7fff5]"
-          title="Drag the Agent Virtual Tablet from the native MOVE control"
+          className="relative flex h-24 shrink-0 items-center gap-3 overflow-hidden bg-[#172627] px-3 text-[11px] font-bold tracking-[0.08em] text-[#b7fff5]"
+          title="Drag the LeeWay operating system window from the native MOVE control"
         >
-          <span className="flex min-w-0 flex-1 items-center gap-2 truncate">
-            <img src={tabletAssetUrl('/leeway-true-logo.png')} alt="LeeWay" className="h-5 w-5 shrink-0 rounded-full object-cover" />
-            <span>LEEWAY - AGENT VT</span>
-          </span>
-          <span className="text-[8px] font-normal tracking-normal text-[#78b9b9]">AGENT VIRTUAL TABLET</span>
-          <span
-            aria-label="Browser-reported platform (not an enrolled device identity)"
-            className="shrink-0 rounded border border-cyan-200/35 bg-[#0a1a22]/95 px-1.5 py-0.5 text-[8px] font-black tracking-[0.08em] text-cyan-100"
-          >
-            {browserPlatformFamily(typeof navigator !== 'undefined' ? navigator.userAgent : '')} · CLIENT VIEW
-          </span>
-          <button
-            id="leeway-vt-widget-move"
-            type="button"
-            aria-label="Move Agent VT widget"
-            title="Move Agent VT widget"
-            className="rounded border border-[#4b8e97] bg-[#0a3e46] px-1.5 py-0.5 text-[8px] font-black tracking-[0.08em] text-[#d8ffff] hover:bg-[#12616b]"
-          >
-            MOVE
-          </button>
-          <button
-            id="leeway-vt-widget-close"
-            type="button"
-            aria-label="Close Agent VT widget"
-            title="Close Agent VT widget"
-            className="flex h-5 w-5 items-center justify-center rounded border border-[#a9d6d4] bg-transparent text-[15px] leading-none text-[#d8ffff] hover:bg-[#5e2830] hover:text-white"
-          >
-            ×
-          </button>
+          <RotatingLeewayLogo className="h-16 w-16 shrink-0 rounded-full border border-cyan-100/70 bg-black/30 p-1 object-contain shadow-[0_0_16px_rgba(34,211,238,.75)]" />
+          <img
+            src={tabletAssetUrl('/leeway-agentic-workflow-banner.jpg')}
+            alt="LeeWay Agentic Workflow System"
+            className="h-[74px] min-w-0 flex-1 rounded-lg object-cover object-center"
+          />
+          <div className="relative z-10 flex shrink-0 items-center gap-2">
+            <span
+              aria-label="Browser-reported platform (not an enrolled device identity)"
+              className="ml-auto hidden shrink-0 rounded border border-cyan-200/35 bg-[#0a1a22]/90 px-1.5 py-0.5 text-[8px] font-black tracking-[0.08em] text-cyan-100 sm:block"
+            >
+              {browserPlatformFamily(typeof navigator !== 'undefined' ? navigator.userAgent : '')} · CLIENT VIEW
+            </span>
+            <button
+              id="leeway-vt-widget-move"
+              type="button"
+              aria-label="Move LeeWay Agentic Workflow System window"
+              title="Move LeeWay Agentic Workflow System window"
+              className="rounded border border-[#4b8e97] bg-[#0a3e46]/90 px-1.5 py-0.5 text-[8px] font-black tracking-[0.08em] text-[#d8ffff] hover:bg-[#12616b]"
+            >
+              MOVE
+            </button>
+            <button
+              id="leeway-vt-widget-close"
+              type="button"
+              aria-label="Close LeeWay Agentic Workflow System window"
+              title="Close LeeWay Agentic Workflow System window"
+              className="flex h-5 w-5 items-center justify-center rounded border border-[#a9d6d4] bg-[#0a1a22]/80 text-[15px] leading-none text-[#d8ffff] hover:bg-[#5e2830] hover:text-white"
+            >
+              ×
+            </button>
+          </div>
         </div>
         <div className="relative min-h-0 flex-1 overflow-hidden rounded-b-[15px] border-t-[3px] border-[#615f51] bg-[#078184]">
           {appContent}

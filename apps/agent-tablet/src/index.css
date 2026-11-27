@@ -1,5 +1,45 @@
 @import "tailwindcss";
 
+@keyframes leeway-logo-flip {
+  0% {
+    transform: perspective(420px) rotateY(0deg) rotateZ(0deg) scale(1);
+  }
+  50% {
+    transform: perspective(420px) rotateY(180deg) rotateZ(-6deg) scale(1.12);
+  }
+  100% {
+    transform: perspective(420px) rotateY(360deg) rotateZ(0deg) scale(1);
+  }
+}
+
+.leeway-header-logo {
+  --logo-hue: 0deg;
+  --logo-saturation: 1.15;
+  animation: leeway-logo-flip 2.4s ease-in-out infinite;
+  filter: hue-rotate(var(--logo-hue)) saturate(var(--logo-saturation)) contrast(1.18) brightness(1.12)
+    drop-shadow(0 0 8px rgba(34, 211, 238, .75));
+  transform-origin: center;
+  will-change: filter, transform;
+}
+
+/* Each flip lands on a new color treatment. Exact supplied images are used
+   when present in public/leeway-logos; these filters also colorize the
+   canonical medallion so a still asset still changes color on every spin. */
+.leeway-logo-variant-0 { --logo-hue: 0deg; --logo-saturation: 1.15; }
+.leeway-logo-variant-1 { --logo-hue: 40deg; --logo-saturation: 1.35; }
+.leeway-logo-variant-2 { --logo-hue: 85deg; --logo-saturation: 1.4; }
+.leeway-logo-variant-3 { --logo-hue: 135deg; --logo-saturation: 1.3; }
+.leeway-logo-variant-4 { --logo-hue: 180deg; --logo-saturation: 1.5; }
+.leeway-logo-variant-5 { --logo-hue: 225deg; --logo-saturation: 1.45; }
+.leeway-logo-variant-6 { --logo-hue: 275deg; --logo-saturation: 1.5; }
+.leeway-logo-variant-7 { --logo-hue: 320deg; --logo-saturation: 1.4; }
+
+@media (prefers-reduced-motion: reduce) {
+  .leeway-header-logo {
+    animation: none;
+  }
+}
+
 /* Lined Notepad Paper Texture and Ruled Lines */
 .notepad-paper-human {
   background-color: #fffdf5;

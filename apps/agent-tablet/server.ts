@@ -23,6 +23,7 @@ import {
 } from '../../integration/runtime-fabric/workforce-runtime-mcp.mjs';
 import express from 'express';
 import path from 'path';
+import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import os from 'os';
 import { createServer as createViteServer } from 'vite';
@@ -31,6 +32,8 @@ import { promisify } from 'util';
 import { CANONICAL_LIFECYCLE_PLAYBOOK } from './src/data/canonicalLifecyclePlaybook';
 import { createOriginalCreatorBusinessTabletProxy } from '../../integration/runtime-fabric/creator-business-tablet-proxy.mjs';
 import { parseCreatorBusinessOverview } from './src/components/creatorBusinessReadModel';
+import { isLoopbackDiagnosticsAddress, normalizeDiagnosticsSnapshot, type DiagnosticsSnapshot } from './src/diagnostics/contract';
+import { RECOVERED_ASSET_FILES } from './src/diagnostics/assets';
 
 const app = express();
 const PORT = Number(process.env.PORT || 3200);
@@ -705,59 +708,396 @@ app.post('/api/data/query', (req, res) => {
   });
 });
 
-async function readHostDeviceTelemetry() {
+const WINDOWS_DIAGNOSTICS_SCRIPT = String.raw`
+$ErrorActionPreference = 'Stop'
+$providerErrors = @()
+$cpuUsage = $null
+$ramPercent = $null
+$diskPercent = $null
+$hostInfo = $null
+$processors = @()
+$memoryModules = @()
+$graphicsAdapters = @()
+$physicalDisks = @()
+$motherboard = $null
+$firmware = $null
+$batteries = @()
+$networkAdapters = @()
+$usbControllers = @()
+$audioDevices = @()
+$thermalSensors = @()
+
+try {
+  $cpuUsage = (Get-CimInstance Win32_PerfFormattedData_PerfOS_Processor -Filter "Name='_Total'" -ErrorAction Stop).PercentProcessorTime
+} catch { $providerErrors += 'CPU_UTILIZATION_QUERY_FAILED' }
+
+$osInfo = $null
+try {
+  $osInfo = Get-CimInstance Win32_OperatingSystem -ErrorAction Stop
+  if ($osInfo.TotalVisibleMemorySize -gt 0) {
+    $ramPercent = [math]::Round((($osInfo.TotalVisibleMemorySize - $osInfo.FreePhysicalMemory) / $osInfo.TotalVisibleMemorySize) * 100, 2)
+  }
+} catch { $providerErrors += 'OPERATING_SYSTEM_MEMORY_QUERY_FAILED' }
+
+try {
+  $systemInfo = Get-CimInstance Win32_ComputerSystem -ErrorAction Stop | Select-Object -First 1
+  $hostInfo = [pscustomobject]@{
+    manufacturer = $systemInfo.Manufacturer
+    model = $systemInfo.Model
+    totalMemoryBytes = $systemInfo.TotalPhysicalMemory
+  }
+} catch { $providerErrors += 'SYSTEM_IDENTITY_QUERY_FAILED' }
+
+try {
+  $processors = @(Get-CimInstance Win32_Processor -ErrorAction Stop | ForEach-Object {
+    [pscustomobject]@{
+      name = $_.Name
+      manufacturer = $_.Manufacturer
+      physicalCores = $_.NumberOfCores
+      logicalProcessors = $_.NumberOfLogicalProcessors
+      maxClockMHz = $_.MaxClockSpeed
+    }
+  })
+} catch { $providerErrors += 'PROCESSOR_INVENTORY_QUERY_FAILED' }
+
+try {
+  $memoryModules = @(Get-CimInstance Win32_PhysicalMemory -ErrorAction Stop | ForEach-Object {
+    [pscustomobject]@{
+      name = 'Memory module'
+      manufacturer = $_.Manufacturer
+      model = $_.PartNumber
+      capacityBytes = $_.Capacity
+      speedMHz = $_.Speed
+    }
+  })
+} catch { $providerErrors += 'MEMORY_MODULE_QUERY_FAILED' }
+
+try {
+  $graphicsAdapters = @(Get-CimInstance Win32_VideoController -ErrorAction Stop | ForEach-Object {
+    [pscustomobject]@{
+      name = $_.Name
+      manufacturer = $_.AdapterCompatibility
+      model = $_.VideoProcessor
+      adapterMemoryBytes = $_.AdapterRAM
+      driverVersion = $_.DriverVersion
+    }
+  })
+} catch { $providerErrors += 'GRAPHICS_INVENTORY_QUERY_FAILED' }
+
+try {
+  $diskDrives = @(Get-CimInstance Win32_DiskDrive -ErrorAction Stop | ForEach-Object {
+    [pscustomobject]@{
+      name = $_.Model
+      manufacturer = $_.Manufacturer
+      model = $_.Model
+      capacityBytes = $_.Size
+      interface = $_.InterfaceType
+      status = $_.Status
+    }
+  })
+  $physicalDisks = $diskDrives
+  $volumes = @(Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" -ErrorAction Stop)
+  $totalBytes = ($volumes | Measure-Object -Property Size -Sum).Sum
+  $freeBytes = ($volumes | Measure-Object -Property FreeSpace -Sum).Sum
+  if ($totalBytes -gt 0) { $diskPercent = [math]::Round((($totalBytes - $freeBytes) / $totalBytes) * 100, 2) }
+} catch { $providerErrors += 'STORAGE_INVENTORY_QUERY_FAILED' }
+
+try {
+  $boardInfo = Get-CimInstance Win32_BaseBoard -ErrorAction Stop | Select-Object -First 1
+  $motherboard = [pscustomobject]@{
+    manufacturer = $boardInfo.Manufacturer
+    product = $boardInfo.Product
+  }
+} catch { $providerErrors += 'MOTHERBOARD_IDENTITY_QUERY_FAILED' }
+
+try {
+  $biosInfo = Get-CimInstance Win32_BIOS -ErrorAction Stop | Select-Object -First 1
+  $firmware = [pscustomobject]@{
+    name = 'System firmware'
+    manufacturer = $biosInfo.Manufacturer
+    version = ($biosInfo.SMBIOSBIOSVersion -join ', ')
+  }
+} catch { $providerErrors += 'FIRMWARE_IDENTITY_QUERY_FAILED' }
+
+try {
+  $batteries = @(Get-CimInstance Win32_Battery -ErrorAction Stop | ForEach-Object {
+    [pscustomobject]@{
+      name = $_.Name
+      manufacturer = $_.Manufacturer
+      model = $null
+      chemistry = $_.Chemistry
+      chargePercent = $_.EstimatedChargeRemaining
+      status = $_.Status
+    }
+  })
+} catch { $providerErrors += 'BATTERY_QUERY_FAILED' }
+
+try {
+  $networkAdapters = @(Get-CimInstance Win32_NetworkAdapter -Filter "PhysicalAdapter=True" -ErrorAction Stop | ForEach-Object {
+    [pscustomobject]@{name=$_.Name;manufacturer=$_.Manufacturer;physical='true'}
+  })
+} catch { $providerErrors += 'NETWORK_ADAPTER_QUERY_FAILED' }
+
+try {
+  $usbControllers = @(Get-CimInstance Win32_USBController -ErrorAction Stop | ForEach-Object {
+    [pscustomobject]@{name=$_.Name;manufacturer=$_.Manufacturer}
+  })
+} catch { $providerErrors += 'USB_CONTROLLER_QUERY_FAILED' }
+
+try {
+  $audioDevices = @(Get-CimInstance Win32_SoundDevice -ErrorAction Stop | ForEach-Object {
+    [pscustomobject]@{name=$_.Name;manufacturer=$_.Manufacturer}
+  })
+} catch { $providerErrors += 'AUDIO_DEVICE_QUERY_FAILED' }
+
+try {
+  $zoneIndex = 0
+  $thermalSensors = @(Get-CimInstance -Namespace root/WMI -ClassName MSAcpi_ThermalZoneTemperature -ErrorAction Stop |
+    Where-Object { $_.CurrentTemperature -gt 2732 } | ForEach-Object {
+      $zoneIndex++
+      [pscustomobject]@{label="ACPI thermal zone $zoneIndex";celsius=[math]::Round(($_.CurrentTemperature / 10) - 273.15, 1)}
+    })
+} catch { $providerErrors += 'THERMAL_SENSOR_QUERY_UNAVAILABLE' }
+
+$totalRamPercent = $ramPercent
+$result = [ordered]@{
+  telemetry = [ordered]@{cpu=$cpuUsage;ram=$totalRamPercent;disk=$diskPercent}
+  host = $hostInfo
+  processors = @($processors)
+  memoryModules = @($memoryModules)
+  graphicsAdapters = @($graphicsAdapters)
+  physicalDisks = @($physicalDisks)
+  motherboard = $motherboard
+  firmware = $firmware
+  batteries = @($batteries)
+  networkAdapters = @($networkAdapters)
+  usbControllers = @($usbControllers)
+  audioDevices = @($audioDevices)
+  thermalSensors = @($thermalSensors)
+  providerErrors = @($providerErrors)
+}
+ConvertTo-Json -InputObject $result -Depth 6 -Compress
+`;
+
+const DIAGNOSTICS_CACHE_MS = 2_000;
+let diagnosticsSnapshotCache: { value: DiagnosticsSnapshot; expiresAt: number } | null = null;
+let diagnosticsSnapshotInFlight: Promise<DiagnosticsSnapshot> | null = null;
+
+async function collectHostDiagnosticsSnapshot(): Promise<DiagnosticsSnapshot> {
+  const observedAt = new Date().toISOString();
+  const memory = process.memoryUsage();
+  const common = {
+    name: os.type(),
+    release: os.release(),
+    architecture: os.arch(),
+    source: process.platform === 'win32' ? 'WINDOWS_DEVICE_CIM' : 'NODE_HOST_OS',
+    observedAt,
+    processRssBytes: memory.rss,
+    processHeapUsedBytes: memory.heapUsed,
+    uptimeSeconds: Math.floor(process.uptime())
+  };
+
   if (process.platform === 'win32') {
-    // This process runs on the enrolled Windows device. Query Windows itself;
-    // do not turn an unavailable metric into a made-up zero.
-    const script = "$cpu=(Get-CimInstance Win32_PerfFormattedData_PerfOS_Processor -Filter \"Name='_Total'\").PercentProcessorTime;$os=Get-CimInstance Win32_OperatingSystem;$disks=Get-CimInstance Win32_LogicalDisk -Filter \"DriveType=3\";$total=($disks|Measure-Object -Property Size -Sum).Sum;$free=($disks|Measure-Object -Property FreeSpace -Sum).Sum;[pscustomobject]@{cpu=$cpu;ram=[math]::Round((($os.TotalVisibleMemorySize-$os.FreePhysicalMemory)/$os.TotalVisibleMemorySize)*100,2);disk=if($total){[math]::Round((($total-$free)/$total)*100,2)}else{$null}}|ConvertTo-Json -Compress";
     try {
-      const { stdout } = await execFileAsync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], { timeout: 1800, windowsHide: true });
-      const raw = JSON.parse(String(stdout).trim());
-      return { cpu: Number.isFinite(raw.cpu) ? raw.cpu : null, ram: Number.isFinite(raw.ram) ? raw.ram : null, disk: Number.isFinite(raw.disk) ? raw.disk : null, temperature: null, source: 'WINDOWS_DEVICE_CIM' };
-    } catch {
-      return { cpu: null, ram: null, disk: null, temperature: null, source: 'WINDOWS_DEVICE_CIM_UNAVAILABLE' };
+      const { stdout } = await execFileAsync(
+        'powershell.exe',
+        ['-NoProfile', '-NonInteractive', '-Command', WINDOWS_DIAGNOSTICS_SCRIPT],
+        { timeout: 8000, windowsHide: true, maxBuffer: 1024 * 1024 }
+      );
+      const raw: unknown = JSON.parse(String(stdout).trim());
+      return normalizeDiagnosticsSnapshot(raw, { ...common, cpuMeaning: 'UTILIZATION' });
+    } catch (error) {
+      const code = error && typeof error === 'object' && 'code' in error ? String(error.code) : 'UNKNOWN';
+      console.warn('[diagnostics] Windows host collection unavailable:', code);
+      return normalizeDiagnosticsSnapshot(
+        { providerErrors: ['WINDOWS_HOST_COLLECTION_FAILED'] },
+        { ...common, cpuMeaning: 'UTILIZATION' }
+      );
     }
   }
-  const mem = process.memoryUsage();
-  const totalMem = os.totalmem();
-  const freeMem = os.freemem();
-  const load = os.loadavg();
-  const cpuCount = Math.max(os.cpus().length, 1);
-  return {
-    cpu: Number(((load[0] / cpuCount) * 100).toFixed(2)),
-    ram: Number((((totalMem - freeMem) / totalMem) * 100).toFixed(2)),
-    disk: null,
-    temperature: null,
-    source: 'NODE_HOST_OS'
+
+  const totalMemory = os.totalmem();
+  const freeMemory = os.freemem();
+  const cpuList = os.cpus();
+  const loadAverage = os.loadavg()[0];
+  const logicalCpuCount = Math.max(cpuList.length, 1);
+  const normalizedLoad = Number.isFinite(loadAverage) ? Number(((loadAverage / logicalCpuCount) * 100).toFixed(2)) : null;
+  const raw = {
+    telemetry: {
+      cpu: normalizedLoad,
+      ram: totalMemory > 0 ? Number((((totalMemory - freeMemory) / totalMemory) * 100).toFixed(2)) : null,
+      disk: null
+    },
+    host: {},
+    processors: cpuList[0] ? [{
+      name: cpuList[0].model,
+      manufacturer: null,
+      physicalCores: null,
+      logicalProcessors: cpuList.length,
+      maxClockMHz: null
+    }] : [],
+    memoryModules: [{
+      name: 'System memory aggregate',
+      manufacturer: null,
+      model: null,
+      capacityBytes: totalMemory,
+      speedMHz: null
+    }],
+    providerErrors: []
   };
+  return normalizeDiagnosticsSnapshot(raw, { ...common, cpuMeaning: 'NORMALIZED_LOAD' });
 }
 
-app.get('/api/diagnostics/snapshot', async (_req, res) => {
-  const device = await readHostDeviceTelemetry();
-  const mem = process.memoryUsage();
-  res.json({
-    state: 'OBSERVED_HOST_TELEMETRY',
-    telemetry: {
-      cpu: device.cpu,
-      ram: device.ram,
-      disk: device.disk,
-      temp: device.temperature,
-      processRssBytes: mem.rss,
-      processHeapUsedBytes: mem.heapUsed,
-      uptimeSeconds: Math.floor(process.uptime()),
-      source: device.source
-    },
-    unsupported: { deviceTemperature: 'UNBOUND', gpuUtilization: 'UNBOUND' },
-    flowNodes: [],
-    flowEdges: [],
-    charge: [],
-    systemCharge: [],
-    progress: [],
-    gantt: [],
-    tools: [],
-    signals: [],
-    timestamp: new Date().toISOString()
+async function readHostDiagnosticsSnapshot(): Promise<DiagnosticsSnapshot> {
+  if (diagnosticsSnapshotCache && diagnosticsSnapshotCache.expiresAt > Date.now()) {
+    return diagnosticsSnapshotCache.value;
+  }
+  if (diagnosticsSnapshotInFlight) return diagnosticsSnapshotInFlight;
+  diagnosticsSnapshotInFlight = collectHostDiagnosticsSnapshot();
+  try {
+    const snapshot = await diagnosticsSnapshotInFlight;
+    diagnosticsSnapshotCache = { value: snapshot, expiresAt: Date.now() + DIAGNOSTICS_CACHE_MS };
+    return snapshot;
+  } finally {
+    diagnosticsSnapshotInFlight = null;
+  }
+}
+
+app.get('/api/diagnostics/snapshot', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  if (!isLoopbackDiagnosticsAddress(req.socket.remoteAddress)) {
+    return res.status(403).json({ state: 'BLOCKED', error: 'LOCAL_HOST_DIAGNOSTICS_ONLY' });
+  }
+  try {
+    return res.json(await readHostDiagnosticsSnapshot());
+  } catch (error) {
+    const code = error && typeof error === 'object' && 'code' in error ? String(error.code) : 'UNKNOWN';
+    console.error('[diagnostics] Host snapshot failed:', code);
+    return res.status(503).json({ state: 'UNAVAILABLE', error: 'HOST_DIAGNOSTICS_COLLECTION_FAILED' });
+  }
+});
+
+/*
+ * Original Diagnostics Matrix surface binding. The host adapter owns the
+ * runtime origin and authorized body identity; the browser receives only a
+ * same-origin proxy path so a remote client never treats this workstation's
+ * loopback address as its own.
+ */
+const DIAGNOSTICS_MATRIX_ORIGIN = String(process.env.LEEWAY_DIAGNOSTICS_ORIGIN || 'http://127.0.0.1:8890')
+  .replace(/\/$/, '');
+const DIAGNOSTICS_MATRIX_BODY_ID = String(process.env.LEEWAY_DIAGNOSTICS_BODY_ID || 'pc-primary');
+const DIAGNOSTICS_MATRIX_OBSERVATION_VERSION = process.env.LEEWAY_DIAGNOSTICS_OBSERVATION_VERSION
+  ? String(process.env.LEEWAY_DIAGNOSTICS_OBSERVATION_VERSION) : null;
+const DIAGNOSTICS_MATRIX_ASSETS = new Set([
+  'index.html', 'matrix.html', 'app.js', 'app.css', 'matrix-bridge.js', 'matrix-live-ports.js',
+  'matrix-measured-instruments.js', 'matrix-model-topology.js', 'matrix-original-assembly.js',
+  'matrix-original-honeycomb.js', 'matrix-original-kinetics.js', 'matrix-exact-dashboard.js',
+  'matrix-exact-dashboard.css', 'matrix-visual-first.css'
+]);
+
+function diagnosticsAdapterAuthorized(): boolean {
+  try {
+    const parsed = new URL(DIAGNOSTICS_MATRIX_ORIGIN);
+    return parsed.protocol === 'http:' &&
+      ['127.0.0.1', 'localhost', '::1'].includes(parsed.hostname.toLowerCase()) &&
+      parsed.username === '' && parsed.password === '' &&
+      /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(DIAGNOSTICS_MATRIX_BODY_ID);
+  } catch {
+    return false;
+  }
+}
+
+app.get('/api/diagnostics/surface', (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const authorized = diagnosticsAdapterAuthorized();
+  return res.json({
+    state: authorized ? 'LOCAL_ADAPTER_AUTHORIZED' : 'UNAVAILABLE',
+    origin: null,
+    bodyId: authorized ? DIAGNOSTICS_MATRIX_BODY_ID : null,
+    matrixPath: authorized ? '/diagnostics/matrix/matrix.html' : null,
+    observationVersion: authorized ? DIAGNOSTICS_MATRIX_OBSERVATION_VERSION : null,
+    reason: authorized ? null : 'DIAGNOSTICS_LOCAL_ADAPTER_CONFIG_INVALID'
   });
+});
+
+app.get('/diagnostics/matrix/:asset', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  if (!diagnosticsAdapterAuthorized()) {
+    return res.status(503).json({ state: 'UNAVAILABLE', error: 'DIAGNOSTICS_SURFACE_NOT_AUTHORIZED' });
+  }
+  const asset = String(req.params.asset || '');
+  if (RECOVERED_ASSET_FILES.includes(asset)) {
+    const recovered = path.join(process.cwd(), 'public', 'diagnostics-assets', asset);
+    if (!fs.existsSync(recovered)) {
+      return res.status(404).json({ state: 'UNAVAILABLE', error: 'DIAGNOSTICS_RECOVERED_ASSET_MISSING' });
+    }
+    const contentType = asset.endsWith('.jpg') ? 'image/jpeg'
+      : asset.endsWith('.pdf') ? 'application/pdf' : 'image/png';
+    res.setHeader('Content-Type', contentType);
+    return res.status(200).send(fs.readFileSync(recovered));
+  }
+  if (!DIAGNOSTICS_MATRIX_ASSETS.has(asset)) {
+    return res.status(404).json({ state: 'UNAVAILABLE', error: 'DIAGNOSTICS_ASSET_NOT_ADMITTED' });
+  }
+  const bodyId = typeof req.query.bodyId === 'string' ? req.query.bodyId : DIAGNOSTICS_MATRIX_BODY_ID;
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(bodyId)) {
+    return res.status(400).json({ state: 'UNAVAILABLE', error: 'DIAGNOSTICS_BODY_ID_INVALID' });
+  }
+  try {
+    const upstream = new URL(`/digital-brain/diagnostics/${asset}`, DIAGNOSTICS_MATRIX_ORIGIN);
+    upstream.searchParams.set('bodyId', bodyId);
+    const response = await fetch(upstream, { signal: AbortSignal.timeout(8000) });
+    if (!response.ok) {
+      return res.status(502).json({ state: 'UNAVAILABLE', error: 'DIAGNOSTICS_SURFACE_UPSTREAM_FAILED', status: response.status });
+    }
+    const contentType = response.headers.get('content-type');
+    if (contentType) res.setHeader('Content-Type', contentType);
+    return res.status(200).send(Buffer.from(await response.arrayBuffer()));
+  } catch {
+    return res.status(503).json({ state: 'UNAVAILABLE', error: 'DIAGNOSTICS_SURFACE_PROVIDER_DISCONNECTED' });
+  }
+});
+
+app.post('/brain/query', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  if (!diagnosticsAdapterAuthorized()) {
+    return res.status(503).json({ state: 'UNAVAILABLE', error: 'DIAGNOSTICS_SURFACE_NOT_AUTHORIZED' });
+  }
+  const operation = typeof req.body?.operation === 'string' ? req.body.operation : '';
+  const argumentsValue = req.body?.arguments;
+  if (!['root', 'children'].includes(operation) || argumentsValue === null || typeof argumentsValue !== 'object' || Array.isArray(argumentsValue)) {
+    return res.status(400).json({ ok: false, error: 'DIAGNOSTICS_BRAIN_QUERY_INVALID' });
+  }
+  try {
+    const response = await fetch(`${DIAGNOSTICS_MATRIX_ORIGIN}/brain/query`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ operation, arguments: argumentsValue }),
+      signal: AbortSignal.timeout(8000)
+    });
+    const text = await response.text();
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(response.status).send(text);
+  } catch {
+    return res.status(503).json({ ok: false, error: 'DIAGNOSTICS_PROVIDER_DISCONNECTED' });
+  }
+});
+
+app.get('/api/diagnostics/ecosystem', async (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  if (!diagnosticsAdapterAuthorized()) {
+    return res.status(503).json({ ok: false, error: 'DIAGNOSTICS_SURFACE_NOT_AUTHORIZED' });
+  }
+  try {
+    const response = await fetch(`${DIAGNOSTICS_MATRIX_ORIGIN}/api/diagnostics/ecosystem`, {
+      signal: AbortSignal.timeout(8000)
+    });
+    const text = await response.text();
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(response.status).send(text);
+  } catch {
+    return res.status(503).json({ ok: false, error: 'DIAGNOSTICS_PROVIDER_DISCONNECTED' });
+  }
 });
 
 /*

@@ -86,12 +86,12 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
   {
     id: 'officeSuite',
     title: 'LeeWay Office Suites',
-    shortTitle: 'Office',
+    shortTitle: 'Office Suites',
     description: 'Canonical AGPU document, spreadsheet, presentation, research, and review workstation.',
     url: OWNER_LOCAL_OFFICE_URL,
     capabilityRef: 'leeway.office',
     accent: 'border-blue-700 bg-blue-950/20',
-    iconImage: '/app-icons/office-suite.png',
+    iconImage: '/app-icons/Gemini_Generated_Image_y6aytty6aytty6ay.jpg',
     gradient: 'from-blue-300 via-indigo-600 to-slate-950'
   },
   {
@@ -187,10 +187,10 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     title: 'LeeWay Diagnostics',
     shortTitle: 'Diagnostics',
     description: 'Canonical device health, compute diagnostics, and telemetry console.',
-    url: 'http://127.0.0.1:3217/?view=diagnostics&leewaySurface=widget',
+    url: 'http://127.0.0.1:3218/?view=diagnostics&leewaySurface=widget',
     capabilityRef: 'leeway.diagnostics',
     accent: 'border-rose-700 bg-rose-950/20',
-    iconImage: '/app-icons/diagnostics-badge.png',
+    iconImage: '/app-icons/diagnostics-motherboard.png',
     gradient: 'from-rose-300 via-red-600 to-zinc-950'
   },
   {

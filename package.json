@@ -11,6 +11,8 @@
     "lint": "npm --prefix apps/agent-tablet run lint",
     "build": "npm --prefix apps/agent-tablet run build",
     "test:integration": "node --test integration/runtime-fabric/*.test.mjs",
-    "test": "npm run lint && npm run test:integration && npm run build"
+    "test:diagnostics": "npm --prefix apps/agent-tablet run test:diagnostics",
+    "test": "npm run lint && npm run test:integration && npm run test:diagnostics && npm run build",
+    "test:browser:diagnostics": "node test/browser/diagnostics-functional.browser.mjs"
   }
 }

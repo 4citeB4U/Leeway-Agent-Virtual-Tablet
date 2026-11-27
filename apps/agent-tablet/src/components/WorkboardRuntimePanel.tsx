@@ -21,7 +21,7 @@ export function WorkboardRuntimePanel({ initialUrl, onStatusChange, onUrlChange 
   const [targetUrl, setTargetUrl] = useState(initialUrl);
   const [appliedUrl, setAppliedUrl] = useState(initialUrl);
   const [confirmedUrl, setConfirmedUrl] = useState<string | null>(null);
-  const [status, setStatus] = useState('CHECKING');
+  const [status, setStatus] = useState(initialUrl.trim() ? 'CHECKING' : 'UNCONFIGURED');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const refreshInFlight = useRef(false);
@@ -40,6 +40,7 @@ export function WorkboardRuntimePanel({ initialUrl, onStatusChange, onUrlChange 
     setError('');
 
     try {
+      if (!url.trim()) throw new Error('Enter the approved Workboard loopback URL before connecting.');
       const parsed = new URL(url);
       if (!['http:', 'https:'].includes(parsed.protocol) || !isLoopbackHost(parsed.hostname)) {
         throw new Error('Workboard must use an HTTP(S) loopback address.');
@@ -75,6 +76,11 @@ export function WorkboardRuntimePanel({ initialUrl, onStatusChange, onUrlChange 
   }, [onUrlChange]);
 
   useEffect(() => {
+    if (!appliedUrl.trim()) {
+      setStatus('UNCONFIGURED');
+      onStatusChangeRef.current('UNCONFIGURED');
+      return;
+    }
     void probe(appliedUrl);
     const intervalId = window.setInterval(() => { void probe(appliedUrl); }, 15_000);
     return () => window.clearInterval(intervalId);
