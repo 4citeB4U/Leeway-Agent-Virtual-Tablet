@@ -54,7 +54,6 @@ import { AgentVTWorkforceCommandCenter } from './components/AgentVTWorkforceComm
 import { TabletDestination } from './components/TabletDestination';
 import { AgentRosterBoard } from './components/AgentRosterBoard';
 import { AgentCommandCenter } from './components/AgentCommandCenter';
-import { CoreServiceDock } from './components/CoreServiceDock';
 import { RotatingLeewayLogo } from './components/RotatingLeewayLogo';
 import { WorkboardRuntimePanel } from './components/WorkboardRuntimePanel';
 import { AgentNotepadBlackboard } from './components/AgentNotepadBlackboard';
@@ -143,12 +142,12 @@ const TABLET_WIDGETS = [
   { id: 'contentVault' as const, label: 'Vault', image: '/app-icons/content-vault.jpg', color: 'from-amber-300 via-fuchsia-600 to-indigo-900' },
   { id: 'employmentCenter' as const, label: 'Employment', image: '/app-icons/employment-center.png', color: 'from-amber-200 to-orange-800' },
   { id: 'notepad' as const, label: 'Blackboard', image: '/app-icons/blackboard.jpg', color: 'from-fuchsia-300 to-violet-800' },
-  { id: 'officeSuite' as const, label: 'Office Suites', image: '/app-icons/Gemini_Generated_Image_y6aytty6aytty6ay.jpg', color: 'from-blue-300 to-indigo-800' },
+  { id: 'officeSuite' as const, label: 'Office Suites', image: '/app-icons/office-suite-new.png', color: 'from-blue-300 to-indigo-800' },
   { id: 'leewayIde' as const, label: 'IDE', image: '/app-icons/ide.jpg', color: 'from-cyan-300 to-blue-800' },
   { id: 'erpCrm' as const, label: 'CRM / ERP', image: '/app-icons/crm-erp.png', color: 'from-violet-300 to-indigo-900' },
   { id: 'logistics' as const, label: 'Logistics', image: '/app-icons/logistics.png', color: 'from-sky-300 to-blue-900' },
   { id: 'agentVision' as const, label: 'Vision', image: '/app-icons/agent-vision.png', color: 'from-emerald-300 to-teal-900' },
-  { id: 'creatorControl' as const, label: 'Creator Control', image: '/app-icons/diagnostics-motherboard.png', color: 'from-amber-300 via-orange-700 to-slate-950' },
+  { id: 'creatorControl' as const, label: 'LeeWay Core', image: '/app-icons/leeway-core.png', color: 'from-amber-300 via-orange-700 to-slate-950' },
   { id: 'modelHub' as const, label: 'Model Hub', image: '/app-icons/model-hub-button.png', icon: Layers, color: 'from-cyan-300 via-blue-700 to-indigo-950' }
 ] as const;
 
@@ -438,16 +437,6 @@ export default function App() {
     });
   };
 
-  const authorizeCoreSurface = async () => {
-    const authorize = window.leewayNative?.authorizeCoreSurface;
-    if (!authorize) return { state: 'UNAVAILABLE', reason: 'CREATOR_CORE_AUTHORITY_UNBOUND' };
-    try {
-      return await authorize();
-    } catch {
-      return { state: 'UNAVAILABLE', reason: 'CREATOR_CORE_AUTHORITY_FAILURE' };
-    }
-  };
-
   useEffect(() => {
     const requestedView = new URLSearchParams(window.location.search).get('view');
     if (requestedView === 'workboard') {
@@ -733,7 +722,6 @@ export default function App() {
                 </button>
               );
             })}
-            <CoreServiceDock onOpenSurface={setCurrentApp} authorizeCoreSurface={authorizeCoreSurface} embedded />
           </div>
 
           {/* Taskbar Right-Click Jump List */}
@@ -1698,7 +1686,7 @@ export default function App() {
           className="relative flex h-24 shrink-0 items-center gap-3 overflow-hidden bg-[#172627] px-3 text-[11px] font-bold tracking-[0.08em] text-[#b7fff5]"
           title="Drag the LeeWay operating system window from the native MOVE control"
         >
-          <RotatingLeewayLogo className="h-16 w-16 shrink-0 rounded-full border border-cyan-100/70 bg-black/30 p-1 object-contain shadow-[0_0_16px_rgba(34,211,238,.75)]" />
+          <RotatingLeewayLogo className="h-16 w-16 shrink-0 object-cover" />
           <img
             src={tabletAssetUrl('/leeway-agentic-workflow-banner.jpg')}
             alt="LeeWay Agentic Workflow System"

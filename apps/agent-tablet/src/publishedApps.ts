@@ -76,12 +76,12 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
   {
     id: 'creatorControl',
     title: 'LeeWay Core - Creator Enterprise Administrative Control Center',
-    shortTitle: 'Creator Control',
+    shortTitle: 'LeeWay Core',
     description: 'Creator enterprise administrative control center for the LeeWay ecosystem.',
     url: 'http://127.0.0.1:3217/leeway-core-admin/',
     capabilityRef: 'leeway.creator-administrative-control',
     accent: 'border-amber-700 bg-amber-950/20',
-    iconImage: '/app-icons/diagnostics-motherboard.png',
+    iconImage: '/app-icons/leeway-core.png',
     gradient: 'from-amber-300 via-orange-700 to-slate-950'
   },
   {
@@ -103,7 +103,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: OWNER_LOCAL_OFFICE_URL,
     capabilityRef: 'leeway.office',
     accent: 'border-blue-700 bg-blue-950/20',
-    iconImage: '/app-icons/Gemini_Generated_Image_y6aytty6aytty6ay.jpg',
+    iconImage: '/app-icons/office-suite-new.png',
     gradient: 'from-blue-300 via-indigo-600 to-slate-950'
   },
   {
@@ -202,7 +202,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     url: 'http://127.0.0.1:3218/?view=diagnostics&leewaySurface=widget',
     capabilityRef: 'leeway.diagnostics',
     accent: 'border-rose-700 bg-rose-950/20',
-    iconImage: '/app-icons/diagnostics-motherboard.png',
+    iconImage: '/app-icons/diagnostics-new.png',
     gradient: 'from-rose-300 via-red-600 to-zinc-950'
   },
   {

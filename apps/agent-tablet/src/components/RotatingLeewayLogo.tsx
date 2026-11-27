@@ -14,9 +14,9 @@ LICENSE: Existing repository terms.
 import React, { useEffect, useState } from 'react';
 import { tabletAssetUrl } from '../assetUrl';
 
-const SLOT_COUNT = 8;
-const HOLD_MS = 6000;
-const SPIN_MS = 1200;
+const SLOT_COUNT = 9;
+const HOLD_MS = 9000;
+const SPIN_MS = 2000;
 const baseLogo = tabletAssetUrl('/leeway-true-logo.png');
 const slots = Array.from({ length: SLOT_COUNT }, (_, index) =>
   tabletAssetUrl(`/leeway-logos/leeway-logo-${String(index + 1).padStart(2, '0')}.png`));
