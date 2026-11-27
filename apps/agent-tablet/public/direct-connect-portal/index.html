@@ -1,0 +1,53 @@
+<!--
+LEEWAY HEADER — DO NOT REMOVE
+
+REGION: LEEWAY.PORTAL.UI
+TAG: LEEWAY.PORTAL.HTML.ENTRY
+
+5WH:
+WHAT = HTML entry point, font imports, metadata, and PWA manifest/icon links for LeeWay Portal.
+WHY = Establish cross-platform browser/tablet/phone PWA shell and compliant typography.
+WHO = Leonard J. Lee / Leeway Innovations — A Leeway Industries Product
+WHERE = index.html
+WHEN = 2026-11-27
+HOW = Standard HTML5 entry with Google Fonts (Plus Jakarta Sans, DM Sans, JetBrains Mono) and iOS/Chromium PWA tags.
+
+LICENSE = MIT
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>LeeWay Portal</title>
+    <meta
+      name="description"
+      content="Unified cross-device Phone Bridge, remote dialer portal, and multi-provider email workspace governed by LeeWay Standards."
+    />
+    <meta property="og:title" content="LeeWay Portal" />
+    <meta
+      property="og:description"
+      content="Unified cross-device Phone Bridge, remote dialer portal, and multi-provider email workspace governed by LeeWay Standards."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0F172A" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="LeeWayPortal" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" crossorigin src="./assets/index-D_trHz0z.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DM2wL7I-.css">
+  <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
+  <body class="bg-slate-100 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 antialiased selection:bg-blue-600 selection:text-white">
+    <div id="root"></div>
+  </body>
+</html>
