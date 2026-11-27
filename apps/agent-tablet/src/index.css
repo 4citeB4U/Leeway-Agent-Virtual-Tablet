@@ -51,3 +51,133 @@
   background-image: linear-gradient(transparent 2.45rem, #f1f5f9 2.5rem);
   background-size: 100% 2.5rem;
 }
+
+/* ---------- Small-screen / mobile adaptation ---------- */
+@media (max-width: 760px) {
+  [aria-label="LeeWay Agent VT floating widget"] {
+    inset: 2px !important;
+    border-width: 2px !important;
+    border-radius: 12px !important;
+    outline-width: 1px !important;
+  }
+
+  #leeway-vt-widget-header {
+    height: 56px !important;
+    gap: 6px !important;
+    padding: 0 6px !important;
+  }
+
+  .leeway-header-logo {
+    width: 42px !important;
+    height: 42px !important;
+    padding: 2px !important;
+  }
+
+  #leeway-vt-widget-header img:not(.leeway-header-logo) {
+    height: 44px !important;
+    min-width: 0 !important;
+  }
+
+  #leeway-vt-widget-move,
+  #leeway-vt-widget-close {
+    font-size: 7px !important;
+    padding: 2px 4px !important;
+    gap: 4px !important;
+  }
+
+  #leeway-vt-widget-close {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 12px !important;
+  }
+
+  [aria-label="Tablet Taskbar"] {
+    height: 58px !important;
+    padding: 4px 6px !important;
+  }
+
+  [aria-label="Tablet Taskbar"] > div:first-child {
+    margin: 0 !important;
+    min-width: max-content !important;
+    gap: 4px !important;
+    padding: 3px 6px !important;
+    border-radius: 16px !important;
+  }
+
+  [aria-label="Tablet Taskbar"] button {
+    width: 38px !important;
+    padding: 2px !important;
+    font-size: 6px !important;
+    gap: 1px !important;
+  }
+
+  [aria-label="Tablet Taskbar"] button > span:first-child {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 9px !important;
+  }
+
+  [aria-label="Desktop Shortcuts"] {
+    inset: 0 !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-auto-flow: row !important;
+    grid-template-rows: none !important;
+    grid-auto-columns: auto !important;
+    gap: 8px !important;
+    padding: 10px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  [aria-label="Desktop Shortcuts"] > div {
+    width: 100% !important;
+    height: 82px !important;
+    padding: 4px !important;
+  }
+
+  [aria-label="Desktop Shortcuts"] > div > span:first-child {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 12px !important;
+  }
+
+  [aria-label="Desktop Shortcuts"] strong,
+  [aria-label="Desktop Shortcuts"] span {
+    font-size: 8px !important;
+    line-height: 10px !important;
+  }
+
+  [class*="grid-cols-[220px_1fr]"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 460px) {
+  #leeway-vt-widget-header img:not(.leeway-header-logo) {
+    display: none !important;
+  }
+
+  [aria-label*="platform"] {
+    display: none !important;
+  }
+
+  [aria-label="Desktop Shortcuts"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-height: 520px) {
+  #leeway-vt-widget-header {
+    height: 48px !important;
+  }
+
+  .leeway-header-logo {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  [aria-label="Tablet Taskbar"] {
+    height: 50px !important;
+  }
+}
