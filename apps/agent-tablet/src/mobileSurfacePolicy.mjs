@@ -38,7 +38,7 @@ export function tabletSurfaceUrl(rawUrl, appId, surface, compact = false) {
   // The existing Logistics URL intentionally pins a desktop-heavy tactical
   // camera/state preset. Adjust presentation ONLY when rendered in a compact
   // Tablet viewport; retain map layers, camera coordinates and detection state.
-  if (appId === 'logistics' && compact) {
+  if (appId === 'logistics' && surface === 'tablet') {
     const state = new URLSearchParams(url.hash.slice(1));
     if (state.has('lat') && state.has('lon')) {
       state.set('hud', 'minimal');
