@@ -19,6 +19,7 @@ export type PublishedLeeWayAppId = Extract<WorkstationAppId,
   | 'diagnostics'
   | 'agentRoster'
   | 'digitalBrain'
+  | 'settings'
   | 'globalP2p'
   | 'directConnect'
   | 'motionGlyph'
@@ -230,6 +231,17 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     accent: 'border-blue-700 bg-blue-950/20',
     iconImage: '/app-icons/digital-brain.png',
     gradient: 'from-blue-200 via-cyan-600 to-indigo-950'
+  },
+  {
+    id: 'settings',
+    title: 'Settings & About — Journey with LeeWay',
+    shortTitle: 'Settings & About',
+    description: 'The integrated Discover LeeWay guide, settings documentation and application instruction center.',
+    url: 'http://127.0.0.1:3217/journey-with-leeway/',
+    capabilityRef: 'leeway.tablet.settings',
+    accent: 'border-cyan-700 bg-cyan-950/20',
+    iconImage: '/app-icons/settings-about.png',
+    gradient: 'from-cyan-200 via-blue-700 to-indigo-950'
   },
   {
     id: 'globalP2p',

@@ -151,7 +151,7 @@ const TABLET_WIDGETS = [
   { id: 'logistics' as const, label: 'Logistics', image: '/app-icons/logistics.png', color: 'from-sky-300 to-blue-900' },
   { id: 'agentVision' as const, label: 'Vision', image: '/app-icons/agent-vision.png', color: 'from-emerald-300 to-teal-900' },
   { id: 'creatorControl' as const, label: 'LeeWay Core', image: '/app-icons/leeway-core.png', color: 'from-amber-300 via-orange-700 to-slate-950' },
-  { id: 'settings' as const, label: 'Settings', image: '/app-icons/home-button.png', icon: Settings2, color: 'from-slate-300 via-cyan-700 to-slate-950' },
+  { id: 'settings' as const, label: 'Settings & About', image: '/app-icons/settings-about.png', color: 'from-cyan-200 via-blue-700 to-indigo-950' },
   { id: 'globalP2p' as const, label: 'Global P2P', image: '/app-icons/global-p2p.png', color: 'from-amber-200 via-blue-700 to-slate-950' },
   { id: 'directConnect' as const, label: 'Direct Connect', image: '/app-icons/direct-connect.png', color: 'from-cyan-200 via-blue-700 to-indigo-950' },
   { id: 'motionGlyph' as const, label: 'Motion Glyph', image: '/app-icons/motion-glyph.png', color: 'from-fuchsia-300 via-violet-700 to-slate-950' },
@@ -849,18 +849,6 @@ export default function App() {
             access={surfaceAccess}
             onOpenSurface={(surface, launchOrigin) => setCurrentApp(surface, launchOrigin)}
             onOpenAbout={(appId) => { setCurrentApp(appId); setAboutOpen(true); }}
-          />
-        )}
-        {currentApp === 'settings' && (
-          <SettingsCenter
-            onClose={() => setCurrentApp('desktop')}
-            onOpenAbout={() => setAboutOpen(true)}
-            onUpdate={async () => {
-              const result = await window.leewayNative?.runTabletUpdate?.();
-              if (result?.state === 'UPDATE_COMPLETED') showToast(`Update complete: ${result.status?.state || 'OK'} ${result.status?.current?.slice(0, 7) || ''}`.trim());
-              else showToast(`Update failed: ${result?.status?.reason || result?.state || 'NO_NATIVE_BRIDGE'}`);
-            }}
-            edition={surfaceAccess['creatorControl']?.allowed ? 'CREATOR' : 'PERSONAL'}
           />
         )}
         {false && (
