@@ -1704,7 +1704,7 @@ export default function App() {
               type="button"
               aria-label="Move LeeWay Agentic Workflow System window"
               title="Move LeeWay Agentic Workflow System window"
-              className="rounded border border-[#4b8e97] bg-[#0a3e46]/90 px-1.5 py-0.5 text-[8px] font-black tracking-[0.08em] text-[#d8ffff] hover:bg-[#12616b]"
+              className="rounded border border-[#66c6ff] bg-[#0077ff] px-2.5 py-1 text-[10px] font-black tracking-[0.08em] text-white shadow-[0_0_12px_rgba(0,119,255,.85)] hover:bg-[#2a95ff]"
             >
               MOVE
             </button>
@@ -1713,7 +1713,7 @@ export default function App() {
               type="button"
               aria-label="Close LeeWay Agentic Workflow System window"
               title="Close LeeWay Agentic Workflow System window"
-              className="flex h-5 w-5 items-center justify-center rounded border border-[#a9d6d4] bg-[#0a1a22]/80 text-[15px] leading-none text-[#d8ffff] hover:bg-[#5e2830] hover:text-white"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-[#ff9aa3] bg-[#dc2626] text-[18px] font-black leading-none text-white shadow-[0_0_12px_rgba(220,38,38,.8)] hover:bg-[#ef4444]"
             >
               ×
             </button>
