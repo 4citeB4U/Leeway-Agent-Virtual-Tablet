@@ -20,6 +20,7 @@ export type WorkstationAppId =
   | 'preview'
   | 'apps'
   | 'agentSkills'
+| 'creatorControl'
   | 'leewayIde'
   | 'officeSuite'
   | 'contentFoundry'

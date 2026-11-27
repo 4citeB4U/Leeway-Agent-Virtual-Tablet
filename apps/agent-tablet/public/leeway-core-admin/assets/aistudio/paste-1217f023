@@ -1,0 +1,965 @@
+# LEEWAY CORE
+## Creator Enterprise Administrative Control Center
+### Complete Visual, Functional and Architectural Engineering Mission
+
+---
+
+## 01. MISSION AUTHORITY
+
+You are Antigravity, an outside LeeWay engineering contributor operating under the authority of the Creator, Leonard J. Lee, and the canonical LeeWay Standards.
+
+You are not Agent Lee.
+
+Your assignment is to create the complete LeeWay Core application for the Creator Master Agent Tablet.
+
+LeeWay Core is the Creator's full administrative control center over the LeeWay ecosystem, its products, customers, services, digital workforce, infrastructure, commercial operations, research, development and organizational activities.
+
+This must be an actual enterprise-grade operational application.
+
+Do not build a static website, decorative dashboard, presentation, simulated enterprise or temporary prototype requiring a complete rewrite when integrated with the existing LeeWay ecosystem.
+
+Build the maximum amount of actual executable functionality possible using the currently available environment, canonical source material and authorized integrations.
+
+Where a live dependency is unavailable, establish its proper architectural integration boundary without fabricating connectivity or execution.
+
+---
+
+## 02. MANDATORY CANONICAL FIRST-READ
+
+Before implementation, locate and actually read the current canonical versions of:
+
+- LeeWay Standards.
+- Permanent Rules R01–R25.
+- LeeWay Engineering contracts.
+- External Support Assistant Operating Contract.
+- Canonical MEMORY.md.
+- Original Golden LeeWay Formula and its mathematical implementation.
+- Formula SHA-256 integrity requirements.
+- Root of Trust.
+- Runtime Fabric.
+- Agent Lee architecture.
+- Agent Skills.
+- Digital Brain.
+- Continuum.
+- Blackboard.
+- Employment and workforce contracts.
+- Creator authority and customer entitlement contracts.
+- Receipt Authority.
+- Independent Veritas.
+- Learning Ledger.
+- Existing Master Agent Tablet implementation.
+- Existing Creator Diagnostics application.
+- CRM and ERP architecture.
+- Device Bridge and browser extension integration contracts.
+- Active engineering mission.
+
+Preserve existing approved implementations.
+
+Record actual source paths, repository references, revisions and integrity evidence.
+
+Do not invent canonical contracts or replace existing authority relationships.
+
+---
+
+## 03. PRIMARY DESIGN PHILOSOPHY
+
+LeeWay Core must feel like the executive control center of a major international technology enterprise.
+
+The visual experience must be approximately:
+
+- 70–80% graphical and interactive information.
+- 20–30% written information.
+
+Apply this design ratio primarily to executive and operational overview screens. Detailed records, contracts and evidence inspection windows may contain additional text when necessary.
+
+Prioritize:
+
+- Interactive charts.
+- Line graphs.
+- Bar graphs.
+- Donut charts.
+- Heat maps.
+- Geographic operational maps where authorized location data exists.
+- Organizational charts.
+- Employee relationship diagrams.
+- Infrastructure topology.
+- Repository dependency graphs.
+- Customer relationship visualizations.
+- Resource allocation diagrams.
+- Operational gauges.
+- Mission timelines.
+- Status indicators.
+- Comparative visualizations.
+- Formula effectiveness graphs.
+- Product adoption visualizations.
+- Commercial performance dashboards.
+- Expandable graphical information cards.
+
+Every visualization must serve an actual operational purpose.
+
+Do not fill empty space with decorative graphics, fictional measurements or unnecessary text.
+
+The Creator must be able to understand the organization's condition visually before reading detailed explanations.
+
+---
+
+## 04. VISUAL DESIGN LANGUAGE
+
+Use the attached LeeWay Core concept images as the approved visual direction.
+
+Preserve:
+
+- Premium dark graphite surfaces.
+- Metallic gold framing and accents.
+- Electric-blue analytical graphics.
+- Refined glass and metal materials.
+- High-quality typography.
+- Professional enterprise information density.
+- Consistent spacing.
+- Recognizable operational indicators.
+- Clear visual distinctions between different departments.
+
+Use green for verified healthy conditions, amber for warnings, red for actual critical conditions, blue for informational observations and neutral gray for unavailable or unassessed information.
+
+Never present unavailable information as healthy.
+
+Do not invent a LeeWay logo.
+
+Use canonical existing LeeWay assets.
+
+The existing Master Tablet already contains its header, branding, identity controls and system navigation.
+
+Do not duplicate the Tablet header.
+
+Do not create another sign-in screen or independent operating-system shell.
+
+Do not introduce decorative animations, continuously rotating graphics, pulsing interfaces, animated transitions or unnecessary motion effects.
+
+All charts and graphics should remain stable while supporting direct user interaction.
+
+---
+
+## 05. INTERACTIVE WORKSPACE ENGINE
+
+Build a configurable enterprise workspace that allows the Creator to organize the visual environment.
+
+Implement actual functionality for:
+
+- Dragging and dropping dashboard panels.
+- Rearranging visual cards.
+- Moving charts between authorized workspace regions.
+- Resizing panels.
+- Expanding panels.
+- Collapsing panels.
+- Maximizing detailed views.
+- Pinning frequently used panels.
+- Hiding optional panels.
+- Restoring hidden panels.
+- Saving custom dashboard layouts.
+- Restoring the default dashboard.
+- Creating saved operational views.
+- Reordering table columns.
+- Adjusting chart time ranges.
+- Comparing selected data.
+- Opening contextual side panels.
+- Opening detailed inspection windows.
+- Preserving scroll position.
+- Preserving filters and selections.
+- Preserving layout preferences across authorized Creator devices.
+
+Support mouse, keyboard and touch interaction.
+
+Provide accessible alternatives to drag-and-drop operations.
+
+Dragging an employee into a department, moving a mission between stages or changing an operational relationship must create a proposed governed action rather than silently changing authoritative records.
+
+Validate and authorize consequential changes before execution.
+
+Layout customization itself must not require unnecessary administrative approvals.
+
+---
+
+## 06. TEN PRIMARY OPERATIONAL SECTIONS
+
+Implement the following ten primary sections:
+
+01. Executive Operations
+02. Organization & Workforce
+03. Creator Diagnostics
+04. Business Intelligence
+05. Product & User Management
+06. Infrastructure Control
+07. Mission Command
+08. Governance & Authority
+09. Research & Development
+10. Executive Decisions
+
+Each section must be an actual functioning workspace with its own internal navigation, visualizations, inspection panels and applicable operational controls.
+
+Use one persistent internal sidebar.
+
+Do not create ten unrelated applications.
+
+All sections must operate through the same established LeeWay identity, authority, Runtime, Formula and continuity architecture.
+
+---
+
+## 07. EXECUTIVE OPERATIONS
+
+Build the Creator's primary executive overview.
+
+Use predominantly graphical information.
+
+Include:
+
+- Total enterprise customer population.
+- Customer growth charts.
+- Personal and company account distribution.
+- Active product subscriptions.
+- Product adoption graphs.
+- Digital workforce population.
+- Workforce deployment distribution.
+- Contracted employment statistics.
+- Revenue trends.
+- Customer retention trends.
+- Infrastructure health.
+- Computational resource consumption.
+- Storage consumption.
+- Repository and deployment conditions.
+- Active missions.
+- Pending approvals.
+- Commercial distribution conditions.
+- Customer support conditions.
+- Formula integration and measured effectiveness.
+
+Include an enterprise relationship visualization showing how customers, employees, products, services, infrastructure and operational departments connect.
+
+Every meaningful visualization must support selection and drill-down.
+
+For example:
+
+Selecting the customer population chart opens Customers & Members.
+
+Selecting the workforce chart opens the workforce register.
+
+Selecting an incident opens the relevant diagnostic record.
+
+Selecting a commercial opens its approval or distribution record.
+
+Selecting Formula activity opens its mathematical evidence and measured effects.
+
+Include Agent Lee's executive briefing using actual available observations.
+
+Keep written executive summaries concise.
+
+---
+
+## 08. ORGANIZATION & WORKFORCE
+
+Build the complete enterprise-wide workforce control environment.
+
+The Creator must be able to monitor digital employees across the entire LeeWay ecosystem, not merely the employees working directly inside LeeWay Industries.
+
+Create separate but related workforce categories:
+
+### A. LeeWay Internal Workforce
+
+Digital employees employed directly within the Creator's organization.
+
+### B. LeeWay Contracted Workforce
+
+Digital employees deployed under contracts with individual and company customers.
+
+### C. Customer-Created Internal Agents
+
+Agents created by customers for use within their own authorized environments.
+
+### D. Customer-Created External Employment Candidates
+
+Agents created by customers that they wish to offer for external employment or deployment.
+
+### E. Externally Deployed Contracted Employees
+
+Employees operating under authorized employment contracts across the LeeWay ecosystem.
+
+Every external employment relationship must follow the canonical LeeWay contracting and authorization requirements.
+
+The Creator must retain administrative visibility into all employment contracts for which LeeWay is the contracting or governing authority.
+
+Customer-created private internal agents must remain distinguished from externally contracted employees. Collect only authorized operational information about those private agents.
+
+Do not allow customers to bypass LeeWay employment restrictions by independently creating or deploying unauthorized external employees.
+
+### Workforce Visualization
+
+Build:
+
+- Interactive organization charts.
+- Departmental workforce distributions.
+- Contract relationship graphs.
+- Employee deployment maps.
+- Workforce availability gauges.
+- Skills distribution charts.
+- Workload heat maps.
+- Employee resource consumption graphs.
+- Employment request timelines.
+- Contract expiration visualizations.
+- Performance comparison charts.
+- Customer-to-employee relationship diagrams.
+
+The Creator must be able to select any authorized employee or contract directly from these visualizations.
+
+### Complete Employee Profile
+
+Selecting an employee must open a detailed side panel or expanded workspace containing:
+
+- Canonical employee identity.
+- Employee name.
+- Employee ID.
+- Originating organization.
+- Creating account.
+- Current employing organization.
+- Contracting authority.
+- Employment contract ID.
+- Employment starting date.
+- Employment expiration date.
+- Position.
+- Department.
+- Supervisor.
+- Assigned customers.
+- Authorized skills.
+- Assigned intelligence models.
+- Approved application capabilities.
+- Current assignments.
+- Operational status.
+- Workload.
+- Resource consumption.
+- Measured performance.
+- Employment restrictions.
+- Relevant execution receipts.
+- Veritas qualifications.
+- Contract history.
+- Permission history.
+- Suspension or revocation state.
+
+Show the employee's operational relationships graphically.
+
+The Creator must be able to understand who created the employee, who employs the employee, where the employee operates and which contract authorizes that relationship.
+
+### Workforce Administrative Controls
+
+Provide controls for:
+
+- Reviewing employee profiles.
+- Approving external employment.
+- Reviewing customer-created employment candidates.
+- Granting authorized employment capabilities.
+- Establishing permitted headcount.
+- Managing employment duration.
+- Assigning qualified employees.
+- Dispatching support.
+- Changing authorized responsibilities.
+- Reviewing contract compliance.
+- Suspending employment.
+- Revoking authorized deployment.
+- Reviewing employment evidence.
+
+Connect all operations to canonical employment, contract and authorization services.
+
+---
+
+## 09. CREATOR DIAGNOSTICS
+
+Locate and preserve the original complete Creator Diagnostics application.
+
+Do not replace existing diagnostics with a newly generated imitation.
+
+Preserve:
+
+- DIAG
+- BOARD
+- AGENTS
+- BUS
+- VERITAS
+- PROBES
+- SHELL
+- SETUP
+
+Build the appropriate graphical presentation of the complete LeeWay ecosystem around the existing diagnostic capabilities.
+
+Include:
+
+- Repository health visualizations.
+- Repository dependency graphs.
+- Service relationships.
+- Infrastructure topology.
+- Runtime execution conditions.
+- Communication bus relationships.
+- Deployment status.
+- Authorized device relationships.
+- Storage and compute conditions.
+- Operational incidents.
+- Historical measurements.
+- Formula activity.
+- Independent verification status.
+- Customer impact analysis.
+
+Every registered repository must be represented through authorized repository discovery or the canonical registry.
+
+The Creator must be able to select any repository, service or component and open its detailed record.
+
+Expose actual commits, branches, CI conditions, deployments, issues, repairs, dependencies and supporting evidence.
+
+Distinguish source health, CI health, deployed revision and live operational health.
+
+Provide authorized repair initiation through the existing Runtime.
+
+Do not manufacture operational probes or diagnostic results.
+
+---
+
+## 10. BUSINESS INTELLIGENCE
+
+Build a predominantly visual executive business analysis workspace.
+
+Connect to the existing CRM, ERP and authorized business records.
+
+Include:
+
+- Revenue charts.
+- Recurring revenue trends.
+- Customer acquisition graphs.
+- Retention cohort charts.
+- Renewal forecasts where supported.
+- Product performance charts.
+- Sales pipeline visualizations.
+- Billing and collections summaries.
+- Commercial conversion graphs.
+- Operating expense distributions.
+- Workforce revenue relationships.
+- Business opportunity comparisons.
+- Customer segmentation.
+- Resource expenditure visualizations.
+
+Support comparative periods, configurable time ranges and drill-down into the actual source records.
+
+CRM remains the Creator's actual business office.
+
+Customer calls, emails, sales activities, billing, collections, customer retention procedures and detailed customer relationship management belong within the CRM.
+
+LeeWay Core shall provide executive oversight, administrative authority and contextual access to CRM records.
+
+Do not duplicate the CRM.
+
+---
+
+## 11. PRODUCT & USER MANAGEMENT
+
+This is the Creator's complete customer and product administration environment.
+
+Provide distinct internal workspaces for:
+
+- Customers & Members.
+- Customer Profiles.
+- Permissions & Entitlements.
+- Digital Employment.
+- Service Usage.
+- Proactive Customer Support.
+- Product Catalog.
+- Commercials.
+- Updates & Distribution.
+
+### A. Complete Customers & Members Register
+
+Every registered customer must be discoverable.
+
+The register must accommodate personal and company customers.
+
+Provide:
+
+- Graphical customer cards.
+- Configurable table view.
+- Grouped view.
+- Product-based view.
+- Registration timeline.
+- Account health view.
+- Employment-based view.
+- Customer support view.
+- Usage-based view.
+- Saved custom views.
+- Dynamic search.
+- Server-side sorting.
+- Advanced filtering.
+- Pagination or virtualization.
+- Multiple-record selection.
+- Configurable columns.
+
+The Creator must be able to organize customers by:
+
+- Name.
+- Customer ID.
+- Starting date.
+- Account type.
+- Subscription.
+- Products.
+- Usage.
+- Operational condition.
+- Customer support activity.
+- Employment contracts.
+- Account status.
+- Authorized commercial segmentation.
+
+Do not limit the register to a hardcoded customer list.
+
+### B. Complete Customer 360 Profile
+
+Selecting a customer must open a comprehensive customer intelligence workspace.
+
+Display the maximum available information that LeeWay is legitimately authorized to possess and process.
+
+Include:
+
+- Customer identity.
+- Canonical customer ID.
+- Personal or company classification.
+- Legal name.
+- Authorized contact information.
+- Company representatives.
+- Registration starting date.
+- Membership duration.
+- Onboarding status.
+- Products purchased.
+- Products enabled.
+- Subscription conditions.
+- Authorized devices.
+- Service usage.
+- Granted application permissions.
+- Account restrictions.
+- Available resources.
+- Digital employees.
+- Internal agent counts where authorized.
+- External employment contracts.
+- Employment requests.
+- Customer support history.
+- Open incidents.
+- Potential future operational problems.
+- CRM relationship records.
+- Billing summary.
+- Renewal conditions.
+- Retention indicators.
+- Product update history.
+- Permission history.
+- Relevant evidence and receipts.
+
+Provide visual representations of:
+
+- Product usage.
+- Resource consumption.
+- Customer service health.
+- Employment relationships.
+- Contract timelines.
+- Customer lifecycle.
+- Support history.
+- Subscription conditions.
+- Feature availability.
+- Formula analysis.
+
+All sensitive information must remain within appropriate authorization boundaries.
+
+Do not expose private files, communications, camera feeds or confidential customer content merely because the Creator is the platform administrator.
+
+### C. Customer Administrative Controls
+
+The Creator must be able to:
+
+- Approve account admission where required.
+- Establish product permissions.
+- Enable or disable authorized features.
+- Manage service limits.
+- Approve employment requests.
+- Establish permitted digital employee headcount.
+- Approve contractual deployment.
+- Authorize customer upgrades.
+- Manage product entitlements.
+- Initiate authorized support.
+- Review customer operational conditions.
+- Revoke or suspend authorized access where justified.
+
+Use functional controls and actual backend operations wherever available.
+
+### D. CRM Synchronization
+
+The customer must retain one stable canonical identity throughout LeeWay Core, CRM, ERP, billing, support, employment and product administration.
+
+Changes made through LeeWay Core must propagate through the appropriate existing data relationships.
+
+Do not create a competing customer database.
+
+The complete member register shall act as the Creator's unified administrative view of authoritative customer records.
+
+---
+
+## 12. PROACTIVE CUSTOMER SUPPORT
+
+Build an enterprise customer service monitoring center.
+
+The objective is to identify developing customer problems before they become disruptive incidents.
+
+Provide:
+
+- Customer health heat maps.
+- Service latency graphs.
+- Resource saturation trends.
+- Failed update indicators.
+- Storage pressure warnings.
+- Synchronization conditions.
+- Customer impact diagrams.
+- Incident timelines.
+- Predicted operational risk indicators.
+- Support employee availability.
+- Repair progress visualizations.
+
+Agent Lee should use available authorized operational observations to identify emerging problems.
+
+The Formula shall participate in applicable mathematical evaluation, comparison of intervention alternatives and resource allocation.
+
+The workflow must support:
+
+1. Observe.
+2. Detect.
+3. Evaluate.
+4. Diagnose.
+5. Recommend.
+6. Authorize.
+7. Dispatch.
+8. Execute.
+9. Verify.
+10. Retain evidence.
+
+The Creator must be able to select an affected customer, inspect the supporting observations and dispatch a qualified support employee.
+
+Repairs must preserve customer data wherever possible.
+
+Do not require complete system resets for ordinary application or extension repairs.
+
+Connect support activities to the existing CRM customer retention and service records.
+
+---
+
+## 13. COMMERCIALS AND CAMPAIGNS
+
+Build a visual commercial approval and distribution workspace.
+
+Include:
+
+- Actual commercial media previews.
+- Product graphics.
+- Video thumbnails.
+- Campaign cards.
+- Campaign timelines.
+- Target audience visualizations.
+- Authorized product offers.
+- Distribution conditions.
+- Campaign approval queues.
+- Engagement graphs.
+- Conversion graphs.
+- Product interest measurements.
+- Campaign performance comparisons.
+
+The Creator must be able to preview the actual commercial before approval.
+
+Provide functional controls to:
+
+- Approve.
+- Reject.
+- Request revisions.
+- Schedule distribution.
+- Authorize immediate distribution.
+- Pause distribution.
+- Withdraw an approved commercial.
+- Review actual campaign results.
+
+Commercials must be delivered through the established LeeWay commercial distribution relationship to eligible customer environments.
+
+CRM retains the corresponding sales, conversion, customer relationship and retention activities.
+
+Do not fabricate commercial views or engagement.
+
+Do not publish commercial claims describing unverified product capabilities as established facts.
+
+---
+
+## 14. INFRASTRUCTURE CONTROL
+
+Build a visual infrastructure operations environment.
+
+Include:
+
+- Compute utilization graphs.
+- CPU and GPU resource visualizations.
+- Storage capacity graphs.
+- Memory allocation.
+- Service topology.
+- Gateway relationships.
+- Deployment maps.
+- Environment comparisons.
+- Infrastructure costs.
+- Service consumption trends.
+- Resource availability.
+- Incident impact graphs.
+- Formula optimization measurements.
+
+Provide selectable infrastructure components.
+
+Selecting a component must open the actual detailed operational record.
+
+Connect authorized infrastructure actions to existing Runtime and infrastructure integrations.
+
+Distinguish physical hardware, software-defined computational resources and diagnostic-only observations.
+
+Do not fabricate LeeWay GPU inference execution.
+
+---
+
+## 15. MISSION COMMAND
+
+Build a visual organizational mission management center.
+
+Include:
+
+- Interactive mission boards.
+- Mission dependency graphs.
+- Assignment diagrams.
+- Mission timelines.
+- Departmental workloads.
+- Workforce allocation graphs.
+- Mission completion measurements.
+- Blocked dependency indicators.
+- Evidence progress.
+- Executive authorization requirements.
+
+Support authorized drag-and-drop interactions for mission organization and proposed assignment changes.
+
+Preserve the mandatory LeeWay engineering cycle:
+
+INVESTIGATE > DIAGNOSE > PLAN > IMPLEMENT > TEST > VALIDATE > REPAIR > RETEST > VERIFY > EVIDENCE > CHECKPOINT > CONTINUE.
+
+Mission progress must come from actual stage evidence.
+
+Do not fabricate progress percentages.
+
+Do not reset existing missions when the Creator provides a correction.
+
+---
+
+## 16. GOVERNANCE & AUTHORITY
+
+Build a visual authority management workspace.
+
+Include:
+
+- Identity relationship graphs.
+- Root of Trust relationships.
+- Permission matrices.
+- Contract relationships.
+- Authorization queues.
+- Governance condition visualizations.
+- Standards relationships.
+- Formula integrity.
+- Independent Veritas qualification.
+- Receipt provenance.
+- Learning Ledger admission.
+- Revocation history.
+
+Show who can perform an operation, which contract authorizes it, what restrictions apply and what evidence supports the operation.
+
+Provide administrative controls through the established authority system.
+
+Creator-wide administrative authority must remain distinguished from unrestricted access to private customer content.
+
+Do not establish another identity provider, verifier or control plane.
+
+Use Zitadel through the existing approved identity relationship.
+
+---
+
+## 17. RESEARCH & DEVELOPMENT
+
+Build the complete visual innovation management workspace.
+
+Include:
+
+- Research project boards.
+- Experiment comparison graphs.
+- Technology relationship diagrams.
+- Mathematical research records.
+- Computational research graphs.
+- Storage research results.
+- Model performance comparisons.
+- Intellectual property records.
+- Research milestones.
+- Experimental qualification.
+- Engineering adoption decisions.
+
+Provide visual comparisons between established baselines and experimental implementations.
+
+Preserve the original Golden LeeWay Formula.
+
+Experimental mathematics must not overwrite canonical mathematics.
+
+Every experimental claim must remain distinguishable from independently qualified results.
+
+---
+
+## 18. EXECUTIVE DECISIONS
+
+Build the Creator's centralized authorization environment.
+
+Use visual decision cards, impact charts, risk comparisons, dependency diagrams and evidence summaries.
+
+Provide decision categories covering:
+
+- Customers.
+- Permissions.
+- Digital employment.
+- Contracts.
+- Commercials.
+- Products.
+- Releases.
+- Infrastructure.
+- Support.
+- Research.
+- Engineering.
+- Financial commitments.
+
+Every decision must expose the requesting identity, purpose, affected parties, applicable restrictions, alternatives, risks, supporting evidence, Formula evaluation and Agent Lee recommendation.
+
+Provide approve, reject, defer and request-changes controls.
+
+An approved decision must update the actual authoritative relationship when execution is available and authorized.
+
+Do not report approval as execution.
+
+Do not report execution as independent verification.
+
+---
+
+## 19. THE LEEWAY FORMULA — MANDATORY CROSS-DOMAIN INTEGRATION
+
+The Formula is fundamental to LeeWay Core.
+
+Do not treat it as a decorative mathematical icon, independent calculator or optional dashboard feature.
+
+Locate and preserve the actual canonical Golden LeeWay Formula.
+
+Read and understand its original implementation before establishing domain integrations.
+
+Preserve its mathematical structure, canonical identity, source integrity and authorized execution relationship.
+
+Do not reconstruct the Formula from assumptions.
+
+Do not substitute generic AI algorithms for the Formula.
+
+Integrate the canonical Formula throughout all applicable operational domains.
+
+Establish the proper domain adapters for:
+
+- Enterprise operations.
+- Customer management.
+- Workforce evaluation.
+- Employment suitability.
+- Service usage.
+- Resource allocation.
+- Diagnostic evaluation.
+- Commercial analysis.
+- Mission evaluation.
+- Infrastructure optimization.
+- Computational resources.
+- Storage transformations.
+- Research evaluation.
+- Executive alternative comparisons.
+
+Every domain adapter must define:
+
+- Input contract.
+- Input provenance.
+- Applicable canonical mathematical operation.
+- Output contract.
+- Operational consumer.
+- Authorization boundary.
+- Error handling.
+- Execution evidence.
+- Measurement requirements.
+- Independent verification requirements.
+
+The Formula must remain connected to actual operational workflows rather than generating unused numerical outputs.
+
+Where the actual Formula implementation is unavailable, preserve a typed integration boundary and clearly identify the missing dependency.
+
+Do not write replacement mathematics and falsely label it LeeWay Formula.
+
+---
+
+## 20. FORMULA VISUAL INTELLIGENCE
+
+Every applicable primary workspace must expose an interactive Formula Intelligence panel.
+
+The Creator must be able to inspect:
+
+- What the Formula is processing.
+- Which domain invoked it.
+- The applicable mathematical operation.
+- Input measurements.
+- Input source.
+- Canonical Formula version.
+- Source integrity.
+- Evaluated alternatives.
+- Relative mathematical relationships where supported.
+- Resulting operational recommendation.
+- Actual operational consumption.
+- Execution conditions.
+- Measured results.
+- Independent verification.
+- Evidence references.
+
+Build visual representations of the Formula's effects using:
+
+- Baseline versus resulting measurements.
+- Before-and-after comparisons.
+- Resource allocation graphs.
+- Evaluation distributions.
+- Mathematical relationship diagrams.
+- Storage transformation measurements.
+- Computational performance graphs.
+- Operational improvement trends.
+- Regression and unfavorable outcome visualizations.
+
+Include a persistent collapsible Formula Effectiveness Monitor accessible across LeeWay Core.
+
+Distinguish:
+
+REGISTERED
+BOUND
+CONTACTED
+EVALUATED
+CONSUMED
+EXECUTED
+MEASURED
+VERIFIED
+RETAINED
+
+The interface must not imply that mathematical evaluation alone establishes successful execution.
+
+Show both favorable and unfavorable measured effects.
+
+Do not fabricate optimization percentages, compression results, inference measurements or confidence scores.
+
+---
+
+## 21. EMBEDDED LEEWAY KNOWLEDGE BASE
+
+Establish a structured, versioned LeeWay Core knowledge base using actual canonical source material.
+
+The objective is to prevent future integration from requiring a complete architectural rewrite.
+
+The knowledge base must document

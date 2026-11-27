@@ -1,0 +1,16 @@
+{
+  "files": {
+    "base64-codec.mjs": "3d66c4a42a29733901564c8502ddf23b2398ca94860f80a9bc1611816794276d",
+    "canonical-input.mjs": "4087fc14a9f1f44eb46d9d6417156176794e2acc72ee9bf481f21a5d0abe5236",
+    "formula-receipts.mjs": "811aceac5385fab88cfa4702d58ab492e7fe0060866687f8303b21f34befa36d",
+    "formula-service.mjs": "59c74a850cfbacab4408d73538c824d25687ae0fbd12f07ab5d3622661b7b1ec",
+    "leeway-formula-v1.mjs": "6502791bba909d7481db3a204f3cbf67b1dc06a4b76a73c797d709408341d63e",
+    "rational.mjs": "5d36ff407256ddc2858b2e6747ea1091b99a8d787b7b840d912a6c9968c35264",
+    "adapters/adapter-registry.mjs": "ea18cef8cf058e339b5018ded22037b5134af2b0fe0341e4a01867a82186e522",
+    "adapters/raw-base64-v1.mjs": "2c8b477abad73a0b8519127b20e500bc857f6d26a2722634f23637d4eeac6215",
+    "adapters/runtime-state-v1.mjs": "3264d0a97a76246b31c5ca759b5993188cbae10422eb153ac395e3fb5e2470e0",
+    "../../standards/formulas/LEEWAY-FORMULA-v1.0.spec.json": "2f4604f143e2f7c3bc2fe315f2faa2c7d9b8b188151a0fab9f6cebea3e155f9b",
+    "../../standards/formulas/LEEWAY-FORMULA-v1.0.md": "dd9f2f7d23dcc8076d7d3c9e1f194b596bff041e8b25dc003348c8554db7b16d"
+  },
+  "authority": "Verified E-drive v1 source; four primary hashes match canonical recovery pins"
+}

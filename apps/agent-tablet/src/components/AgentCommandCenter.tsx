@@ -40,6 +40,7 @@ const DESKTOP_APP_ORDER: PublishedLeeWayAppId[] = [
   'employmentCenter',
   'continuum',
   'agentSkills',
+  'creatorControl',
   'leewayIde',
   'officeSuite',
   'logistics',

@@ -3,6 +3,7 @@ import { resolvePublishedAppSurface, tabletSurfaceUrl, type PublishedAppSurfaceD
 
 export type PublishedLeeWayAppId = Extract<WorkstationAppId,
   | 'agentSkills'
+  | 'creatorControl'
   | 'continuum'
   | 'leewayIde'
   | 'officeSuite'
@@ -71,6 +72,17 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     accent: 'border-lime-700 bg-lime-950/20',
     iconImage: '/app-icons/agent-skills.png',
     gradient: 'from-lime-300 via-emerald-500 to-slate-950'
+  },
+  {
+    id: 'creatorControl',
+    title: 'LeeWay Core - Creator Enterprise Administrative Control Center',
+    shortTitle: 'Creator Control',
+    description: 'Creator enterprise administrative control center for the LeeWay ecosystem.',
+    url: 'http://127.0.0.1:3217/leeway-core-admin/',
+    capabilityRef: 'leeway.creator-administrative-control',
+    accent: 'border-amber-700 bg-amber-950/20',
+    iconImage: '/app-icons/diagnostics-motherboard.png',
+    gradient: 'from-amber-300 via-orange-700 to-slate-950'
   },
   {
     id: 'leewayIde',

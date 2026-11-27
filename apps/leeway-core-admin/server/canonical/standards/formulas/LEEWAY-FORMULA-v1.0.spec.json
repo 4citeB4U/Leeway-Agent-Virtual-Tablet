@@ -1,0 +1,92 @@
+{
+  "formulaId": "LEEWAY-FORMULA-v1.0",
+  "version": "1.0",
+  "status": "FROZEN_VERIFIED",
+  "frozenAt": "2026-08-11T22:17:00",
+  "frozenBy": "creator (Leonard Lee) via opencode session",
+  "verifiedAt": "2026-08-11T22:17:00",
+  "verificationStatus": "LEEWAY_FORMULA_V1_PASS",
+  "verificationReceipt": "receipts/leeway-formula/leeway-formula-v1-golden-verification-20260811-221700.json",
+  "documentationPath": "standards/formulas/LEEWAY-FORMULA-v1.0.md",
+  "implementationPath": "leeway-formula/v1",
+  "universe": {
+    "min": 0,
+    "max": 69,
+    "size": 70
+  },
+  "window": {
+    "rows": 16,
+    "columns": 6,
+    "cells": 96
+  },
+  "goldenInput": {
+    "sum": 2908,
+    "muNumerator": 727,
+    "muDenominator": 24,
+    "matrix": [
+      [5, 9, 35, 54, 63, 7],
+      [14, 20, 59, 60, 61, 25],
+      [8, 30, 41, 48, 54, 4],
+      [6, 17, 27, 48, 50, 5],
+      [30, 36, 40, 42, 57, 2],
+      [6, 26, 46, 58, 65, 25],
+      [3, 4, 24, 36, 47, 17],
+      [4, 5, 22, 50, 58, 1],
+      [2, 9, 44, 53, 59, 8],
+      [9, 14, 44, 50, 56, 3],
+      [2, 7, 18, 29, 38, 16],
+      [5, 25, 36, 40, 48, 3],
+      [8, 10, 14, 45, 59, 5],
+      [12, 29, 37, 43, 55, 18],
+      [17, 44, 63, 66, 67, 4],
+      [17, 38, 46, 50, 69, 20]
+    ]
+  },
+  "goldenVector": {
+    "decimal": [4, 50, 63, 59, 48, 69],
+    "base64": ["E", "y", "/", "7", "w", "BF"]
+  },
+  "features": {
+    "order": ["F", "G", "R", "P", "v", "a", "D", "H", "C", "phi"],
+    "weights": { "F": "1/10", "G": "1/10", "R": "1/10", "P": "1/10", "v": "1/10", "a": "1/10", "D": "1/10", "H": "1/10", "C": "1/10", "phi": "1/10" },
+    "definitions": {
+      "F": "total number of cells in the 16x6 matrix equal to x",
+      "G": "16 - lastOccurrenceRow; 16 if unseen",
+      "R": "lastOccurrenceRow / 16; 0 if unseen",
+      "P": "max over columns j of (count of cells equal to x in column j) / F; 0 if F=0",
+      "v": "lastOccurrenceRow - secondLastOccurrenceRow; 0 if fewer than 2 occurrences",
+      "a": "(last - secondLast) - (secondLast - thirdLast); 0 if fewer than 3 occurrences",
+      "D": "|x - 727/24| (exact rational)",
+      "H": "(1/2) * v^2 + (1/2) * D^2 (exact rational)",
+      "C": "number of distinct y != x with Pair(x,y) >= 2, Pair(x,y) = number of rows containing both x and y",
+      "phi": "2*pi * Norm_Omega(Q) where Q = v + a + D + R + G; Norm_Omega(phi) = Norm_Omega(Q)"
+    }
+  },
+  "normalization": {
+    "type": "min-max across all 70 candidates per feature",
+    "degenerateCase": 0
+  },
+  "score": {
+    "formula": "S(x) = (1/10) * sum of 10 normalized features",
+    "arithmetic": "exact rational (BigInt numerator/denominator); no float, no pi, no rounding before ranking"
+  },
+  "softmax": {
+    "applied": true,
+    "rankingNote": "exp is strictly increasing; ordering determined by exact S(x)"
+  },
+  "tieBreak": "S down, F down, R down, P down, x up",
+  "output": {
+    "count": 6,
+    "rule": "Top 6 candidate values x from Omega, preserving ranking order; no extra quantization"
+  },
+  "codec": {
+    "alphabet": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+    "kind": "positional base-64, no leading zero digit",
+    "example69": "BF"
+  },
+  "failClosed": {
+    "blockedStatus": "LEEWAY_FORMULA_V1_BLOCKED",
+    "action": "refuse formula-governed decisions",
+    "goldenAssertion": "DECIMAL_STATE=4,50,63,59,48,69; BASE64_STATE=E,y,/,7,w,BF"
+  }
+}

@@ -1,0 +1,95 @@
+/*
+LEEWAY HEADER — DO NOT REMOVE
+
+REGION: LEEWAY.CORE.FRONTEND.STYLES
+TAG: LEEWAY.CORE.GRAPHITE.GOLD.THEME.V1
+
+5WH:
+WHAT = Global Tailwind CSS v4 tokens and enterprise graphite/gold/electric-blue surface rules.
+WHY = Enforce dark graphite surfaces, metallic gold framing, electric-blue analytical accents, tabular numerals, and zero decorative motion.
+WHO = Creator/Human Authority via Leeway Innovations.
+WHERE = src/index.css
+WHEN = 2026-11-27
+HOW = Tailwind CSS v4 @import with root custom properties and utility rules.
+
+LICENSE = Apache-2.0
+*/
+@import "tailwindcss";
+
+:root {
+  --lw-canvas: #0b0e14;
+  --lw-surface: #121721;
+  --lw-surface-elevated: #171d2a;
+  --lw-border: #252d3d;
+  --lw-gold: #d4af37;
+  --lw-gold-soft: rgba(212, 175, 55, 0.28);
+  --lw-blue: #38bdf8;
+  --lw-green: #22c55e;
+  --lw-amber: #f59e0b;
+  --lw-red: #ef4444;
+  --lw-gray: #64748b;
+  --font-display: "Outfit", system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+html,
+body {
+  font-family: var(--font-sans);
+  background-color: var(--lw-canvas);
+  color: #e6e9ef;
+  letter-spacing: 0.01em;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-display);
+  text-wrap: balance;
+}
+
+.font-mono,
+.tabular-nums {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle metallic gold hairline accents & enterprise scrollbar */
+.lw-gold-hairline {
+  border-color: rgba(212, 175, 55, 0.32);
+}
+
+.lw-surface {
+  background-color: var(--lw-surface);
+  border: 1px solid var(--lw-border);
+}
+
+.lw-surface-gold {
+  background: linear-gradient(180deg, rgba(23, 29, 42, 0.96) 0%, rgba(16, 20, 29, 0.98) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--lw-gold);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0e14;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #273042;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.45);
+}
