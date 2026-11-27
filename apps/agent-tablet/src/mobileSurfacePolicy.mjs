@@ -70,6 +70,14 @@ function surfaceResult(state, url, reason, decision) {
 }
 export function resolvePublishedAppSurface(app, surface, compact, decision) {
   if (!decision || typeof decision !== 'object') return surfaceResult('UNAVAILABLE', null, 'RESOLVER_DECISION_REQUIRED');
+  // Explicit browser-preview state: local rendering only. It is NOT an
+  // entitlement, hosted-app approval, adapter authorization or production
+  // admission. Native hosts still use their own resolver decisions.
+  if (decision.state === 'BROWSER_PREVIEW') {
+    const raw = decision.url || app.url;
+    try { new URL(raw); } catch { return surfaceResult('UNAVAILABLE', null, 'PREVIEW_URL_INVALID', decision); }
+    return surfaceResult('BROWSER_PREVIEW', tabletSurfaceUrl(raw, app.id, surface, compact), 'BROWSER_PREVIEW_NO_AUTHORITY', decision);
+  }
   if (decision.entitlement === 'REVOKED' || decision.entitlement === 'DEGRADED' ||
       decision.entitlement === 'CREATOR_EXCLUSIVE' || decision.state === 'DENIED') {
     return surfaceResult('DENIED', null, 'ENTITLEMENT_OR_AUTHORIZATION_DENIED', decision);

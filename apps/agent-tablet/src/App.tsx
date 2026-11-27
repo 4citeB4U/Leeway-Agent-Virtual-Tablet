@@ -64,7 +64,7 @@ import { ContentVault } from './components/ContentVault';
 import { LeeWayFederated } from './components/LeeWayFederated';
 import { isPublishedLeeWayAppId, PUBLISHED_LEEWAY_APP_BY_ID, PUBLISHED_LEEWAY_APPS, type PublishedLeeWayAppId } from './publishedApps';
 import { tabletAssetUrl } from './assetUrl';
-import { browserPlatformFamily, resolvePublishedAppSurface, type PublishedAppSurfaceDecision } from './mobileSurfacePolicy.mjs';
+import { browserPlatformFamily, isCompactTabletViewport, resolvePublishedAppSurface, type PublishedAppSurfaceDecision } from './mobileSurfacePolicy.mjs';
 
 // Base initial files for LeeCode
 const initialFiles: Record<string, string> = {
@@ -399,12 +399,17 @@ export default function App() {
     }
     const resolveAppSurface = window.leewayNative?.resolveAppSurface;
     if (!resolveAppSurface) {
-      // Browser preview has no native window authority. Use the documented
-      // in-tablet fallback instead of failing closed on every app button.
+      // Browser preview has no native window authority. Render the app's
+      // published surface in-tablet with an explicit preview-only decision.
+      // This is not an entitlement, adapter authorization or production claim.
+      const app = PUBLISHED_LEEWAY_APP_BY_ID[appId];
+      const preview = resolvePublishedAppSurface(app, 'tablet',
+        isCompactTabletViewport(window.innerWidth, window.innerHeight),
+        { state: 'BROWSER_PREVIEW', url: app.url, capabilityRef: app.capabilityRef });
       setCurrentLaunchOrigin(launchOrigin);
-      setSurfaceResolutions({});
+      setSurfaceResolutions(previous => ({ ...previous, [appId]: preview }));
       setCurrentAppState(appId);
-      showToast(`${appId}: browser preview (native Runtime decision source unavailable).`);
+      showToast(`${appId}: browser preview only — no native Runtime decision source.`);
       return;
     }
     void resolveAppSurface(appId, 'tablet', launchOrigin).then(decision => {
@@ -977,7 +982,7 @@ export default function App() {
               </div>
               <a
                 href={currentApp === 'modelHub'
-                  ? 'https://4citeb4u.github.io/LeeWay-Model-Hub/'
+                  ? '/model-hub-3d/'
                   : 'https://4citeb4u.github.io/LEEWAY-LOGISTICS-/'}
                 target="_blank" rel="noopener noreferrer"
                 className="shrink-0 rounded border border-zinc-500 px-3 py-2 text-[11px] font-semibold hover:bg-zinc-800"
@@ -986,7 +991,7 @@ export default function App() {
             <iframe
               title={currentApp === 'modelHub' ? 'LeeWay Model Hub public catalog' : 'LeeWay Logistics Transit World'}
               src={currentApp === 'modelHub'
-                ? 'https://4citeb4u.github.io/LeeWay-Model-Hub/'
+                ? '/model-hub-3d/'
                 : 'https://4citeb4u.github.io/LEEWAY-LOGISTICS-/'}
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
               allow={currentApp === 'logistics' ? 'geolocation' : undefined}

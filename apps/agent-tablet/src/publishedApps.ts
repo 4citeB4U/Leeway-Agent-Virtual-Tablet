@@ -121,7 +121,7 @@ export const PUBLISHED_LEEWAY_APPS: readonly PublishedLeeWayApp[] = [
     title: 'LeeWay Agentic CRM & ERP',
     shortTitle: 'CRM & ERP',
     description: 'Canonical sovereign commercial, manufacturing, fulfillment, device, and governance UI.',
-    url: 'https://4citeb4u.github.io/Leeway-Agentic-CRM-ERP/',
+    url: 'http://127.0.0.1:3217/crm/',
     capabilityRef: 'leeway.erp-crm',
     accent: 'border-indigo-700 bg-indigo-950/20',
     iconImage: '/app-icons/crm-erp.png',

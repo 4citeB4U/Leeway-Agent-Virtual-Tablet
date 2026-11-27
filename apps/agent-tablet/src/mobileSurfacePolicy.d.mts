@@ -16,7 +16,7 @@ export function browserPlatformFamily(userAgent?: string): 'WINDOWS' | 'LINUX' |
 export function tabletSurfaceUrl(rawUrl: string, appId: string, surface: 'tablet' | 'widget', compact?: boolean): string;
 
 export interface PublishedAppSurfaceDecision {
-  state: 'HOSTED_APPROVED' | 'LOCAL_ADAPTER_AUTHORIZED' | 'UNAVAILABLE' | 'DENIED';
+  state: 'HOSTED_APPROVED' | 'LOCAL_ADAPTER_AUTHORIZED' | 'BROWSER_PREVIEW' | 'UNAVAILABLE' | 'DENIED';
   url?: string;
   appId?: string;
   capabilityRef?: string;
@@ -39,7 +39,7 @@ export interface PublishedAppSurfaceDecision {
   policyRevision?: number;
 }
 export interface PublishedAppSurfaceResult {
-  state: 'HOSTED_APPROVED' | 'LOCAL_ADAPTER_AUTHORIZED' | 'UNAVAILABLE' | 'DENIED';
+  state: 'HOSTED_APPROVED' | 'LOCAL_ADAPTER_AUTHORIZED' | 'BROWSER_PREVIEW' | 'UNAVAILABLE' | 'DENIED';
   url: string | null;
   reason: string | null;
   entitlement: string;
