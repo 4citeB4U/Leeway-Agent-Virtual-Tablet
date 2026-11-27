@@ -60,7 +60,7 @@ Agent Lee cannot self-declare Veritas approval, issue receipts, activate employe
 4. Drop one icon onto another to create a group; click the group to select one of its apps.
 5. Right-click any icon for **Properties / About & User Guide**.
 6. Open **Settings** for Discover LeeWay, operations, permissions, capabilities and Employment Center setup.
-7. Use **UPDATE** inside Settings to apply GitHub `main` changes to the local master copy.
+7. Use the taskbar **UPDATE** button for the Update Center. It compares the installed commit of the tablet and every installed application with canonical GitHub `main`, raises an UPDATE FLAG when a newer version exists, and routes whole-system or per-application update requests through the native host. Every application's About & User Guide describes this same path; no application creates its own updater.
 
 ## 5. Application encyclopedia
 

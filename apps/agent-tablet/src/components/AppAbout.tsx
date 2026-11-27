@@ -12,7 +12,7 @@ AUTHORITY: DOCUMENTATION_READ_ONLY. No Veritas, receipt or production claim.
 LICENSE: Existing repository terms.
 */
 import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, ExternalLink, FileText, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { ArrowLeft, ExternalLink, FileText, Image as ImageIcon, RefreshCw, Sparkles } from 'lucide-react';
 import { APP_DOC_BINDINGS, docUrl, type AppDocBinding } from '../appDocs';
 import type { WorkstationAppId } from '../types';
 
@@ -135,6 +135,10 @@ export function AppAbout({ appId, onClose }: Props) {
                 <div className="mt-3 grid gap-3 md:grid-cols-2">
                   <div><div className="text-[10px] font-black uppercase tracking-widest text-cyan-300/70">Purpose</div><p className="mt-1 text-sm text-zinc-200">{binding.purpose}</p></div>
                   <div><div className="text-[10px] font-black uppercase tracking-widest text-cyan-300/70">Scope & boundary</div><p className="mt-1 text-sm text-zinc-200">{binding.scope}</p></div>
+                </div>
+                <div className="mt-4 rounded-xl border border-[#66c6ff]/30 bg-[#0077ff]/10 p-3">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-cyan-200"><RefreshCw size={13} /> Updates</div>
+                  <p className="mt-1 text-xs leading-relaxed text-cyan-50/80">This application can be updated from the tablet UPDATE button. The Update Center compares the installed commit with the canonical GitHub main commit and raises an UPDATE FLAG when a newer version exists. Whole-system and per-application updates are separate, owner-authorized actions.</p>
                 </div>
                 <div className="mt-4 rounded-xl border border-emerald-300/25 bg-emerald-950/20 p-3">
                   <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-300"><Sparkles size={13} /> Tasks you can request from Agent Lee</div>

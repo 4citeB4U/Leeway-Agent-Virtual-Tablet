@@ -30,6 +30,7 @@ declare global {
       onAppMirrorFrame: (listener: (payload: { appId: string; frame: string; width: number; height: number; at: number }) => void) => () => void;
       sendAppMirrorInput: (appId: string, input: Record<string, unknown>) => void;
       runTabletUpdate: () => Promise<{ state: string; status?: { state: string; current?: string; previous?: string; reason?: string }; stderr?: string }>;
+      runAppUpdate: (appId: string) => Promise<{ state: string; appId?: string; reason?: string }>;
     };
   }
 }

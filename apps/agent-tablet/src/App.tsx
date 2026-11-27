@@ -58,6 +58,7 @@ import { AgentCommandCenter } from './components/AgentCommandCenter';
 import { RotatingLeewayLogo } from './components/RotatingLeewayLogo';
 import { SettingsCenter } from './components/SettingsCenter';
 import { AppAbout } from './components/AppAbout';
+import { UpdateCenter } from './components/UpdateCenter';
 import { WorkboardRuntimePanel } from './components/WorkboardRuntimePanel';
 import { AgentNotepadBlackboard } from './components/AgentNotepadBlackboard';
 import { PublishedLeeWayApp, type PublishedAppLaunchOrigin } from './components/PublishedLeeWayApp';
@@ -218,6 +219,7 @@ export default function App() {
   // Main Navigation App
   const [currentApp, setCurrentAppState] = useState<WorkstationAppId>('desktop');
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [updateOpen, setUpdateOpen] = useState(false);
   const [surfaceAccess, setSurfaceAccess] = useState<Record<string, { allowed: boolean; reason?: string }>>({});
   useEffect(() => {
     let alive = true;
@@ -742,6 +744,16 @@ export default function App() {
                 </button>
               );
             })}
+            <button
+              type="button"
+              id="leeway-taskbar-update"
+              aria-label="Update Center"
+              title="Update Center — check GitHub versions"
+              onClick={() => setUpdateOpen(true)}
+              className="flex h-11 min-w-16 shrink-0 items-center justify-center rounded-2xl border border-[#66c6ff] bg-[#0077ff] px-3 text-[9px] font-black tracking-[.08em] text-white shadow-[0_0_12px_rgba(0,119,255,.85)] hover:bg-[#2a95ff]"
+            >
+              UPDATE
+            </button>
           </div>
 
           {/* Taskbar Right-Click Jump List */}
@@ -1746,6 +1758,9 @@ export default function App() {
         </div>
         {aboutOpen && currentApp !== 'desktop' && (
           <AppAbout appId={currentApp} onClose={() => setAboutOpen(false)} />
+        )}
+        {updateOpen && (
+          <UpdateCenter onClose={() => setUpdateOpen(false)} onNotice={showToast} />
         )}
       </section>
     </div>
