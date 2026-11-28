@@ -708,11 +708,11 @@ export default function App() {
               }
             }
           }}
-          className="order-2 z-30 flex h-[68px] w-full shrink-0 items-center justify-center gap-2 overflow-hidden border-t border-white/10 bg-[#07111b]/95 px-2 py-1 select-none backdrop-blur-2xl"
+          className="order-2 z-30 flex h-[68px] w-full shrink-0 items-center justify-start gap-1 overflow-hidden border-t border-white/10 bg-[#07111b]/95 px-0 py-1 select-none backdrop-blur-2xl"
         >
-          <div className="flex h-full w-full max-w-[720px] shrink-0 items-stretch gap-2">
+          <div className="flex h-full w-full shrink-0 items-stretch gap-1">
             {/* Permanent left dock: Home, time and weather. Never part of the app grid. */}
-            <div className="flex shrink-0 items-center gap-2 rounded-[18px] border border-cyan-300/25 bg-black/50 p-1.5 shadow-[0_10px_30px_rgba(0,0,0,.6)]">
+            <div className="flex shrink-0 items-center gap-2 rounded-r-[18px] border border-l-0 border-cyan-300/25 bg-black/50 py-1.5 pl-2 pr-3 shadow-[0_10px_30px_rgba(0,0,0,.6)]">
               <button
                 type="button"
                 aria-label="Home — right click for desktop controls"
@@ -733,8 +733,8 @@ export default function App() {
               </div>
             </div>
             {/* Only this app area scrolls. The dock above stays fixed. */}
-            <div className="min-w-0 flex-1 overflow-y-auto rounded-[18px] border border-white/15 bg-white/[.08] shadow-[0_10px_34px_rgba(0,0,0,.5),inset_0_1px_1px_rgba(255,255,255,.15)] [scrollbar-color:#155e75_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-800/80">
-              <div className="grid grid-cols-9 gap-1 p-1.5">
+            <div className="min-w-0 flex-1 overflow-y-auto rounded-l-[18px] border border-r-0 border-white/15 bg-white/[.08] shadow-[0_10px_34px_rgba(0,0,0,.5),inset_0_1px_1px_rgba(255,255,255,.15)] [scrollbar-color:#155e75_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-800/80">
+              <div className="grid grid-cols-12 gap-1 p-1.5">
               {pinnedAppIds.filter(id => id !== 'desktop').filter(isSurfaceAllowed).map(appId => {
               const appMeta = TABLET_WIDGETS.find(w => w.id === appId) ||
                 (PUBLISHED_LEEWAY_APP_BY_ID[appId as any] ? {
@@ -1809,15 +1809,6 @@ export default function App() {
                   className="flex h-8 items-center gap-1 rounded-full border border-white/20 px-2 text-[9px] font-black text-zinc-200 hover:bg-white/10 disabled:opacity-30"
                 >
                   <ArrowLeft size={13} /> BACK
-                </button>
-                <button
-                  type="button"
-                  aria-label="Go home"
-                  title="Go home"
-                  onClick={() => setCurrentApp('desktop', 'taskbar')}
-                  className="flex h-8 items-center gap-1 rounded-full border border-[#66c6ff] bg-[#0077ff] px-3 text-[9px] font-black text-white shadow-[0_0_12px_rgba(0,119,255,.6)] hover:bg-[#2a95ff]"
-                >
-                  <Home size={13} /> HOME
                 </button>
               </div>
             </div>
