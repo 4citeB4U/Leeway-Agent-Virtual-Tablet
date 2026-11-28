@@ -1793,6 +1793,13 @@ export function LeewayAgentVTBackground({
   customRef.current = customBackgrounds;
   medallionSrcRef.current = medallionSrc;
 
+  // The rotary console is opened from Settings, never from a floating button.
+  useEffect(() => {
+    const openFromSettings = () => setOpen(true);
+    window.addEventListener('leeway:open-background-settings', openFromSettings);
+    return () => window.removeEventListener('leeway:open-background-settings', openFromSettings);
+  }, []);
+
   useEffect(() => {
     if (initial.isEmbed) return;
     try {
@@ -2440,21 +2447,6 @@ export function LeewayAgentVTBackground({
             </aside>
           )}
 
-          <button
-            type="button"
-            onClick={() => setOpen((prev) => !prev)}
-            aria-label="Change Background"
-            title="Change Background"
-            aria-expanded={open}
-            className="absolute bottom-3 right-3 z-40 pointer-events-auto rounded-xl border border-cyan-400/60 bg-[#07131f]/90 p-1 hover:bg-[#0c2238] hover:border-cyan-300 shadow-[0_4px_16px_rgba(0,0,0,0.6)] backdrop-blur-md transition-all select-none group"
-          >
-            <img
-              src={tabletAssetUrl('/app-icons/background-button.png')}
-              alt="Background"
-              className="h-10 w-20 rounded-lg object-cover transition-transform group-hover:scale-[1.03]"
-              draggable={false}
-            />
-          </button>
         </>
       )}
     </div>

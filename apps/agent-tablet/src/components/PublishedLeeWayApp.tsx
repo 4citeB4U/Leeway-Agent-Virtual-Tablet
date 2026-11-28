@@ -122,7 +122,7 @@ export function PublishedLeeWayApp({ appId, onBack, resolution }: Props) {
         onKeyUp={onKeyUp}
       >
         {mirror ? (
-          <img src={mirror.frame} alt={`${app.title} live widget`} className="h-full w-full bg-black object-contain" draggable={false} />
+          <img src={mirror.frame} alt={`${app.title} live widget`} className="h-full w-full bg-black object-cover" draggable={false} />
         ) : surfaceUrl ? (
           <iframe title={`${app.title} tablet application`} src={surfaceUrl} className="h-full w-full border-0 bg-black" allow="camera; microphone; autoplay; clipboard-read; clipboard-write" />
         ) : (

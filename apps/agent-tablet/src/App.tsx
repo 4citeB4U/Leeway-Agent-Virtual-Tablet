@@ -42,7 +42,8 @@ import {
   Pin,
   Bot,
   Github,
-  Settings2
+  Settings2,
+  Cloud
 } from 'lucide-react';
 import { WorkstationAppId } from './types';
 import { LeeWayEditor } from './components/editor/LeeWayEditor';
@@ -213,7 +214,7 @@ const TABLET_APP_CATALOG: readonly TabletCatalogItem[] = Array.from(
 // mounted through PublishedLeeWayApp: doing so embeds the tablet route inside
 // itself and produces the repeated narrow window stack seen in widgets.
 const LOCAL_SURFACE_APP_IDS = new Set<WorkstationAppId>([
-  'contentVault', 'workforce', 'notepad', 'diagnostics', 'agentRoster', 'federated', 'workboard'
+  'contentVault', 'workforce', 'notepad', 'diagnostics', 'agentRoster', 'federated', 'workboard', 'settings'
 ]);
 
 export default function App() {
@@ -253,6 +254,11 @@ export default function App() {
     return ['desktop', 'contentVault', 'employmentCenter', 'notepad', 'officeSuite', 'leewayIde', 'erpCrm', 'logistics', 'agentVision', 'modelHub', 'creatorControl', 'settings', 'globalP2p', 'directConnect', 'motionGlyph', 'watchWinSale'];
   });
   const [taskbarMenu, setTaskbarMenu] = useState<{ x: number; y: number; appId: WorkstationAppId } | null>(null);
+  const [taskbarClock, setTaskbarClock] = useState(() => new Date());
+  useEffect(() => {
+    const timer = window.setInterval(() => setTaskbarClock(new Date()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const pinAppToTaskbar = (appId: WorkstationAppId) => {
     if (!pinnedAppIds.includes(appId)) {
@@ -700,10 +706,32 @@ export default function App() {
               }
             }
           }}
-          className="order-2 z-30 flex h-[70px] w-full shrink-0 items-center justify-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border-t border-white/10 bg-[#07111b]/95 px-1 py-2 select-none backdrop-blur-2xl"
+          className="order-2 z-30 flex max-h-[228px] w-full shrink-0 flex-col items-center overflow-y-auto border-t border-white/10 bg-[#07111b]/95 px-2 py-1.5 select-none backdrop-blur-2xl [scrollbar-color:#155e75_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-800/80"
         >
-          <div className="mx-0 flex min-w-full shrink-0 items-center justify-between gap-1 rounded-[26px] border border-white/15 bg-white/[.08] px-2 py-1.5 shadow-[0_10px_34px_rgba(0,0,0,.5),inset_0_1px_1px_rgba(255,255,255,.15)]">
-            {pinnedAppIds.filter(isSurfaceAllowed).map(appId => {
+          <div className="mx-auto flex w-full max-w-[720px] shrink-0 items-start gap-2">
+            {/* Permanent left dock: Home, time and weather. Never part of the app grid. */}
+            <div className="flex shrink-0 items-center gap-2 rounded-[18px] border border-cyan-300/25 bg-black/50 p-1.5 shadow-[0_10px_30px_rgba(0,0,0,.6)]">
+              <button
+                type="button"
+                aria-label="Home — right click for desktop controls"
+                title="Home · right click for desktop controls"
+                onClick={() => setCurrentApp('desktop', 'taskbar')}
+                onContextMenu={e => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setTaskbarMenu({ x: e.clientX, y: Math.max(10, e.clientY - 240), appId: 'desktop' });
+                }}
+                className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-cyan-300/40 bg-gradient-to-br from-cyan-300 to-teal-700 shadow-lg hover:border-cyan-200"
+              >
+                <img src={tabletAssetUrl('/app-icons/home-button.png')} alt="Home" className="h-full w-full object-cover" draggable={false} />
+              </button>
+              <div className="flex min-w-[74px] flex-col items-start gap-0.5 pr-1 text-white">
+                <span className="font-mono text-[13px] font-black leading-none tracking-tight">{taskbarClock.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <span className="flex items-center gap-1 text-[8px] font-black tracking-wide text-cyan-200"><Cloud size={10} /> WEATHER · NO FEED</span>
+              </div>
+            </div>
+            <div className="grid min-w-0 flex-1 grid-cols-9 gap-1 rounded-[18px] border border-white/15 bg-white/[.08] p-1.5 shadow-[0_10px_34px_rgba(0,0,0,.5),inset_0_1px_1px_rgba(255,255,255,.15)]">
+              {pinnedAppIds.filter(id => id !== 'desktop').filter(isSurfaceAllowed).map(appId => {
               const appMeta = TABLET_WIDGETS.find(w => w.id === appId) ||
                 (PUBLISHED_LEEWAY_APP_BY_ID[appId as any] ? {
                   id: appId,
@@ -729,7 +757,7 @@ export default function App() {
                     setTaskbarMenu({ x: e.clientX, y: e.clientY - 140, appId });
                   }}
                   title={`${appMeta.label} (Right click for Taskbar Jump List)`}
-                  className={`group relative flex w-12 shrink-0 flex-col items-center gap-0.5 rounded-2xl p-1 text-[7px] font-bold text-zinc-200 transition hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${isActive ? 'bg-white/15' : 'hover:bg-white/10'}`}
+                  className={`group relative flex w-full min-w-0 flex-col items-center gap-0.5 rounded-2xl p-1 text-[7px] font-bold text-zinc-200 transition hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${isActive ? 'bg-white/15' : 'hover:bg-white/10'}`}
                 >
                   <span className={`flex h-9 w-9 items-center justify-center overflow-hidden rounded-[13px] border border-white/25 bg-gradient-to-br ${appMeta.color} shadow-lg`}>
                     {'image' in appMeta && appMeta.image ? (
@@ -742,19 +770,17 @@ export default function App() {
                   </span>
                   <span className="max-w-full truncate">{appMeta.label}</span>
                   <span className={`h-0.5 w-3 rounded-full ${isActive ? 'bg-cyan-300 shadow-[0_0_8px_#22d3ee]' : 'bg-transparent'}`} />
+                  <span
+                    role="button"
+                    aria-label={`Remove ${appMeta.label} from taskbar`}
+                    title="Remove from taskbar"
+                    onClick={e => { e.stopPropagation(); unpinAppFromTaskbar(appId); }}
+                    className="absolute -right-0.5 -top-0.5 hidden h-4 w-4 items-center justify-center rounded-full border border-rose-300/60 bg-rose-700 text-[10px] font-black leading-none text-white group-hover:flex hover:bg-rose-600"
+                  >×</span>
                 </button>
               );
             })}
-            <button
-              type="button"
-              id="leeway-taskbar-update"
-              aria-label="Update Center"
-              title="Update Center — check GitHub versions"
-              onClick={() => setUpdateOpen(true)}
-              className="flex h-11 min-w-16 shrink-0 items-center justify-center rounded-2xl border border-[#66c6ff] bg-[#0077ff] px-3 text-[9px] font-black tracking-[.08em] text-white shadow-[0_0_12px_rgba(0,119,255,.85)] hover:bg-[#2a95ff]"
-            >
-              UPDATE
-            </button>
+            </div>
           </div>
 
           {/* Taskbar Right-Click Jump List */}
@@ -766,6 +792,12 @@ export default function App() {
             >
               {taskbarMenu.appId === 'desktop' ? (
                 <div className="w-[min(92vw,430px)]">
+                  <div className="border-b border-white/10 px-2 py-1 font-black text-cyan-200">DESKTOP CONTROLS</div>
+                  <div className="grid grid-cols-2 gap-1 p-1">
+                    <button type="button" onClick={() => { window.dispatchEvent(new CustomEvent('leeway:auto-arrange-icons')); setTaskbarMenu(null); }} className="rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-2 py-1.5 text-left text-[10px] font-black text-cyan-100 hover:bg-cyan-500/25">Auto-arrange icons</button>
+                    <button type="button" onClick={() => { window.dispatchEvent(new CustomEvent('leeway:toggle-icon-lock')); setTaskbarMenu(null); }} className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-2 py-1.5 text-left text-[10px] font-black text-amber-100 hover:bg-amber-500/25">Lock / unlock icons</button>
+                    <button type="button" onClick={() => { window.dispatchEvent(new CustomEvent('leeway:reset-desktop')); setTaskbarMenu(null); }} className="rounded-lg border border-rose-400/30 bg-rose-500/10 px-2 py-1.5 text-left text-[10px] font-black text-rose-100 hover:bg-rose-500/25">Reset desktop layout</button>
+                  </div>
                   <div className="border-b border-white/10 px-2 py-1 font-black text-cyan-200">AGENT TABLET APPLICATIONS</div>
                   <div className="grid max-h-[min(70vh,520px)] grid-cols-2 gap-1 overflow-y-auto p-1">
                     {TABLET_APP_CATALOG.map(app => {
@@ -1561,22 +1593,19 @@ export default function App() {
           <TabletDestination destination="apps" onOpen={setCurrentApp} />
         )}
 
+        {currentApp === 'settings' && (
+          <SettingsCenter
+            onClose={() => setCurrentApp('desktop')}
+            onOpenAbout={() => setAboutOpen(true)}
+            onUpdate={() => setUpdateOpen(true)}
+          />
+        )}
+
         {!LOCAL_SURFACE_APP_IDS.has(currentApp) && isPublishedLeeWayAppId(currentApp) && (
           <PublishedLeeWayApp appId={currentApp} onBack={() => setCurrentApp('desktop')} resolution={surfaceResolutions[currentApp]} />
         )}
 
         {currentApp === 'agentRoster' && <AgentRosterBoard />}
-
-        {!isWidgetSurface && currentApp !== 'contentVault' && (
-          <button
-            type="button"
-            onClick={() => setIsContentVaultOpen(true)}
-            className="absolute top-3 right-3 z-40 flex items-center gap-2 rounded-2xl border border-cyan-200/30 bg-gradient-to-r from-amber-500 via-fuchsia-700 to-indigo-950 px-3 py-2 text-[9px] font-black tracking-[.1em] text-white shadow-[0_12px_30px_rgba(0,0,0,.6),0_0_18px_rgba(217,70,239,.25)] hover:-translate-y-0.5"
-            aria-label="Open shared Content Vault"
-          >
-            <Folder size={15} /> VAULT
-          </button>
-        )}
 
         {isContentVaultOpen && (
           <ContentVault
@@ -1718,7 +1747,7 @@ export default function App() {
       >
         <div
           id="leeway-vt-widget-header"
-          className="relative flex h-24 shrink-0 items-center gap-3 overflow-hidden bg-[#172627] px-3 text-[11px] font-bold tracking-[0.08em] text-[#b7fff5]"
+          className="relative flex h-[82px] shrink-0 items-center gap-3 overflow-hidden bg-[#172627] px-3 text-[11px] font-bold tracking-[0.08em] text-[#b7fff5]"
           title="Drag the LeeWay operating system window from the native MOVE control"
         >
           <RotatingLeewayLogo className="h-16 w-16 shrink-0 object-cover" />
@@ -1755,7 +1784,7 @@ export default function App() {
           </div>
         </div>
         <UpdateBanner onOpenUpdateCenter={() => setUpdateOpen(true)} />
-        <div className="relative min-h-0 flex-1 overflow-hidden rounded-b-[15px] border-t-[3px] border-[#615f51] bg-[#078184]">
+        <div className="relative min-h-0 flex-1 overflow-hidden rounded-b-[15px] bg-[#078184]">
           {appContent}
         </div>
         {aboutOpen && currentApp !== 'desktop' && (

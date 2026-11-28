@@ -116,6 +116,42 @@ export function AgentCommandCenter({ workboardStatus, access, onOpenSurface, onO
     try { return (JSON.parse(localStorage.getItem('leeway_tablet_groups_v1') || '{}') || {}) as Record<string, WorkstationAppId[]>; } catch { return {}; }
   });
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
+  const [iconsLocked, setIconsLocked] = useState(false);
+
+  // Desktop controls are invoked from the Home button's right-click menu.
+  useEffect(() => {
+    const arrange = () => {
+      setDesktopApps(INITIAL_DESKTOP_APPS);
+      setIconBoxes({});
+      setIconsLocked(false);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_DESKTOP_APPS.map(a => a.id)));
+        localStorage.setItem(ICON_LAYOUT_KEY, JSON.stringify({}));
+      } catch { /* ignore */ }
+    };
+    const toggleLock = () => setIconsLocked(previous => !previous);
+    const reset = () => {
+      setDesktopApps(INITIAL_DESKTOP_APPS);
+      setIconBoxes({});
+      setGroups({});
+      setActiveGroup(null);
+      setIconsLocked(false);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_DESKTOP_APPS.map(a => a.id)));
+        localStorage.setItem(ICON_LAYOUT_KEY, JSON.stringify({}));
+        localStorage.setItem('leeway_tablet_groups_v1', JSON.stringify({}));
+      } catch { /* ignore */ }
+    };
+    window.addEventListener('leeway:auto-arrange-icons', arrange);
+    window.addEventListener('leeway:toggle-icon-lock', toggleLock);
+    window.addEventListener('leeway:reset-desktop', reset);
+    return () => {
+      window.removeEventListener('leeway:auto-arrange-icons', arrange);
+      window.removeEventListener('leeway:toggle-icon-lock', toggleLock);
+      window.removeEventListener('leeway:reset-desktop', reset);
+    };
+  }, []);
+
   const membership = Object.fromEntries((Object.entries(groups) as Array<[string, WorkstationAppId[]]>).flatMap(([groupId, ids]) => ids.map(id => [id, groupId]))) as Record<string, string>;
   const persistGroups = (next: Record<string, WorkstationAppId[]>) => {
     setGroups(next);
@@ -282,11 +318,12 @@ export function AgentCommandCenter({ workboardStatus, access, onOpenSurface, onO
               key={app.id}
               onContextMenu={e => handleAppContextMenu(e, app)}
               onPointerDown={e => {
-                if (e.button !== 0) return;
+                if (e.button !== 0 || iconsLocked) return;
                 e.currentTarget.setPointerCapture(e.pointerId);
                 iconDrag.current = { id: app.id, startX: e.clientX, startY: e.clientY, origin: box, moved: false };
               }}
               onPointerMove={e => {
+                if (iconsLocked) return;
                 const drag = iconDrag.current;
                 if (!drag || drag.id !== app.id) return;
                 const dx = e.clientX - drag.startX, dy = e.clientY - drag.startY;
@@ -309,7 +346,17 @@ export function AgentCommandCenter({ workboardStatus, access, onOpenSurface, onO
                     return currentBox.x < box.x + box.w && currentBox.x + currentBox.w > box.x &&
                       currentBox.y < box.y + box.h && currentBox.y + currentBox.h > box.y;
                   });
-                  if (target) {
+                  // Dropping on an existing GROUP adds to it — no two-app limit.
+                  const groupTargetId = (Object.keys(groups) as string[]).find(groupId => {
+                    const box = iconBoxes[groupId] || defaultIconBox(0);
+                    return currentBox.x < box.x + box.w && currentBox.x + currentBox.w > box.x &&
+                      currentBox.y < box.y + box.h && currentBox.y + currentBox.h > box.y;
+                  });
+                  if (groupTargetId) {
+                    const members = groups[groupTargetId] || [];
+                    if (!members.includes(drag.id)) persistGroups({ ...groups, [groupTargetId]: [...members, drag.id] });
+                    persistBoxes(previous => ({ ...previous, [groupTargetId]: previous[drag.id] || currentBox }));
+                  } else if (target) {
                     const groupId = `GROUP-${String.fromCharCode(65 + Object.keys(groups).length)}`;
                     persistGroups({ ...groups, [groupId]: [target.id, drag.id] });
                     persistBoxes(previous => ({ ...previous, [groupId]: previous[drag.id] || currentBox }));
@@ -317,6 +364,7 @@ export function AgentCommandCenter({ workboardStatus, access, onOpenSurface, onO
                 }
               }}
               onWheel={e => {
+                if (iconsLocked) return;
                 const delta = e.deltaY < 0 ? 6 : -6;
                 persistBoxes(previous => ({ ...previous, [app.id]: {
                   ...box,

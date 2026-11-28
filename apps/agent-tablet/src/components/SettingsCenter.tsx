@@ -178,6 +178,20 @@ export function SettingsCenter({ onClose, onOpenAbout, onUpdate, edition = 'PERS
                 <p className="mt-2">The header UPDATE button fetches GitHub <span className="font-mono text-cyan-200">main</span>, rebuilds only when the commit changed, copies the built tablet surface, and restarts the native Agent VT host. Status is written to <span className="font-mono text-cyan-200">sync-status.json</span>. A push alone does not update the running system.</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-[#070d14] p-5 text-sm leading-relaxed text-zinc-300">
+                <h2 className="flex items-center gap-2 text-base font-black text-cyan-100"><Sparkles size={16} /> Appearance</h2>
+                <p className="mt-2">Open the background rotary console to choose a scene, pause motion or reset appearance. The control lives here instead of floating over the desktop.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    window.dispatchEvent(new CustomEvent('leeway:open-background-settings'));
+                  }}
+                  className="mt-3 rounded-lg border border-[#66c6ff] bg-[#0077ff] px-3 py-2 text-[10px] font-black text-white hover:bg-[#2a95ff]"
+                >
+                  CHANGE BACKGROUND
+                </button>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-[#070d14] p-5 text-sm leading-relaxed text-zinc-300">
                 <h2 className="text-base font-black text-cyan-100">Live widget link</h2>
                 <p className="mt-2">Each published app renders the real native widget frame inside the tablet and forwards pointer, wheel and keyboard input back to that same widget. The direct iframe is only a preview until the host supplies a live frame.</p>
               </div>
