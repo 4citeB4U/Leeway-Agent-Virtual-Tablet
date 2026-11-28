@@ -59,6 +59,7 @@ import { RotatingLeewayLogo } from './components/RotatingLeewayLogo';
 import { SettingsCenter } from './components/SettingsCenter';
 import { AppAbout } from './components/AppAbout';
 import { UpdateCenter } from './components/UpdateCenter';
+import { UpdateBanner } from './components/UpdateBanner';
 import { WorkboardRuntimePanel } from './components/WorkboardRuntimePanel';
 import { AgentNotepadBlackboard } from './components/AgentNotepadBlackboard';
 import { PublishedLeeWayApp, type PublishedAppLaunchOrigin } from './components/PublishedLeeWayApp';
@@ -1753,6 +1754,7 @@ export default function App() {
             </button>
           </div>
         </div>
+        <UpdateBanner onOpenUpdateCenter={() => setUpdateOpen(true)} />
         <div className="relative min-h-0 flex-1 overflow-hidden rounded-b-[15px] border-t-[3px] border-[#615f51] bg-[#078184]">
           {appContent}
         </div>

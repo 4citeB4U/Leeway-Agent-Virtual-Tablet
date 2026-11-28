@@ -13,9 +13,9 @@ LICENSE: Existing repository terms.
 */
 import React, { useCallback, useEffect, useState } from 'react';
 import { ArrowLeft, CheckCircle2, RefreshCw, ShieldAlert, AlertTriangle } from 'lucide-react';
-import { APP_UPDATE_BINDINGS, githubCommitUrl, type AppUpdateBinding } from '../appUpdates';
+import { APP_UPDATE_BINDINGS, checkGithubUpdates, type AppUpdateCheck } from '../appUpdates';
 
-type Row = AppUpdateBinding & { latestCommit: string | null; state: 'CHECKING'|'CURRENT'|'UPDATE_AVAILABLE'|'UNBOUND'|'ERROR'; detail?: string };
+type Row = AppUpdateCheck;
 
 export function UpdateCenter({ onClose, onNotice }: { onClose: () => void; onNotice: (message: string) => void }) {
   const [rows, setRows] = useState<Row[]>(() => APP_UPDATE_BINDINGS.map(binding => ({ ...binding, latestCommit: null, state: 'CHECKING' })));
@@ -23,21 +23,7 @@ export function UpdateCenter({ onClose, onNotice }: { onClose: () => void; onNot
 
   const refresh = useCallback(async () => {
     setRows(APP_UPDATE_BINDINGS.map(binding => ({ ...binding, latestCommit: null, state: 'CHECKING' })));
-    const next = await Promise.all(APP_UPDATE_BINDINGS.map(async binding => {
-      try {
-        const response = await fetch(githubCommitUrl(binding), { cache: 'no-store' });
-        if (response.status === 409) return { ...binding, latestCommit: null, state: 'UNBOUND' as const, detail: 'GitHub reports no commit for this repository yet.' };
-        if (!response.ok) throw new Error(`GITHUB_${response.status}`);
-        const data = await response.json() as { sha?: string };
-        const latestCommit = data.sha || null;
-        if (!binding.installedCommit) return { ...binding, latestCommit, state: 'UNBOUND' as const, detail: 'No installed commit recorded for this surface.' };
-        if (!latestCommit) return { ...binding, latestCommit, state: 'ERROR' as const, detail: 'GitHub did not return a commit SHA.' };
-        return { ...binding, latestCommit, state: latestCommit === binding.installedCommit ? 'CURRENT' as const : 'UPDATE_AVAILABLE' as const };
-      } catch (error) {
-        return { ...binding, latestCommit: null, state: 'ERROR' as const, detail: String(error) };
-      }
-    }));
-    setRows(next);
+    setRows(await checkGithubUpdates());
   }, []);
 
   useEffect(() => { void refresh(); }, [refresh]);
