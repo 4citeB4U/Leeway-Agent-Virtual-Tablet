@@ -3,6 +3,14 @@
   "updatedAt": "2026-11-27T18:45:00Z",
   "authority": "Creator-directed installation into the existing Agent Virtual Tablet; no production acceptance claim",
   "authenticatedGitHubAccount": "4citeB4U",
+  "sharedIdentityAndBackend": {
+    "state": "CONFIGURED_PLAN_NOT_EXECUTED",
+    "issuer": "https://leeway-mcp-d3xoxh.us1.zitadel.cloud",
+    "projectId": "397622361785898800",
+    "clientsCreated": false,
+    "reason": "Four public PKCE client registrations and owner-held Northflank/Railway/ZITADEL actions are outstanding.",
+    "document": "apps/agent-tablet/docs/ZITADEL-SHARED-BACKEND-INTEGRATION.md"
+  },
   "applications": [
     {
       "name": "LeeWay Global P2P",
