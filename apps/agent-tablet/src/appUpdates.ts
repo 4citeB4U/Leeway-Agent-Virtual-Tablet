@@ -52,19 +52,21 @@ export const githubCommitUrl = (binding: AppUpdateBinding) =>
 
 // One source of truth for the GitHub comparison, shared by Update Center and
 // the always-on update warning banner.
+export async function checkGithubUpdate(binding: AppUpdateBinding): Promise<AppUpdateCheck> {
+  try {
+    const response = await fetch(githubCommitUrl(binding), { cache: 'no-store' });
+    if (response.status === 409) return { ...binding, latestCommit: null, state: 'UNBOUND', detail: 'GitHub reports no commit for this repository yet.' };
+    if (!response.ok) throw new Error(`GITHUB_${response.status}`);
+    const data = await response.json() as { sha?: string };
+    const latestCommit = data.sha || null;
+    if (!binding.installedCommit) return { ...binding, latestCommit, state: 'UNBOUND', detail: 'No installed commit recorded for this surface.' };
+    if (!latestCommit) return { ...binding, latestCommit, state: 'ERROR', detail: 'GitHub did not return a commit SHA.' };
+    return { ...binding, latestCommit, state: latestCommit === binding.installedCommit ? 'CURRENT' : 'UPDATE_AVAILABLE' };
+  } catch (error) {
+    return { ...binding, latestCommit: null, state: 'ERROR', detail: String(error) };
+  }
+}
+
 export async function checkGithubUpdates(): Promise<AppUpdateCheck[]> {
-  return Promise.all(APP_UPDATE_BINDINGS.map(async binding => {
-    try {
-      const response = await fetch(githubCommitUrl(binding), { cache: 'no-store' });
-      if (response.status === 409) return { ...binding, latestCommit: null, state: 'UNBOUND' as const, detail: 'GitHub reports no commit for this repository yet.' };
-      if (!response.ok) throw new Error(`GITHUB_${response.status}`);
-      const data = await response.json() as { sha?: string };
-      const latestCommit = data.sha || null;
-      if (!binding.installedCommit) return { ...binding, latestCommit, state: 'UNBOUND' as const, detail: 'No installed commit recorded for this surface.' };
-      if (!latestCommit) return { ...binding, latestCommit, state: 'ERROR' as const, detail: 'GitHub did not return a commit SHA.' };
-      return { ...binding, latestCommit, state: latestCommit === binding.installedCommit ? 'CURRENT' as const : 'UPDATE_AVAILABLE' as const };
-    } catch (error) {
-      return { ...binding, latestCommit: null, state: 'ERROR' as const, detail: String(error) };
-    }
-  }));
+  return Promise.all(APP_UPDATE_BINDINGS.map(checkGithubUpdate));
 }

@@ -706,7 +706,7 @@ export default function App() {
               }
             }
           }}
-          className="order-2 z-30 flex max-h-[228px] w-full shrink-0 flex-col items-center overflow-y-auto border-t border-white/10 bg-[#07111b]/95 px-2 py-1.5 select-none backdrop-blur-2xl [scrollbar-color:#155e75_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-800/80"
+          className="order-2 z-30 flex h-[68px] w-full shrink-0 flex-col items-center overflow-y-auto border-t border-white/10 bg-[#07111b]/95 px-2 py-1 select-none backdrop-blur-2xl [scrollbar-color:#155e75_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-800/80"
         >
           <div className="mx-auto flex w-full max-w-[720px] shrink-0 items-start gap-2">
             {/* Permanent left dock: Home, time and weather. Never part of the app grid. */}

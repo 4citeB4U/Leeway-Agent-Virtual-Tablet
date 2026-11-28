@@ -13,7 +13,7 @@ LICENSE: Existing repository terms.
 */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, RefreshCw, X } from 'lucide-react';
-import { checkGithubUpdates } from '../appUpdates';
+import { APP_UPDATE_BINDINGS, checkGithubUpdate } from '../appUpdates';
 
 const RECHECK_MS = 10 * 60 * 1000;
 
@@ -25,10 +25,13 @@ export function UpdateBanner({ onOpenUpdateCenter }: { onOpenUpdateCenter: () =>
   const check = useCallback(async () => {
     setChecking(true);
     try {
-      const rows = await checkGithubUpdates();
+      // One request for the tablet surface. Update Center still checks every
+      // app on demand, so the always-on banner cannot exhaust GitHub's
+      // unauthenticated rate limit.
+      const row = await checkGithubUpdate(APP_UPDATE_BINDINGS[0]);
       // A failed check keeps the last known state; it never invents an update.
-      if (rows.some(row => row.state !== 'ERROR')) {
-        setAvailable(rows.filter(row => row.state === 'UPDATE_AVAILABLE').map(row => row.label));
+      if (row.state !== 'ERROR') {
+        setAvailable(row.state === 'UPDATE_AVAILABLE' ? [row.label] : []);
       }
     } catch {
       /* network failure: retain last observed state */
