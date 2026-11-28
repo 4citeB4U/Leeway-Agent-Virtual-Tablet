@@ -236,6 +236,7 @@ export default function App() {
   const [currentLaunchOrigin, setCurrentLaunchOrigin] = useState<PublishedAppLaunchOrigin>('desktop');
   const [surfaceResolutions, setSurfaceResolutions] = useState<Partial<Record<PublishedLeeWayAppId, PublishedAppSurfaceDecision>>>({});
   const appLaunchRequestId = useRef(0);
+  const previousAppRef = useRef<WorkstationAppId | null>(null);
   const [pinnedAppIds, setPinnedAppIds] = useState<WorkstationAppId[]>(() => {
     try {
       const saved = localStorage.getItem(TASKBAR_STORAGE_KEY) ?? localStorage.getItem(LEGACY_TASKBAR_STORAGE_KEY);
@@ -414,6 +415,7 @@ export default function App() {
 
   const setCurrentApp = (appId: WorkstationAppId, launchOrigin: PublishedAppLaunchOrigin = 'desktop') => {
     const requestId = ++appLaunchRequestId.current;
+    if (currentApp !== 'desktop' && currentApp !== appId) previousAppRef.current = currentApp;
     if (appId === 'desktop') {
       setCurrentLaunchOrigin('desktop');
       setSurfaceResolutions({});
@@ -1787,8 +1789,39 @@ export default function App() {
           </div>
         </div>
         <UpdateBanner onOpenUpdateCenter={() => setUpdateOpen(true)} />
-        <div className="relative min-h-0 flex-1 overflow-hidden rounded-b-[15px] bg-[#078184]">
+        <div className="group/app relative min-h-0 flex-1 overflow-hidden rounded-b-[15px] bg-[#078184]">
           {appContent}
+          {currentApp !== 'desktop' && (
+            <div
+              data-leeway-app-nav="true"
+              className="pointer-events-none absolute inset-x-0 top-0 z-40 flex justify-end p-2 opacity-0 transition-opacity duration-200 group-hover/app:pointer-events-auto group-hover/app:opacity-100 focus-within:pointer-events-auto focus-within:opacity-100"
+            >
+              <div className="flex items-center gap-1 rounded-full border border-cyan-300/40 bg-slate-950/85 p-1 shadow-[0_6px_22px_rgba(0,0,0,.65)] backdrop-blur-md">
+                <button
+                  type="button"
+                  aria-label="Back to previous application"
+                  title="Back to previous application"
+                  disabled={!previousAppRef.current || previousAppRef.current === currentApp}
+                  onClick={() => {
+                    const target = previousAppRef.current;
+                    if (target && target !== currentApp) setCurrentApp(target, 'context-menu');
+                  }}
+                  className="flex h-8 items-center gap-1 rounded-full border border-white/20 px-2 text-[9px] font-black text-zinc-200 hover:bg-white/10 disabled:opacity-30"
+                >
+                  <ArrowLeft size={13} /> BACK
+                </button>
+                <button
+                  type="button"
+                  aria-label="Go home"
+                  title="Go home"
+                  onClick={() => setCurrentApp('desktop', 'taskbar')}
+                  className="flex h-8 items-center gap-1 rounded-full border border-[#66c6ff] bg-[#0077ff] px-3 text-[9px] font-black text-white shadow-[0_0_12px_rgba(0,119,255,.6)] hover:bg-[#2a95ff]"
+                >
+                  <Home size={13} /> HOME
+                </button>
+              </div>
+            </div>
+          )}
         </div>
         {aboutOpen && currentApp !== 'desktop' && (
           <AppAbout appId={currentApp} onClose={() => setAboutOpen(false)} />

@@ -12,7 +12,7 @@ AUTHORITY: LOCAL_PRESENTATION_ONLY. No entitlement, Veritas or receipt claim.
 LICENSE: Existing repository terms.
 */
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, MonitorUp } from 'lucide-react';
+import { MonitorUp } from 'lucide-react';
 import { PUBLISHED_LEEWAY_APP_BY_ID, publishedAppSurfaceUrl, type PublishedLeeWayAppId } from '../publishedApps';
 import type { PublishedAppSurfaceDecision } from '../mobileSurfacePolicy.mjs';
 import type { WorkstationAppId } from '../types';
@@ -108,7 +108,6 @@ export function PublishedLeeWayApp({ appId, onBack, resolution }: Props) {
         <MonitorUp size={11} /><span>{app.title}</span><span className="text-cyan-200">SESSION {appId}</span>
         <span className={mirror ? 'text-emerald-300' : 'text-amber-300'}>{mirror ? 'LIVE WIDGET MIRROR' : 'TABLET PREVIEW'}</span>
       </div>
-      <button type="button" onClick={onBack} aria-label="Return to LeeWay Tablet home" className="absolute right-2 top-2 z-20 flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-full border border-white/20 bg-slate-950/85 px-3 py-2 text-xs font-black text-white shadow-lg backdrop-blur hover:bg-slate-800 focus-visible:outline focus-visible:outline-cyan-300"><ArrowLeft size={11} />HOME</button>
       {surfaceUrl && appId === 'erpCrm' && <CreatorCustomerMonitor />}
       <div
         ref={mirrorHostRef}
