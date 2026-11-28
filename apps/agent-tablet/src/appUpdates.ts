@@ -25,7 +25,7 @@ export type AppUpdateBinding = {
 export const APP_UPDATE_BINDINGS: AppUpdateBinding[] = [
   { appId: 'desktop', label: 'LeeWay Agent Virtual Tablet', owner: '4citeB4U', repo: 'Leeway-Agent-Virtual-Tablet', installedCommit: '466a2d2c37cc2b355a3850e6efd39c2f2f040361', kind: 'TABLET' },
   { appId: 'globalP2p', label: 'LeeWay Global P2P', owner: 'agentlee2116-ctrl', repo: 'Leeway-Global-P2P', installedCommit: '94c905da4a2dc3a7916047afd6ccbb5d41aefbd6', kind: 'PUBLISHED_APP' },
-  { appId: 'directConnect', label: 'Direct Connect Portal', owner: 'larrylee2912-ux', repo: 'Direct-Connect-Portal', installedCommit: null, kind: 'PUBLISHED_APP' },
+  { appId: 'directConnect', label: 'Direct Connect Portal', owner: 'larrylee2912-ux', repo: 'Direct-Connect-Portal', installedCommit: 'a7dbe5f73c5b02f4a8f52c7bb059079523838781', kind: 'PUBLISHED_APP' },
   { appId: 'motionGlyph', label: 'Motion-Glyph-LAB', owner: 'larrylee2912-ux', repo: 'Motion-Glyph-LAB', installedCommit: '59c131b383cd13a15ce1b7f1b55481780f3ded71', kind: 'PUBLISHED_APP' },
   { appId: 'watchWinSale', label: 'Watch-Win-Sale', owner: 'larrylee2912-ux', repo: 'Watch-Win-Sale', installedCommit: '8ec657c610585f51ebe27e30ed6f9b1df939bc2b', kind: 'PUBLISHED_APP' },
   { appId: 'settings', label: 'Settings & About — Journey with LeeWay', owner: '4citeB4U', repo: 'Leeway-Agent-Virtual-Tablet', installedCommit: '466a2d2c37cc2b355a3850e6efd39c2f2f040361', kind: 'TABLET' },

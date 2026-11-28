@@ -20,15 +20,15 @@
     {
       "name": "Direct Connect Portal",
       "repository": "larrylee2912-ux/Direct-Connect-Portal",
-      "mainCommit": null,
+      "mainCommit": "a7dbe5f73c5b02f4a8f52c7bb059079523838781",
       "githubPages": "https://larrylee2912-ux.github.io/Direct-Connect-Portal/",
-      "pagesState": "NOT_PUBLISHED",
+      "pagesState": "VERIFIED_SUCCESS",
       "buttonAsset": "apps/agent-tablet/public/app-icons/direct-connect.png",
       "tabletInstall": "REGISTERED_BUTTON_PRESENT_SAME_ORIGIN_BUILD",
-      "browserTest": "TABLET_STATIC_PREVIEW_PASS; BACKEND_UNBOUND_TRUTHFUL",
+      "browserTest": "TABLET_STATIC_PREVIEW_PASS; PAGES_STATIC_PREVIEW_PASS; BACKEND_UNBOUND_TRUTHFUL",
       "backend": "NOT_BOUND_STATIC_PAGES_CANNOT_EXECUTE_EXPRESS",
       "blockers": [
-        "No authenticated GitHub account with push permission to larrylee2912-ux/Direct-Connect-Portal; active 4citeB4U has push=false and larrylee2912-ux is not authenticated in this environment."
+        "Live dialer, email and device-pairing backend remain owner-authorized and unbound; static Pages build intentionally shows a static preview only."
       ]
     },
     {
