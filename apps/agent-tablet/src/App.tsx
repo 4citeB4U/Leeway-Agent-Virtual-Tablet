@@ -706,9 +706,9 @@ export default function App() {
               }
             }
           }}
-          className="order-2 z-30 flex h-[68px] w-full shrink-0 flex-col items-center overflow-y-auto border-t border-white/10 bg-[#07111b]/95 px-2 py-1 select-none backdrop-blur-2xl [scrollbar-color:#155e75_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-800/80"
+          className="order-2 z-30 flex h-[68px] w-full shrink-0 items-center justify-center gap-2 overflow-hidden border-t border-white/10 bg-[#07111b]/95 px-2 py-1 select-none backdrop-blur-2xl"
         >
-          <div className="mx-auto flex w-full max-w-[720px] shrink-0 items-start gap-2">
+          <div className="flex h-full w-full max-w-[720px] shrink-0 items-stretch gap-2">
             {/* Permanent left dock: Home, time and weather. Never part of the app grid. */}
             <div className="flex shrink-0 items-center gap-2 rounded-[18px] border border-cyan-300/25 bg-black/50 p-1.5 shadow-[0_10px_30px_rgba(0,0,0,.6)]">
               <button
@@ -730,7 +730,9 @@ export default function App() {
                 <span className="flex items-center gap-1 text-[8px] font-black tracking-wide text-cyan-200"><Cloud size={10} /> WEATHER · NO FEED</span>
               </div>
             </div>
-            <div className="grid min-w-0 flex-1 grid-cols-9 gap-1 rounded-[18px] border border-white/15 bg-white/[.08] p-1.5 shadow-[0_10px_34px_rgba(0,0,0,.5),inset_0_1px_1px_rgba(255,255,255,.15)]">
+            {/* Only this app area scrolls. The dock above stays fixed. */}
+            <div className="min-w-0 flex-1 overflow-y-auto rounded-[18px] border border-white/15 bg-white/[.08] shadow-[0_10px_34px_rgba(0,0,0,.5),inset_0_1px_1px_rgba(255,255,255,.15)] [scrollbar-color:#155e75_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-cyan-800/80">
+              <div className="grid grid-cols-9 gap-1 p-1.5">
               {pinnedAppIds.filter(id => id !== 'desktop').filter(isSurfaceAllowed).map(appId => {
               const appMeta = TABLET_WIDGETS.find(w => w.id === appId) ||
                 (PUBLISHED_LEEWAY_APP_BY_ID[appId as any] ? {
@@ -780,6 +782,7 @@ export default function App() {
                 </button>
               );
             })}
+              </div>
             </div>
           </div>
 
